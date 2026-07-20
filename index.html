@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fazendinha Turca | Frutas Frescas em Araruama-RJ e Produtos Naturais para Todo o Brasil</title>
+<meta name="description" content="Frutas frescas da estação entregues em Araruama-RJ. Café turco orgânico, chá calmante, shampoo para barba, camisetas e Gibi Turco infantil enviados para São Paulo, Cascavel-PR, RS, MG e ES. Produtos naturais, sustentabilidade e propósito.">
+<meta name="keywords" content="frutas frescas Araruama, venda de frutas Araruama, café turco orgânico, café orgânico em grãos, chá do turco natural, shampoo para barba natural, gibi infantil, ebook 20 frutas por dia, projeto Replantar, projeto Resgatar, produtos naturais Brasil">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="Fazendinha Turca">
+<link rel="canonical" href="https://www.fazendinhaturca.com.br/">
+
+<!-- Open Graph / Facebook / WhatsApp preview -->
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:url" content="https://www.fazendinhaturca.com.br/">
+<meta property="og:site_name" content="Fazendinha Turca">
+<meta property="og:title" content="Fazendinha Turca | Frutas Frescas em Araruama e Produtos Naturais para Todo o Brasil">
+<meta property="og:description" content="Frutas da estação entregues em Araruama-RJ. Café turco orgânico, chá calmante, shampoo para barba, camisetas e Gibi Turco enviados para São Paulo, Cascavel-PR, RS, MG e ES.">
+<meta property="og:image" content="https://www.fazendinhaturca.com.br/images/hero-frutas.webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Fazendinha Turca | Frutas Frescas em Araruama e Produtos Naturais para Todo o Brasil">
+<meta name="twitter:description" content="Frutas da estação em Araruama-RJ. Café turco, chá calmante, shampoo para barba, camisetas e Gibi Turco enviados para todo o Brasil.">
+<meta name="twitter:image" content="https://www.fazendinhaturca.com.br/images/hero-frutas.webp">
+
+<!-- Geo tags (foco Araruama-RJ) -->
+<meta name="geo.region" content="BR-RJ">
+<meta name="geo.placename" content="Araruama">
+<meta name="geo.position" content="-22.8728;-42.3436">
+<meta name="ICBM" content="-22.8728, -42.3436">
+
+<style>
+  :root {
+    --cream: #FAF3E6;
+    --cream-2: #F1E8D6;
+    --green-dark: #1E2E1B;
+    --green: #3D5A32;
+    --green-light: #7FA35C;
+    --brown: #7A5230;
+    --brown-dark: #4E3420;
+    --terracotta: #C1622D;
+    --terracotta-dark: #A24E22;
+    --gold: #D9A441;
+    --text: #2B2418;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--cream);
+    color: var(--text);
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  }
+  h1,h2,h3 {
+    font-family: Georgia, 'Times New Roman', serif;
+    margin: 0;
+  }
+  a { text-decoration: none; }
+  img { display: block; max-width: 100%; }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 24px;
+    background: var(--cream);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+  }
+  .logo-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo-wrap img {
+    height: 44px;
+    width: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .logo-text {
+    font-family: Georgia, serif;
+    font-weight: 700;
+    color: var(--green-dark);
+    font-size: 15px;
+    line-height: 1.05;
+    letter-spacing: 0.5px;
+  }
+  nav {
+    display: flex;
+    gap: 26px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--text);
+  }
+  nav a {
+    color: var(--text);
+    position: relative;
+    padding-bottom: 4px;
+    transition: color 0.15s ease;
+  }
+  nav a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 2px;
+    background: var(--gold);
+    transition: width 0.2s ease;
+  }
+  nav a:hover { color: var(--green); }
+  nav a:hover::after { width: 100%; }
+  .header-icons {
+    display: flex;
+    gap: 16px;
+    font-size: 18px;
+    color: var(--green-dark);
+  }
+  .menu-toggle { display:none; background:none; border:none; font-size: 22px; cursor:pointer; color: var(--green-dark); }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    max-width: 1100px;
+    margin: 16px auto 0;
+    padding: 0 16px;
+  }
+  .hero-img-wrap {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .hero-img-wrap img { width: 100%; display:block; }
+  .hero-cta {
+    position: absolute;
+    left: 8%;
+    top: 62%;
+    background: var(--terracotta);
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: clamp(11px, 1.6vw, 15px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .hero-cta:hover { background: var(--terracotta-dark); transform: translateY(-2px); }
+  .hero-title {
+    font-size: clamp(20px, 3.2vw, 30px);
+    color: var(--green-dark);
+    line-height: 1.25;
+    margin: 6px 0 8px;
+    max-width: 780px;
+  }
+  .hero-sub {
+    font-size: 13.5px;
+    color: #4B4432;
+    max-width: 640px;
+    margin: 0 0 14px;
+    line-height: 1.5;
+  }
+
+  /* GRID */
+  .grid {
+    max-width: 1100px;
+    margin: 20px auto 40px;
+    padding: 0 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .card {
+    background: var(--cream-2);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 8px rgba(33,51,31,0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 22px rgba(33,51,31,0.16);
+  }
+  .grid-heading-wrap {
+    max-width: 1100px;
+    margin: 30px auto 0;
+    padding: 0 16px;
+    text-align: center;
+  }
+  .section-heading {
+    font-size: clamp(20px, 3vw, 26px);
+    color: var(--green-dark);
+  }
+  .section-sub {
+    font-size: 13px;
+    color: #4B4432;
+    max-width: 640px;
+    margin: 8px auto 0;
+    line-height: 1.5;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    padding: 3px 9px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+  }
+  .badge.local { background: rgba(193,98,45,0.15); color: var(--terracotta-dark); }
+  .badge.national { background: rgba(61,90,50,0.15); color: var(--green); }
+
+  .info-section {
+    max-width: 1100px;
+    margin: 10px auto 40px;
+    padding: 26px 20px;
+    text-align: center;
+  }
+  .info-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 16px;
+    text-align: left;
+  }
+  .info-col {
+    background: var(--cream-2);
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .info-col h3 {
+    font-size: 15px;
+    color: var(--green-dark);
+    margin-bottom: 8px;
+  }
+  .info-col p {
+    font-size: 13px;
+    color: #4B4432;
+    line-height: 1.55;
+    margin: 0;
+  }
+  @media (max-width: 640px) {
+    .info-cols { grid-template-columns: 1fr; }
+  }
+  .card img {
+    width: 100%;
+    display: block;
+  }
+  .card-body {
+    padding: 14px 18px 18px;
+  }
+  .card-body h3 {
+    font-size: 17px;
+    color: var(--green-dark);
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--gold);
+    display: inline-block;
+  }
+  .card-body p {
+    font-size: 12.5px;
+    color: #4B4432;
+    margin: 0 0 12px;
+    line-height: 1.4;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+  .btn.green { background: var(--green); }
+  .btn.green:hover { background: var(--green-dark); }
+  .btn.brown { background: var(--terracotta); }
+  .btn.brown:hover { background: var(--terracotta-dark); }
+
+  /* FOOTER */
+  footer {
+    position: relative;
+    background: var(--green-dark);
+    color: #EDE7D6;
+    padding: 0;
+  }
+  .footer-img {
+    width: 100%;
+    display: block;
+    opacity: 0.0;
+    height: 0;
+  }
+  .footer-content {
+    background: var(--green-dark);
+    padding: 22px 16px 26px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .footer-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .footer-top img {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .footer-items {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 22px;
+    font-size: 11.5px;
+    letter-spacing: 0.3px;
+    opacity: 0.9;
+  }
+  .footer-items span { white-space: nowrap; }
+  .footer-nap {
+    font-size: 11px;
+    opacity: 0.75;
+    text-align: center;
+    max-width: 640px;
+    line-height: 1.6;
+    margin: 4px 0 0;
+  }
+
+  /* WHATSAPP FLOAT */
+  .wa-float {
+    position: fixed;
+    bottom: 22px;
+    right: 22px;
+    background: #25D366;
+    color: #fff;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    z-index: 100;
+    animation: pulse 2.4s infinite;
+  }
+  .wa-float svg { width: 28px; height: 28px; fill: #fff; }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(37,211,102,0.55); }
+    70% { box-shadow: 0 0 0 14px rgba(37,211,102,0); }
+    100% { box-shadow: 0 0 0 0 rgba(37,211,102,0); }
+  }
+
+  @media (max-width: 640px) {
+    nav { display: none; }
+    .menu-toggle { display: inline-block; }
+    .grid { grid-template-columns: 1fr; }
+    .hero-cta { top: 58%; left: 6%; padding: 8px 16px; }
+  }
+</style>
+
+<!-- Schema.org: negócio local (Araruama) + catálogo de produtos + FAQ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": ["LocalBusiness", "Farm"],
+      "@id": "https://www.fazendinhaturca.com.br/#negocio",
+      "name": "Fazendinha Turca",
+      "description": "Fazenda de produtos naturais em Araruama-RJ: frutas frescas da estação com entrega local, além de café turco orgânico, chás, camisetas, e-book, gibi infantil e shampoo para barba com entrega para todo o Brasil.",
+      "url": "https://www.fazendinhaturca.com.br/",
+      "image": "https://www.fazendinhaturca.com.br/images/hero-frutas.webp",
+      "logo": "https://www.fazendinhaturca.com.br/images/logo.webp",
+      "telephone": "+5522988328812",
+      "priceRange": "$$",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Araruama",
+        "addressRegion": "RJ",
+        "addressCountry": "BR"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": -22.8728,
+        "longitude": -42.3436
+      },
+      "areaServed": [
+        { "@type": "City", "name": "Araruama" },
+        { "@type": "City", "name": "São Paulo" },
+        { "@type": "City", "name": "Cascavel" },
+        { "@type": "State", "name": "Rio Grande do Sul" },
+        { "@type": "State", "name": "Minas Gerais" },
+        { "@type": "State", "name": "Espírito Santo" }
+      ],
+      "sameAs": []
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://www.fazendinhaturca.com.br/#produtos",
+      "name": "Produtos Fazendinha Turca",
+      "itemListElement": [
+        {
+          "@type": "Product",
+          "position": 1,
+          "name": "Frutas da Estação",
+          "description": "Frutas frescas selecionadas da estação, cultivadas com cuidado natural. Entrega exclusiva em Araruama-RJ.",
+          "image": "https://www.fazendinhaturca.com.br/images/hero-frutas.webp",
+          "areaServed": "Araruama, RJ",
+          "brand": { "@type": "Brand", "name": "Fazendinha Turca" }
+        },
+        {
+          "@type": "Product",
+          "position": 2,
+          "name": "Café Turco Orgânico em Grãos",
+          "description": "Café orgânico em grãos, torrado no ponto do café turco tradicional, para um momento de conexão. Enviamos para todo o Brasil.",
+          "image": "https://www.fazendinhaturca.com.br/images/card-cafe-turco.webp",
+          "brand": { "@type": "Brand", "name": "Fazendinha Turca" }
+        },
+        {
+          "@type": "Product",
+          "position": 3,
+          "name": "Chá do Turco Natural",
+          "description": "Chá natural com ação calmante, feito com ingredientes selecionados. Enviamos para todo o Brasil.",
+          "image": "https://www.fazendinhaturca.com.br/images/card-cha-turco.webp",
+          "brand": { "@type": "Brand", "name": "Fazendinha Turca" }
+        },
+        {
+          "@type": "Product",
+          "position": 4,
+          "name": "Shampoo para Barba com Ativos Naturais",
+          "description": "Shampoo para barba formulado com ativos naturais para cuidado masculino. Enviamos para todo o Brasil.",
+          "image": "https://www.fazendinhaturca.com.br/images/card-shampoo-barba.webp",
+          "brand": { "@type": "Brand", "name": "Fazendinha Turca" }
+        },
+        {
+          "@type": "Product",
+          "position": 5,
+          "name": "Gibi Turco Infantil",
+          "description": "Gibi (história em quadrinhos) infantil para crianças de 2 a 12 anos, incentivando leitura e menos tempo de tela. Enviamos para todo o Brasil.",
+          "image": "https://www.fazendinhaturca.com.br/images/card-gibi-turco.webp",
+          "audience": { "@type": "PeopleAudience", "suggestedMinAge": 2, "suggestedMaxAge": 12 },
+          "brand": { "@type": "Brand", "name": "Fazendinha Turca" }
+        },
+        {
+          "@type": "Product",
+          "position": 6,
+          "name": "E-book 20 Frutas por Dia",
+          "description": "E-book digital com orientações para incluir mais frutas na rotina alimentar. Entrega digital imediata para todo o Brasil.",
+          "image": "https://www.fazendinhaturca.com.br/images/card-20-frutas.webp",
+          "brand": { "@type": "Brand", "name": "Fazendinha Turca" }
+        },
+        {
+          "@type": "Product",
+          "position": 7,
+          "name": "Camiseta Fazendinha Turca",
+          "description": "Camiseta estampada que representa a causa da Fazendinha Turca. Enviamos para todo o Brasil.",
+          "image": "https://www.fazendinhaturca.com.br/images/card-camiseta-turco.webp",
+          "brand": { "@type": "Brand", "name": "Fazendinha Turca" }
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://www.fazendinhaturca.com.br/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Vocês entregam frutas frescas em São Paulo, Cascavel, Rio Grande do Sul, Minas Gerais ou Espírito Santo?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "As frutas frescas da estação são entregues apenas em Araruama-RJ e região, devido à necessidade de transporte rápido para manter a qualidade. Os demais produtos (café turco, chá, shampoo para barba, camisetas, gibi infantil e e-book) são enviados para todo o Brasil, incluindo São Paulo Capital, Cascavel-PR, Rio Grande do Sul, Minas Gerais e Espírito Santo."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Como faço para comprar produtos da Fazendinha Turca fora de Araruama?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Basta entrar em contato pelo WhatsApp para fazer o pedido de café turco orgânico, chá calmante, shampoo para barba, camisetas, Gibi Turco ou o e-book 20 Frutas por Dia, com envio para todo o Brasil."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "O que são os projetos Replantar e Resgatar?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Replantar e Resgatar são iniciativas da Fazendinha Turca voltadas à reflorestação e ao resgate e cuidado de animais, refletindo o compromisso da fazenda com sustentabilidade e propósito."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="logo-wrap">
+    <img src="images/logo.webp" alt="Fazendinha Turca">
+    <div class="logo-text">FAZENDINHA<br>TURCA</div>
+  </div>
+  <nav>
+    <a href="#inicio">INÍCIO</a>
+    <a href="#produtos">PRODUTOS</a>
+    <a href="#onde-entregamos">ONDE ENTREGAMOS</a>
+    <a href="#sobre">SOBRE</a>
+    <a href="https://wa.me/5522988328812?text=Ol%C3%A1%21%20Quero%20falar%20com%20a%20Fazendinha%20Turca." target="_blank">CONTATO</a>
+  </nav>
+  <div class="header-icons">
+    <span>&#128269;</span>
+    <span>&#128722;</span>
+    <button class="menu-toggle" aria-label="menu">&#9776;</button>
+  </div>
+</header>
+
+<section class="hero" id="inicio">
+  <h1 class="hero-title">Frutas Frescas da Estação em Araruama-RJ &amp; Produtos Naturais Entregues em Todo o Brasil</h1>
+  <p class="hero-sub">Café turco orgânico, chá calmante, shampoo para barba, camisetas e Gibi Turco enviados para São Paulo, Cascavel-PR, Rio Grande do Sul, Minas Gerais e Espírito Santo.</p>
+  <div class="hero-img-wrap">
+    <img src="images/hero-frutas.webp" alt="Frutas frescas da estação para venda em Araruama RJ - Fazendinha Turca" loading="eager">
+    <a class="hero-cta" href="cadastro.html">CADASTRE-SE &#127807;</a>
+  </div>
+</section>
+
+<section class="grid-heading-wrap" id="produtos">
+  <h2 class="section-heading">Nossos Produtos</h2>
+  <p class="section-sub">Frutas frescas com entrega local em Araruama-RJ e produtos naturais enviados para São Paulo Capital, Cascavel-PR, Rio Grande do Sul, Minas Gerais e Espírito Santo.</p>
+</section>
+
+<section class="grid">
+
+  <div class="card">
+    <img src="images/card-replantar.webp" alt="Projeto Replantar Fazendinha Turca - reflorestamento em Araruama" loading="lazy">
+    <div class="card-body">
+      <span class="badge local">Araruama-RJ</span>
+      <h3>REPLANTAR &#127793;</h3>
+      <p>Toda semente deve voltar pra terra.</p>
+      <a class="btn green" href="https://wa.me/5522988328812?text=Ol%C3%A1%21%20Quero%20fazer%20parte%20do%20Replantar%20%F0%9F%8C%B1" target="_blank">FAÇA PARTE &#127793;</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <img src="images/card-resgatar.webp" alt="Projeto Resgatar Fazendinha Turca - resgate de animais em Araruama" loading="lazy">
+    <div class="card-body">
+      <span class="badge local">Araruama-RJ</span>
+      <h3>RESGATAR &#128062;</h3>
+      <p>Porque todo animal nasceu para viver.</p>
+      <a class="btn brown" href="https://wa.me/5522988328812?text=Ol%C3%A1%21%20Quero%20fazer%20parte%20do%20Resgatar%20%F0%9F%90%BE" target="_blank">FAÇA PARTE &#128062;</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <img src="images/card-gibi-turco.webp" alt="Gibi Turco infantil para crianças de 2 a 12 anos" loading="lazy">
+    <div class="card-body">
+      <span class="badge national">Entrega para todo o Brasil</span>
+      <h3>GIBI TURCO INFANTIL</h3>
+      <p>Menos telas. Mais histórias. Para crianças de 2 a 12 anos.</p>
+      <a class="btn green" href="https://wa.me/5522988328812?text=Ol%C3%A1%21%20Quero%20conhecer%20o%20Gibi%20Turco%20%F0%9F%93%96" target="_blank">&#128214; CONHEÇA</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <img src="images/card-20-frutas.webp" alt="E-book 20 Frutas por Dia - guia de alimentação natural" loading="lazy">
+    <div class="card-body">
+      <span class="badge national">Entrega digital: todo o Brasil</span>
+      <h3>E-BOOK 20 FRUTAS POR DIA</h3>
+      <p>Seu corpo vai aprender a pedir fruta.</p>
+      <a class="btn green" href="https://wa.me/5522988328812?text=Ol%C3%A1%21%20Quero%20conhecer%20o%20e-book%2020%20Frutas%20por%20Dia%20%F0%9F%8D%8E" target="_blank">&#127820; CONHEÇA</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <img src="images/card-shampoo-barba.webp" alt="Shampoo para barba com ativos naturais Fazendinha Turca" loading="lazy">
+    <div class="card-body">
+      <span class="badge national">Entrega para todo o Brasil</span>
+      <h3>SHAMPOO PARA BARBA NATURAL</h3>
+      <p>Para o homem que se cuida, com ativos naturais.</p>
+      <a class="btn green" href="https://wa.me/5522988328812?text=Ol%C3%A1%21%20Quero%20conhecer%20o%20Shampoo%20para%20Barba%20Turco" target="_blank">&#128167; CONHEÇA</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <img src="images/card-cafe-turco.webp" alt="Café turco orgânico em grãos Fazendinha Turca" loading="lazy">
+    <div class="card-body">
+      <span class="badge national">Entrega para todo o Brasil</span>
+      <h3>CAFÉ TURCO ORGÂNICO EM GRÃOS</h3>
+      <p>Mais que café, um momento de conexão.</p>
+      <a class="btn brown" href="https://wa.me/5522988328812?text=Ol%C3%A1%21%20Quero%20conhecer%20o%20Caf%C3%A9%20Turco%20%E2%98%95" target="_blank">&#9749; CONHEÇA</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <img src="images/card-camiseta-turco.webp" alt="Camiseta Fazendinha Turca com estampa exclusiva" loading="lazy">
+    <div class="card-body">
+      <span class="badge national">Entrega para todo o Brasil</span>
+      <h3>CAMISETA TURCO</h3>
+      <p>Vista essa ideia. Plante essa causa.</p>
+      <a class="btn green" href="https://wa.me/5522988328812?text=Ol%C3%A1%21%20Quero%20conhecer%20a%20Camiseta%20Turco%20%F0%9F%91%95" target="_blank">&#128085; CONHEÇA</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <img src="images/card-cha-turco.webp" alt="Chá do Turco natural com ação calmante" loading="lazy">
+    <div class="card-body">
+      <span class="badge national">Entrega para todo o Brasil</span>
+      <h3>CHÁ DO TURCO CALMANTE</h3>
+      <p>Natureza que acolhe. Sabor que tranquiliza.</p>
+      <a class="btn green" href="https://wa.me/5522988328812?text=Ol%C3%A1%21%20Quero%20conhecer%20o%20Ch%C3%A1%20do%20Turco%20%F0%9F%8D%B5" target="_blank">&#127813; CONHEÇA</a>
+    </div>
+  </div>
+
+</section>
+
+<section class="info-section" id="onde-entregamos">
+  <h2 class="section-heading">Onde Entregamos</h2>
+  <div class="info-cols">
+    <div class="info-col">
+      <h3>&#127807; Frutas Frescas: exclusivo em Araruama-RJ</h3>
+      <p>As frutas da estação são colhidas e entregues frescas apenas em Araruama e região, no Rio de Janeiro. Essa entrega local garante que a fruta chegue no ponto certo, sem perder qualidade no transporte.</p>
+    </div>
+    <div class="info-col">
+      <h3>&#128230; Demais produtos: entrega para todo o Brasil</h3>
+      <p>Café turco orgânico em grãos, chá do turco calmante, shampoo para barba com ativos naturais, camisetas, Gibi Turco infantil e o e-book 20 Frutas por Dia enviamos para todo o país, com destaque para clientes de <strong>São Paulo Capital</strong>, <strong>Cascavel (PR)</strong>, <strong>Rio Grande do Sul</strong>, <strong>Minas Gerais</strong> e <strong>Espírito Santo</strong>.</p>
+    </div>
+  </div>
+</section>
+
+<section class="info-section" id="sobre">
+  <h2 class="section-heading">Sobre a Fazendinha Turca</h2>
+  <p class="section-sub" style="text-align:left; max-width:820px; margin:8px auto 0;">A Fazendinha Turca nasceu em Araruama, no Rio de Janeiro, com o propósito de reconectar as pessoas à natureza através de produtos naturais e de causas que fazem sentido: o <strong>Replantar</strong>, projeto de reflorestamento, e o <strong>Resgatar</strong>, dedicado ao resgate e cuidado de animais. Além das frutas frescas da estação, entregues localmente em Araruama, produzimos café turco orgânico, chá calmante, shampoo para barba natural, camisetas e conteúdo para crianças com o Gibi Turco — tudo pensado para chegar até você em qualquer estado do Brasil.</p>
+</section>
+
+<footer>
+  <div class="footer-content">
+    <div class="footer-top">
+      <img src="images/logo.webp" alt="Fazendinha Turca - Araruama RJ" loading="lazy">
+      <span>Do campo para você.</span>
+    </div>
+    <div class="footer-items">
+      <span>&#127793; Produtos naturais</span>
+      <span>&#9878;&#65039; Sustentabilidade de verdade</span>
+      <span>&#128106; Família e propósito</span>
+      <span>&#127757; Conexão com a natureza</span>
+    </div>
+    <p class="footer-nap">Fazendinha Turca &middot; Araruama &ndash; RJ &middot; Frutas frescas com entrega local &middot; Demais produtos entregues para todo o Brasil &middot; <a href="https://wa.me/5522988328812" target="_blank" style="color:#EDE7D6; text-decoration:underline;"></a></p>
+  </div>
+</footer>
+
+<a class="wa-float" href="https://wa.me/5522988328812?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Fazendinha%20Turca%20e%20gostaria%20de%20mais%20informa%C3%A7%C3%B5es." target="_blank" aria-label="Falar no WhatsApp">
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-1.746-.874-2.892-1.56-4.043-3.538-.306-.526.306-.489.874-1.627.099-.198.05-.371-.05-.52-.099-.148-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.148.198 2.043 3.125 4.955 4.26 2.912 1.136 2.912.758 3.858.634.947-.124 3.038-1.24 3.462-2.44.421-1.198.421-2.223.297-2.436-.124-.213-.297-.297-.669-.446z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.98.573 3.827 1.562 5.396L2 22l4.752-1.545A9.94 9.94 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.94 7.94 0 0 1-4.243-1.225l-.304-.19-3.15 1.024 1.05-3.075-.198-.315A7.94 7.94 0 0 1 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg>
+</a>
+
+</body>
+</html>
