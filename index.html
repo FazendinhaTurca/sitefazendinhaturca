@@ -428,6 +428,101 @@
     .grid { grid-template-columns: 1fr; }
     .hero-cta { top: 58%; left: 6%; padding: 8px 16px; }
   }
+
+  /* BARRA DE BUSCA (topo) */
+  .search-bar {
+    display: none;
+    background: var(--cream);
+    padding: 12px 16px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    position: sticky;
+    top: 65px;
+    z-index: 49;
+  }
+  .search-bar.open { display: block; }
+  .search-bar form {
+    max-width: 500px;
+    margin: 0 auto;
+    display: flex;
+    gap: 8px;
+  }
+  .search-bar input {
+    flex: 1;
+    padding: 11px 16px;
+    border-radius: 24px;
+    border: 1px solid rgba(30,46,27,0.15);
+    background: #fff;
+    font-size: 13.5px;
+    color: var(--text);
+    outline: none;
+  }
+  .search-bar input:focus { border-color: var(--green-light); }
+  .search-bar button[type="submit"] {
+    background: var(--green);
+    color: #fff;
+    border: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .search-bar button[type="submit"]:hover { background: var(--green-dark); }
+
+  /* POPUP PROMOCIONAL */
+  .promo-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(30,46,27,0.55);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .promo-overlay.open { display: flex; }
+  .promo-box {
+    position: relative;
+    background: var(--cream);
+    border-radius: 18px;
+    overflow: hidden;
+    max-width: 380px;
+    width: 100%;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+  }
+  .promo-box img {
+    width: 100%;
+    display: block;
+  }
+  .promo-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(30,46,27,0.85);
+    color: #fff;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+  .promo-cta {
+    display: block;
+    text-align: center;
+    background: var(--green);
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 12px;
+    letter-spacing: 0.4px;
+  }
+  .promo-cta:hover { background: var(--green-dark); }
 </style>
 
 <!-- Schema.org: negócio local (Araruama) + catálogo de produtos + FAQ -->
@@ -585,16 +680,24 @@
   <nav id="main-nav">
     <a href="#inicio">INÍCIO</a>
     <a href="#produtos">PRODUTOS</a>
+    <a href="produtos.html">MERCADINHO</a>
     <a href="#onde-entregamos">ONDE ENTREGAMOS</a>
     <a href="#sobre">SOBRE</a>
     <a href="https://wa.me/5522988328812?text=Ol%C3%A1%21%20Quero%20falar%20com%20a%20Fazendinha%20Turca." target="_blank" rel="noopener noreferrer">CONTATO</a>
   </nav>
   <div class="header-icons">
-    <span aria-hidden="true">&#128269;</span>
-    <span aria-hidden="true">&#128722;</span>
+    <button class="header-icon-btn" id="search-toggle" aria-label="Buscar produtos">&#128269;</button>
+    <a href="produtos.html" class="header-icon-btn" aria-label="Ver mercadinho de produtos">&#128722;</a>
     <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menu" aria-controls="main-nav" aria-expanded="false">&#9776;</button>
   </div>
 </header>
+
+<div class="search-bar" id="search-bar">
+  <form id="search-form">
+    <input type="text" id="search-input" placeholder="Buscar produtos... (ex: banana, tomate, mel)" autocomplete="off">
+    <button type="submit" aria-label="Buscar">&#128269;</button>
+  </form>
+</div>
 
 <script>
   document.getElementById('menu-toggle').addEventListener('click', function () {
@@ -602,6 +705,24 @@
     var isOpen = nav.classList.toggle('nav-open');
     this.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
   });
+
+  (function () {
+    var searchToggle = document.getElementById('search-toggle');
+    var searchBar = document.getElementById('search-bar');
+    var searchInput = document.getElementById('search-input');
+    var searchForm = document.getElementById('search-form');
+
+    searchToggle.addEventListener('click', function () {
+      var isOpen = searchBar.classList.toggle('open');
+      if (isOpen) { setTimeout(function () { searchInput.focus(); }, 50); }
+    });
+
+    searchForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var termo = searchInput.value.trim();
+      window.location.href = 'produtos.html' + (termo ? ('?busca=' + encodeURIComponent(termo)) : '');
+    });
+  })();
 </script>
 
 <section class="hero" id="inicio">
@@ -756,6 +877,37 @@
 <a class="wa-float" href="https://wa.me/5522988328812?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Fazendinha%20Turca%20e%20gostaria%20de%20mais%20informa%C3%A7%C3%B5es." target="_blank" rel="noopener noreferrer" aria-label="Falar no WhatsApp">
   <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-1.746-.874-2.892-1.56-4.043-3.538-.306-.526.306-.489.874-1.627.099-.198.05-.371-.05-.52-.099-.148-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.148.198 2.043 3.125 4.955 4.26 2.912 1.136 2.912.758 3.858.634.947-.124 3.038-1.24 3.462-2.44.421-1.198.421-2.223.297-2.436-.124-.213-.297-.297-.669-.446z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.98.573 3.827 1.562 5.396L2 22l4.752-1.545A9.94 9.94 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.94 7.94 0 0 1-4.243-1.225l-.304-.19-3.15 1.024 1.05-3.075-.198-.315A7.94 7.94 0 0 1 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg>
 </a>
+
+<!-- POPUP PROMOCIONAL -->
+<div class="promo-overlay" id="promo-overlay">
+  <div class="promo-box">
+    <button class="promo-close" id="promo-close" aria-label="Fechar">&times;</button>
+    <img src="images/popup-promocional.jpg" alt="Promoção da Colheita - 12 Bananas por R$8,00 em setembro">
+    <a class="promo-cta" href="produtos.html" id="promo-cta">VER PROMOÇÃO &#127820;</a>
+  </div>
+</div>
+<script>
+(function () {
+  const promoOverlay = document.getElementById('promo-overlay');
+  const promoClose = document.getElementById('promo-close');
+  const CHAVE_POPUP = "fazendinhaTurca_popupVisto";
+
+  function abrirPopup() { promoOverlay.classList.add('open'); }
+  function fecharPopup() {
+    promoOverlay.classList.remove('open');
+    sessionStorage.setItem(CHAVE_POPUP, "1");
+  }
+
+  if (!sessionStorage.getItem(CHAVE_POPUP)) {
+    setTimeout(abrirPopup, 900);
+  }
+  promoClose.addEventListener('click', fecharPopup);
+  promoOverlay.addEventListener('click', (e) => {
+    if (e.target === promoOverlay) fecharPopup();
+  });
+  document.getElementById('promo-cta').addEventListener('click', fecharPopup);
+})();
+</script>
 
 </body>
 </html>
