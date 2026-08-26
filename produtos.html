@@ -830,7 +830,7 @@
 
 <header>
   <a href="index.html" class="logo-wrap">
-    <img src="images/logo.webp" alt="Fazendinha Turca">
+    <img src="images/logo.webp" alt="Fazendinha Turca" width="200" height="266">
     <div class="logo-text">FAZENDINHA<br>TURCA</div>
   </a>
   <nav id="main-nav">
@@ -899,14 +899,14 @@
 <div class="promo-overlay" id="promo-overlay">
   <div class="promo-box">
     <button class="promo-close" id="promo-close" aria-label="Fechar">&times;</button>
-    <img src="images/popup-promocional.jpg" alt="Promoção da Colheita - 12 Bananas por R$8,00 em setembro">
+    <img src="images/popup-promocional.webp" alt="Promoção da Colheita - 12 Bananas por R$8,00 em setembro" width="900" height="900" fetchpriority="high">
     <a class="promo-cta" href="produtos.html#Banana%20Prata" id="promo-cta">VER PROMOÇÃO &#127820;</a>
   </div>
 </div>
 
 <footer>
   <div class="footer-content">
-    <img src="images/logo.webp" alt="Fazendinha Turca - Araruama RJ" loading="lazy" style="width:34px;height:34px;border-radius:50%;object-fit:cover;">
+    <img src="images/logo.webp" alt="Fazendinha Turca - Araruama RJ" width="200" height="266" loading="lazy" style="width:34px;height:34px;border-radius:50%;object-fit:cover;">
     <div class="footer-top"><span>Do campo para você.</span></div>
     <div class="footer-items">
       <span>&#127793; Produtos naturais</span>
@@ -990,7 +990,7 @@ function renderCatalogo() {
       card.id = slug(p.nome);
 
       const imgHtml = p.img
-        ? `<img src="images/produtos/${p.img}.webp" alt="${p.nome} - Fazendinha Turca" loading="lazy">`
+        ? `<img src="images/produtos/${p.img}.webp" alt="${p.nome} - Fazendinha Turca" width="700" height="700" loading="lazy">`
         : `<div class="produto-img-placeholder">${EMOJI_CAT[p.cat] || "🌿"}</div>`;
 
       const qtdAtual = (carrinho[p.nome] && carrinho[p.nome].qtd) || 0;
@@ -1103,7 +1103,7 @@ function renderCarrinho() {
       const row = document.createElement('div');
       row.className = 'cart-item';
       const imgHtml = item.img
-        ? `<img src="images/produtos/${item.img}.webp" alt="${nome}">`
+        ? `<img src="images/produtos/${item.img}.webp" alt="${nome}" width="46" height="46">`
         : `<div class="cart-item-placeholder">🌿</div>`;
       row.innerHTML = `
         ${imgHtml}
