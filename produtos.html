@@ -686,6 +686,29 @@
     line-height: 1.6;
     margin: 4px 0 0;
   }
+
+/* Animações de entrada ao rolar */
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.in-view { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+  /* ===== CHECKOUT / DADOS DO CLIENTE ===== */
+  .checkout-overlay{position:fixed;inset:0;background:rgba(30,20,10,.58);display:none;align-items:flex-start;justify-content:center;padding:24px 14px;overflow-y:auto;z-index:120;}
+  .checkout-overlay.show{display:flex;}
+  .checkout-box{background:#fff;border-radius:14px;width:100%;max-width:720px;padding:24px;box-shadow:0 16px 50px rgba(30,20,10,.22);}
+  .checkout-box h3{margin:0 0 6px;font-size:1.25rem;}
+  .checkout-note{font-size:.78rem;color:#725f49;margin:0 0 14px;}
+  .checkout-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;}
+  .checkout-grid .full{grid-column:1/-1;}
+  .checkout-box label{font-size:.76rem;font-weight:700;color:#4E3420;display:block;margin:9px 0 4px;}
+  .checkout-box input,.checkout-box textarea{font-family:inherit;font-size:.86rem;padding:9px 10px;border:1px solid rgba(122,82,48,.35);border-radius:7px;background:#fff;width:100%;}
+  .checkout-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;}
+  .checkout-actions button{border:none;border-radius:7px;padding:10px 16px;font-weight:700;}
+  .checkout-cancel{background:#f1e8d6;color:#4E3420;} .checkout-submit{background:#25D366;color:#fff;}
+  .checkout-error{display:none;background:#f7e1e1;color:#9f2428;border-radius:7px;padding:9px 10px;font-size:.78rem;margin-top:12px;}
+  @media(max-width:620px){.checkout-grid{grid-template-columns:1fr}.checkout-grid .full{grid-column:auto}.checkout-box{padding:18px}}
 </style>
 <script type="application/ld+json">
 {
@@ -837,6 +860,8 @@
   <nav id="main-nav">
     <a href="index.html#inicio">INÍCIO</a>
     <a href="produtos.html">CATÁLOGO</a>
+    <a href="atelie.html">ATELIÊ</a>
+    <a href="blog.html">BLOG</a>
     <a href="index.html#onde-entregamos">ONDE ENTREGAMOS</a>
     <a href="index.html#sobre">SOBRE</a>
     <a href="https://wa.me/5522988328812?text=Ol%C3%A1%21%20Quero%20falar%20com%20a%20Fazendinha%20Turca." target="_blank" rel="noopener noreferrer">CONTATO</a>
@@ -861,9 +886,6 @@
 
 <div class="filtros" id="filtros">
   <button class="filtro-btn active" data-cat="Todos">Todos</button>
-  <button class="filtro-btn" data-cat="Frutas">Frutas</button>
-  <button class="filtro-btn" data-cat="Legumes e Verduras">Legumes e Verduras</button>
-  <button class="filtro-btn" data-cat="Outros Produtos">Outros Produtos</button>
 </div>
 
 <div id="catalogo-container"></div>
@@ -896,6 +918,34 @@
   </div>
 </aside>
 
+<!-- CHECKOUT / DADOS DO CLIENTE -->
+<div class="checkout-overlay" id="checkout-overlay" aria-hidden="true">
+  <div class="checkout-box" role="dialog" aria-modal="true" aria-labelledby="checkout-titulo">
+    <button type="button" id="checkout-close" aria-label="Fechar" style="float:right;background:none;border:none;font-size:1.35rem;color:#7A5230;cursor:pointer">&times;</button>
+    <h3 id="checkout-titulo">Finalizar pedido</h3>
+    <p class="checkout-note">Preencha seus dados para registrar o pedido e depois confirmar os detalhes pelo WhatsApp.</p>
+    <form id="checkout-form">
+      <div class="checkout-grid">
+        <div><label for="checkout-nome">Nome completo *</label><input id="checkout-nome" autocomplete="name" required></div>
+        <div><label for="checkout-cpf">CPF *</label><input id="checkout-cpf" inputmode="numeric" autocomplete="off" maxlength="14" required></div>
+        <div><label for="checkout-telefone">WhatsApp *</label><input id="checkout-telefone" inputmode="tel" autocomplete="tel" required></div>
+        <div><label for="checkout-email">E-mail</label><input id="checkout-email" type="email" autocomplete="email"></div>
+        <div><label for="checkout-cep">CEP *</label><input id="checkout-cep" inputmode="numeric" maxlength="9" autocomplete="postal-code" required></div>
+        <div><label for="checkout-numero">Número *</label><input id="checkout-numero" autocomplete="address-line2" required></div>
+        <div class="full"><label for="checkout-rua">Rua / Logradouro *</label><input id="checkout-rua" autocomplete="address-line1" required></div>
+        <div><label for="checkout-complemento">Complemento</label><input id="checkout-complemento" autocomplete="address-line2"></div>
+        <div><label for="checkout-bairro">Bairro *</label><input id="checkout-bairro" autocomplete="address-level3" required></div>
+        <div><label for="checkout-cidade">Cidade *</label><input id="checkout-cidade" autocomplete="address-level2" required></div>
+        <div><label for="checkout-uf">Estado / UF *</label><input id="checkout-uf" maxlength="2" autocomplete="address-level1" required></div>
+        <div class="full"><label for="checkout-referencia">Referência</label><input id="checkout-referencia" autocomplete="off"></div>
+        <div class="full"><label for="checkout-observacoes">Observações do pedido</label><textarea id="checkout-observacoes" rows="2"></textarea></div>
+      </div>
+      <div class="checkout-error" id="checkout-error"></div>
+      <div class="checkout-actions"><button type="button" class="checkout-cancel" id="checkout-cancel">Cancelar</button><button type="submit" class="checkout-submit">Registrar e abrir WhatsApp</button></div>
+    </form>
+  </div>
+</div>
+
 <!-- POPUP PROMOCIONAL -->
 <div class="promo-overlay" id="promo-overlay">
   <div class="promo-box">
@@ -927,10 +977,130 @@
   });
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-/* ===================== DADOS DOS PRODUTOS ===================== */
-/* Fonte oficial: DOCX de produtos fornecido pela Fazendinha Turca. */
-const PRODUTOS = [{"nome": "Abacate", "qtd": "2 unidades", "preco": 10.0, "img": "abacate", "cat": "Frutas"}, {"nome": "Mamão", "qtd": "1 unidade", "preco": 10.0, "img": "mamao", "cat": "Frutas"}, {"nome": "Abacaxi", "qtd": "2 unidades", "preco": 10.0, "img": "abacaxi", "cat": "Frutas"}, {"nome": "Mini Manga", "qtd": "12 unidades", "preco": 10.0, "img": "mini-manga", "cat": "Frutas"}, {"nome": "Manga", "qtd": "2 unidades", "preco": 10.0, "img": "manga", "cat": "Frutas"}, {"nome": "Tangerina Doce", "qtd": "4 unidades", "preco": 10.0, "img": "tangerina-doce", "cat": "Frutas"}, {"nome": "Tangerina Azeda", "qtd": "6 unidades", "preco": 10.0, "img": "tangerina-azeda", "cat": "Frutas"}, {"nome": "Tomate", "qtd": "3 unidades", "preco": 10.0, "img": "tomate", "cat": "Legumes e Verduras"}, {"nome": "Mini Tomate", "qtd": "250g", "preco": 10.0, "img": "mini-tomate", "cat": "Legumes e Verduras"}, {"nome": "Quiabo", "qtd": "400g", "preco": 10.0, "img": "quiabo", "cat": "Legumes e Verduras"}, {"nome": "Mini Pepino", "qtd": "300g", "preco": 10.0, "img": "mini-pepino", "cat": "Legumes e Verduras"}, {"nome": "Vagem", "qtd": "200g", "preco": 10.0, "img": "vagem", "cat": "Legumes e Verduras"}, {"nome": "Ervilha", "qtd": "100g", "preco": 10.0, "img": "ervilha", "cat": "Legumes e Verduras"}, {"nome": "Pimenta", "qtd": "100g", "preco": 10.0, "img": "pimenta", "cat": "Legumes e Verduras"}, {"nome": "Goiaba", "qtd": "3 unidades", "preco": 10.0, "img": "goiaba", "cat": "Frutas"}, {"nome": "Abobrinha", "qtd": "3 unidades", "preco": 10.0, "img": "abobrinha", "cat": "Legumes e Verduras"}, {"nome": "Jambo", "qtd": "4 unidades", "preco": 10.0, "img": "jambo", "cat": "Frutas"}, {"nome": "Pitaya", "qtd": "1 unidade", "preco": 10.0, "img": "pitaya", "cat": "Frutas"}, {"nome": "Milho", "qtd": "3 unidades", "preco": 10.0, "img": "milho", "cat": "Legumes e Verduras"}, {"nome": "Couve-Flor", "qtd": "1 unidade", "preco": 10.0, "img": "couve-flor", "cat": "Legumes e Verduras"}, {"nome": "Brócolis", "qtd": "1 unidade", "preco": 10.0, "img": "brocolis", "cat": "Legumes e Verduras"}, {"nome": "Alface", "qtd": "2 unidades", "preco": 10.0, "img": "alface", "cat": "Legumes e Verduras"}, {"nome": "Couve", "qtd": "2 unidades", "preco": 10.0, "img": "couve", "cat": "Legumes e Verduras"}, {"nome": "Repolho", "qtd": "1 unidade", "preco": 10.0, "img": "repolho", "cat": "Legumes e Verduras"}, {"nome": "Beterraba", "qtd": "3 unidades", "preco": 10.0, "img": "beterraba", "cat": "Legumes e Verduras"}, {"nome": "Cenoura", "qtd": "2 unidades", "preco": 10.0, "img": "cenoura", "cat": "Legumes e Verduras"}, {"nome": "Rabanete", "qtd": "4 unidades", "preco": 10.0, "img": "rabanete", "cat": "Legumes e Verduras"}, {"nome": "Chuchu", "qtd": "4 unidades", "preco": 10.0, "img": "chuchu", "cat": "Legumes e Verduras"}, {"nome": "Mandioca", "qtd": "1kg", "preco": 10.0, "img": "mandioca", "cat": "Legumes e Verduras"}, {"nome": "Batata Doce", "qtd": "1kg", "preco": 10.0, "img": "batata-doce", "cat": "Legumes e Verduras"}, {"nome": "Inhame", "qtd": "1kg", "preco": 10.0, "img": "inhame", "cat": "Legumes e Verduras"}, {"nome": "Gengibre", "qtd": "100g", "preco": 10.0, "img": "gengibre", "cat": "Legumes e Verduras"}, {"nome": "Cajá", "qtd": "12 unidades", "preco": 10.0, "img": "caja", "cat": "Frutas"}, {"nome": "Laranja", "qtd": "12 unidades", "preco": 10.0, "img": "laranja", "cat": "Frutas"}, {"nome": "Maçã", "qtd": "3 unidades", "preco": 10.0, "img": "maca", "cat": "Frutas"}, {"nome": "Coco Verde", "qtd": "2 unidades", "preco": 10.0, "img": "coco-verde", "cat": "Frutas"}, {"nome": "Coco Seco", "qtd": "2 unidades", "preco": 10.0, "img": "coco-seco", "cat": "Frutas"}, {"nome": "Limão", "qtd": "12 unidades", "preco": 10.0, "img": "limao", "cat": "Frutas"}, {"nome": "Banana Prata", "qtd": "12 unidades", "preco": 10.0, "img": "banana-prata", "cat": "Frutas"}, {"nome": "Banana D'água", "qtd": "12 unidades", "preco": 10.0, "img": "banana-dagua", "cat": "Frutas"}, {"nome": "Mate", "qtd": "300ml", "preco": 10.0, "img": "mate", "cat": "Outros Produtos"}, {"nome": "Maracujá", "qtd": "2 unidades", "preco": 10.0, "img": "maracuja", "cat": "Frutas"}, {"nome": "Caqui", "qtd": "4 unidades", "preco": 10.0, "img": "caqui", "cat": "Frutas"}, {"nome": "Pêra", "qtd": "3 unidades", "preco": 10.0, "img": "pera", "cat": "Frutas"}, {"nome": "Água de Coco", "qtd": "300ml", "preco": 10.0, "img": "agua-de-coco", "cat": "Frutas"}, {"nome": "Morango", "qtd": "250g", "preco": 15.0, "img": "morango", "cat": "Frutas"}, {"nome": "Romã", "qtd": "1 unidade", "preco": 15.0, "img": "roma", "cat": "Frutas"}, {"nome": "Kiwi", "qtd": "4 unidades", "preco": 15.0, "img": "kiwi", "cat": "Frutas"}, {"nome": "Caju", "qtd": "3 unidades", "preco": 15.0, "img": "caju", "cat": "Frutas"}, {"nome": "Carambola", "qtd": "4 unidades", "preco": 15.0, "img": "carambola", "cat": "Frutas"}, {"nome": "Mini Melancia Amarela", "qtd": "1 unidade", "preco": 15.0, "img": "mini-melancia-amarela", "cat": "Frutas"}, {"nome": "Mini Melancia Vermelha", "qtd": "1 unidade", "preco": 15.0, "img": "mini-melancia-vermelha", "cat": "Frutas"}, {"nome": "Melão Amarelo", "qtd": "1 unidade", "preco": 15.0, "img": "melao-amarelo", "cat": "Frutas"}, {"nome": "Melão Verde", "qtd": "1 unidade", "preco": 15.0, "img": "melao-verde", "cat": "Frutas"}, {"nome": "Acerola", "qtd": "1kg", "preco": 15.0, "img": "acerola", "cat": "Frutas"}, {"nome": "Jaca", "qtd": "300g", "preco": 15.0, "img": "jaca", "cat": "Frutas"}, {"nome": "Ovos", "qtd": "12 unidades", "preco": 15.0, "img": "ovos", "cat": "Outros Produtos"}, {"nome": "Abóbora", "qtd": "1 unidade", "preco": 15.0, "img": "abobora", "cat": "Frutas"}, {"nome": "Amendoim", "qtd": "500g", "preco": 15.0, "img": "amendoim", "cat": "Outros Produtos"}, {"nome": "Feijão Branco", "qtd": "500g", "preco": 15.0, "img": "feijao-branco", "cat": "Outros Produtos"}, {"nome": "Feijão Vermelho", "qtd": "500g", "preco": 15.0, "img": "feijao-vermelho", "cat": "Outros Produtos"}, {"nome": "Feijão Marronzinho", "qtd": "500g", "preco": 15.0, "img": "feijao-marronzinho", "cat": "Outros Produtos"}, {"nome": "Graviola", "qtd": "1 unidade", "preco": 15.0, "img": "graviola", "cat": "Frutas"}, {"nome": "Uva Verde", "qtd": "500g", "preco": 15.0, "img": "uva-verde", "cat": "Frutas"}, {"nome": "Uva Roxa", "qtd": "500g", "preco": 15.0, "img": "uva-roxa", "cat": "Frutas"}, {"nome": "Caldo de Cana", "qtd": "500ml", "preco": 15.0, "img": "caldo-de-cana", "cat": "Outros Produtos"}, {"nome": "Queijo", "qtd": "500g", "preco": 20.0, "img": "queijo", "cat": "Outros Produtos"}, {"nome": "Leite", "qtd": "2L", "preco": 20.0, "img": "leite", "cat": "Outros Produtos"}, {"nome": "Mel", "qtd": "300ml", "preco": 30.0, "img": "mel", "cat": "Outros Produtos"}, {"nome": "Grãos de Café", "qtd": "250g", "preco": 30.0, "img": "graos-de-cafe", "cat": "Outros Produtos"}];
+/* ===================== DADOS DOS PRODUTOS (Supabase — projeto Mercadinho) ===================== */
+const SUPABASE_URL = "https://iskdknoedbvbiqlosgii.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_m_dI-5n_6F_VGKPFb-EFpg_G1mnOZjQ";
+const PROJETO_SLUG_MERCADINHO = "mercadinho";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+let PRODUTOS = [];
+let CATEGORIAS_MERCADINHO = [];
+let PROJETO_ID_MERCADINHO = null;
+
+/* Busca produtos e categorias cadastrados no painel administrativo para o Mercadinho
+   e monta o mesmo formato usado pelo catálogo (nome, qtd, preco, img, cat). */
+async function carregarProdutosMercadinho() {
+  try {
+    // 1) Projeto: mantém o catálogo isolado por projeto.
+    const { data: projeto, error: erroProjeto } = await sb
+      .from('projetos')
+      .select('id, slug, status')
+      .eq('slug', PROJETO_SLUG_MERCADINHO)
+      .eq('status', 'ativo')
+      .maybeSingle();
+
+    if (erroProjeto) throw erroProjeto;
+    if (!projeto) throw new Error('Projeto Mercadinho não encontrado ou inativo.');
+    PROJETO_ID_MERCADINHO = projeto.id;
+
+    // 2) Categorias em consulta independente.
+    const { data: cats, error: erroCategorias } = await sb
+      .from('categorias')
+      .select('id, projeto_id, nome, slug, ordem, status')
+      .eq('projeto_id', projeto.id)
+      .eq('status', 'ativo')
+      .order('ordem', { ascending: true });
+
+    if (erroCategorias) {
+      console.warn('Categorias do Mercadinho não puderam ser carregadas:', erroCategorias);
+    }
+
+    // 3) Produtos sem embedded relation. Isso evita que uma falha na relação
+    //    produtos -> categorias derrube o carregamento inteiro do catálogo.
+    const { data: prods, error: erroProdutos } = await sb
+      .from('produtos')
+      .select('id, projeto_id, categoria_id, nome, descricao_curta, preco, imagem_principal_url, status, ordem')
+      .eq('projeto_id', projeto.id)
+      .eq('status', 'ativo')
+      .order('ordem', { ascending: true });
+
+    if (erroProdutos) throw erroProdutos;
+
+    const categoriasPorId = new Map(
+      (cats || []).map(c => [String(c.id), c])
+    );
+
+    PRODUTOS = (prods || []).map(p => {
+      const categoria = p.categoria_id
+        ? categoriasPorId.get(String(p.categoria_id))
+        : null;
+
+      return {
+        id: p.id,
+        nome: p.nome || 'Produto sem nome',
+        qtd: p.descricao_curta || '',
+        preco: Number(p.preco) || 0,
+        img: p.imagem_principal_url || null,
+        cat: categoria?.nome || 'Outros Produtos',
+        categoria_id: p.categoria_id || null
+      };
+    });
+
+    // 4) As categorias visíveis são derivadas dos próprios produtos.
+    //    Assim, nenhum produto fica escondido por falha de categoria.
+    const nomesCategorias = [];
+    PRODUTOS.forEach(p => {
+      if (!nomesCategorias.includes(p.cat)) nomesCategorias.push(p.cat);
+    });
+    CATEGORIAS_MERCADINHO = nomesCategorias;
+
+    // Compatibilidade com carrinhos antigos: versões anteriores usavam o nome
+    // do produto como chave (ex.: "Mamão"). O banco exige produto_id UUID.
+    // Convertemos essas entradas para o UUID real do produto assim que o catálogo
+    // termina de carregar, evitando perder o carrinho do cliente.
+    const carrinhoNormalizado = {};
+    Object.entries(carrinho).forEach(([chave, item]) => {
+      const produto = PRODUTOS.find(x => String(x.id) === String(chave))
+        || PRODUTOS.find(x => String(x.nome).trim().toLowerCase() === String(item?.nome || chave).trim().toLowerCase());
+      if (!produto) return;
+      const id = String(produto.id);
+      const anterior = carrinhoNormalizado[id];
+      const qtd = (Number(anterior?.qtd) || 0) + (Number(item?.qtd) || 0);
+      carrinhoNormalizado[id] = {
+        id, nome: produto.nome, qtd, preco: Number(produto.preco) || 0,
+        unidade: produto.qtd || produto.unidade || '', img: produto.img || null, cat: produto.cat || ''
+      };
+    });
+    carrinho = carrinhoNormalizado;
+    salvarCarrinho(carrinho);
+
+    console.info(`Mercadinho: ${PRODUTOS.length} produtos ativos carregados.`);
+  } catch (e) {
+    console.error('Não foi possível carregar os produtos do Mercadinho:', e);
+    PRODUTOS = [];
+    CATEGORIAS_MERCADINHO = [];
+  }
+
+  montarFiltrosCategorias();
+  renderCatalogo();
+}
+
+/* Recria os botões de filtro de categoria a partir das categorias cadastradas no painel,
+   mantendo o botão "Todos" fixo. */
+function montarFiltrosCategorias() {
+  const wrap = document.getElementById('filtros');
+  wrap.innerHTML = '<button class="filtro-btn active" data-cat="Todos">Todos</button>';
+  CATEGORIAS_MERCADINHO.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'filtro-btn';
+    btn.dataset.cat = cat;
+    btn.textContent = cat;
+    wrap.appendChild(btn);
+  });
+  categoriaAtiva = "Todos";
+}
 
 const WHATSAPP_NUMERO = "5522988328812";
 const CHAVE_CARRINHO = "fazendinhaTurca_carrinho";
@@ -948,6 +1118,28 @@ function salvarCarrinho(c) {
 }
 let carrinho = carregarCarrinho();
 
+/* Animações de entrada ao rolar */
+const prefereReduzirMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let revealObserver = null;
+if (!prefereReduzirMovimento && 'IntersectionObserver' in window) {
+  revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+}
+function aplicarRevelacao(elementos) {
+  elementos.forEach((el, i) => {
+    el.classList.add('reveal');
+    if (!revealObserver) { el.classList.add('in-view'); return; }
+    el.style.transitionDelay = Math.min(i % 8, 6) * 60 + 'ms';
+    revealObserver.observe(el);
+  });
+}
+
 function formatarPreco(v) {
   return "R$ " + v.toFixed(2).replace(".", ",");
 }
@@ -963,8 +1155,13 @@ function slug(nome) {
 
 function renderCatalogo() {
   container.innerHTML = "";
-  const categorias = ["Frutas", "Legumes e Verduras", "Outros Produtos"];
+  const categorias = CATEGORIAS_MERCADINHO;
   let algumResultado = false;
+
+  if (PRODUTOS.length === 0) {
+    container.innerHTML = '<div class="sem-resultado">Não foi possível carregar o catálogo no momento. Tente novamente em instantes.</div>';
+    return;
+  }
 
   categorias.forEach(cat => {
     if (categoriaAtiva !== "Todos" && categoriaAtiva !== cat) return;
@@ -991,10 +1188,10 @@ function renderCatalogo() {
       card.id = slug(p.nome);
 
       const imgHtml = p.img
-        ? `<img src="images/produtos/${p.img}.webp" alt="${p.nome} - Fazendinha Turca" width="700" height="700" loading="lazy">`
+        ? `<img src="${p.img}" alt="${p.nome} - Fazendinha Turca" width="700" height="700" loading="lazy">`
         : `<div class="produto-img-placeholder">${EMOJI_CAT[p.cat] || "🌿"}</div>`;
 
-      const qtdAtual = (carrinho[p.nome] && carrinho[p.nome].qtd) || 0;
+      const qtdAtual = (carrinho[p.id] && carrinho[p.id].qtd) || 0;
 
       card.innerHTML = `
         <div class="produto-img-wrap">${imgHtml}</div>
@@ -1044,6 +1241,8 @@ function renderCatalogo() {
     container.appendChild(grid);
   });
 
+  aplicarRevelacao(container.querySelectorAll('.cat-heading, .produto-card'));
+
   if (!algumResultado) {
     const grid = document.createElement('div');
     grid.className = 'produtos-grid';
@@ -1069,20 +1268,29 @@ document.getElementById('busca-input').addEventListener('input', (e) => {
 
 /* ===================== CARRINHO: LÓGICA ===================== */
 function atualizarItemCarrinho(produto, qtd) {
+  const id = String(produto.id);
   if (qtd <= 0) {
-    delete carrinho[produto.nome];
+    delete carrinho[id];
   } else {
-    carrinho[produto.nome] = { qtd: qtd, preco: produto.preco, unidade: produto.qtd, img: produto.img };
+    carrinho[id] = { id, nome: produto.nome, qtd: Number(qtd) || 0, preco: Number(produto.preco) || 0, unidade: produto.qtd || produto.unidade || '', img: produto.img || null, cat: produto.cat || '' };
   }
   salvarCarrinho(carrinho);
   renderCarrinho();
 }
 
+function produtoDoItem(id, item) {
+  return { id: String(id), nome: item.nome, qtd: item.unidade || '', unidade: item.unidade || '', preco: Number(item.preco) || 0, img: item.img || null, cat: item.cat || '' };
+}
+
 function totalCarrinho() {
-  return Object.values(carrinho).reduce((acc, item) => acc + item.qtd * item.preco, 0);
+  return Object.values(carrinho).reduce((acc, item) => acc + (Number(item.qtd) || 0) * (Number(item.preco) || 0), 0);
 }
 function totalItensCarrinho() {
-  return Object.values(carrinho).reduce((acc, item) => acc + item.qtd, 0);
+  return Object.values(carrinho).reduce((acc, item) => acc + (Number(item.qtd) || 0), 0);
+}
+
+function escHtml(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 function renderCarrinho() {
@@ -1091,70 +1299,35 @@ function renderCarrinho() {
   const countEl = document.getElementById('cart-count');
   const floatBtn = document.getElementById('cart-float');
   const floatCount = document.getElementById('cart-float-count');
-
-  const nomes = Object.keys(carrinho);
+  const entradas = Object.entries(carrinho);
   const totalItens = totalItensCarrinho();
 
-  if (nomes.length === 0) {
-    itemsEl.innerHTML = `<div class="cart-empty">Seu carrinho está vazio.<br>Adicione produtos do catálogo.</div>`;
+  if (entradas.length === 0) {
+    itemsEl.innerHTML = '<div class="cart-empty">Seu carrinho está vazio.<br>Adicione produtos do catálogo.</div>';
   } else {
-    itemsEl.innerHTML = "";
-    nomes.forEach(nome => {
-      const item = carrinho[nome];
+    itemsEl.innerHTML = '';
+    entradas.forEach(([id, item]) => {
       const row = document.createElement('div');
       row.className = 'cart-item';
-      const imgHtml = item.img
-        ? `<img src="images/produtos/${item.img}.webp" alt="${nome}" width="46" height="46">`
-        : `<div class="cart-item-placeholder">🌿</div>`;
-      row.innerHTML = `
-        ${imgHtml}
-        <div class="cart-item-info">
-          <div class="cart-item-nome">${nome}</div>
-          <div class="cart-item-preco">${item.unidade} &middot; ${formatarPreco(item.preco)}</div>
-        </div>
-        <div class="cart-item-stepper">
-          <button class="ci-menos">&minus;</button>
-          <span>${item.qtd}</span>
-          <button class="ci-mais">&plus;</button>
-        </div>
-        <button class="cart-item-remove" aria-label="Remover">&times;</button>
-      `;
-      row.querySelector('.ci-menos').addEventListener('click', () => {
-        const novoQtd = item.qtd - 1;
-        atualizarItemCarrinho({ nome, preco: item.preco, qtd: item.unidade, img: item.img }, novoQtd);
-        syncCardStepper(nome, novoQtd);
-      });
-      row.querySelector('.ci-mais').addEventListener('click', () => {
-        const novoQtd = item.qtd + 1;
-        atualizarItemCarrinho({ nome, preco: item.preco, qtd: item.unidade, img: item.img }, novoQtd);
-        syncCardStepper(nome, novoQtd);
-      });
-      row.querySelector('.cart-item-remove').addEventListener('click', () => {
-        atualizarItemCarrinho({ nome, preco: item.preco, qtd: item.unidade, img: item.img }, 0);
-        syncCardStepper(nome, 0);
-      });
+      const imgHtml = item.img ? `<img class="cart-item-thumb" src="${escHtml(item.img)}" alt="${escHtml(item.nome)}" width="46" height="46" loading="lazy">` : `<div class="cart-item-placeholder">${EMOJI_CAT[item.cat] || '🌿'}</div>`;
+      row.innerHTML = `${imgHtml}<div class="cart-item-info"><div class="cart-item-nome">${escHtml(item.nome)}</div><div class="cart-item-preco">${item.unidade ? escHtml(item.unidade) + ' · ' : ''}${formatarPreco(Number(item.preco) || 0)}</div></div><div class="cart-item-stepper"><button class="ci-menos" aria-label="Diminuir">&minus;</button><span>${Number(item.qtd) || 0}</span><button class="ci-mais" aria-label="Aumentar">&plus;</button></div><button class="cart-item-remove" aria-label="Remover">&times;</button>`;
+      row.querySelector('.ci-menos').addEventListener('click', () => { const novoQtd = (Number(item.qtd) || 0) - 1; atualizarItemCarrinho(produtoDoItem(id, item), novoQtd); syncCardStepper(id, novoQtd); });
+      row.querySelector('.ci-mais').addEventListener('click', () => { const novoQtd = (Number(item.qtd) || 0) + 1; atualizarItemCarrinho(produtoDoItem(id, item), novoQtd); syncCardStepper(id, novoQtd); });
+      row.querySelector('.cart-item-remove').addEventListener('click', () => { atualizarItemCarrinho(produtoDoItem(id, item), 0); syncCardStepper(id, 0); });
       itemsEl.appendChild(row);
     });
   }
-
   totalEl.textContent = formatarPreco(totalCarrinho());
-
-  if (totalItens > 0) {
-    countEl.style.display = 'flex';
-    countEl.textContent = totalItens;
-    floatBtn.classList.add('show');
-    floatCount.textContent = `(${totalItens})`;
-  } else {
-    countEl.style.display = 'none';
-    floatBtn.classList.remove('show');
-  }
+  if (totalItens > 0) { countEl.style.display = 'flex'; countEl.textContent = totalItens; floatBtn.classList.add('show'); floatCount.textContent = `(${totalItens})`; }
+  else { countEl.style.display = 'none'; floatBtn.classList.remove('show'); floatCount.textContent = ''; }
 }
 
-function syncCardStepper(nome, qtd) {
-  const card = document.getElementById(slug(nome));
-  if (!card) return;
-  const span = card.querySelector('.stepper-valor');
-  if (span) span.textContent = qtd;
+function syncCardStepper(id, qtd) {
+  const p = PRODUTOS.find(x => String(x.id) === String(id));
+  if (!p) return;
+  const card = document.getElementById(slug(p.nome));
+  const span = card && card.querySelector('.stepper-valor');
+  if (span) span.textContent = Math.max(0, Number(qtd) || 0);
 }
 
 /* ===================== DRAWER ABRIR/FECHAR ===================== */
@@ -1173,21 +1346,28 @@ document.getElementById('cart-float').addEventListener('click', abrirCarrinho);
 document.getElementById('cart-close').addEventListener('click', fecharCarrinho);
 overlay.addEventListener('click', fecharCarrinho);
 
-/* ===================== CHECKOUT VIA WHATSAPP ===================== */
-document.getElementById('btn-checkout').addEventListener('click', () => {
-  const nomes = Object.keys(carrinho);
-  if (nomes.length === 0) return;
-
-  let msg = "Olá! Gostaria de fazer o seguinte pedido na Fazendinha Turca:\n\n";
-  nomes.forEach(nome => {
-    const item = carrinho[nome];
-    msg += `• ${item.qtd}x ${nome} (${item.unidade}) - ${formatarPreco(item.qtd * item.preco)}\n`;
-  });
-  msg += `\nTotal: ${formatarPreco(totalCarrinho())}`;
-
-  const url = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(msg)}`;
-  window.open(url, '_blank', 'noopener,noreferrer');
-});
+/* ===================== CHECKOUT: SUPABASE + WHATSAPP ===================== */
+function abrirCheckout(){if(Object.keys(carrinho).length===0)return;document.getElementById('checkout-overlay').classList.add('show');document.getElementById('checkout-overlay').setAttribute('aria-hidden','false');document.getElementById('checkout-nome').focus();}
+function fecharCheckout(){document.getElementById('checkout-overlay').classList.remove('show');document.getElementById('checkout-overlay').setAttribute('aria-hidden','true');}
+function limparNumero(v){return String(v||'').replace(/\D/g,'');}
+function formatarCPF(v){const d=limparNumero(v).slice(0,11);return d.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');}
+function formatarCEP(v){const d=limparNumero(v).slice(0,8);return d.length>5?d.slice(0,5)+'-'+d.slice(5):d;}
+document.getElementById('checkout-cpf').addEventListener('input',e=>e.target.value=formatarCPF(e.target.value));
+document.getElementById('checkout-cep').addEventListener('input',e=>e.target.value=formatarCEP(e.target.value));
+let cepEmBuscaMercadinho=false;
+async function buscarCEPMercadinho(){const input=document.getElementById('checkout-cep');const cep=limparNumero(input.value);if(cep.length!==8||cepEmBuscaMercadinho)return;cepEmBuscaMercadinho=true;const errorEl=document.getElementById('checkout-error');try{const r=await fetch('https://viacep.com.br/ws/'+cep+'/json/');if(!r.ok)throw new Error('Não foi possível consultar o CEP.');const d=await r.json();if(d.erro)throw new Error('CEP não encontrado.');document.getElementById('checkout-rua').value=d.logradouro||'';document.getElementById('checkout-bairro').value=d.bairro||'';document.getElementById('checkout-cidade').value=d.localidade||'';document.getElementById('checkout-uf').value=(d.uf||'').toUpperCase();document.getElementById('checkout-numero').focus();}catch(err){console.warn('CEP Mercadinho:',err);errorEl.textContent=err.message||'Não foi possível consultar o CEP.';errorEl.style.display='block';}finally{cepEmBuscaMercadinho=false;}}
+document.getElementById('checkout-cep').addEventListener('blur',buscarCEPMercadinho);
+document.getElementById('checkout-cep').addEventListener('change',buscarCEPMercadinho);
+document.getElementById('btn-checkout').addEventListener('click',abrirCheckout);document.getElementById('checkout-close').addEventListener('click',fecharCheckout);document.getElementById('checkout-cancel').addEventListener('click',fecharCheckout);document.getElementById('checkout-overlay').addEventListener('click',e=>{if(e.target.id==='checkout-overlay')fecharCheckout();});
+document.getElementById('checkout-form').addEventListener('submit',async(e)=>{e.preventDefault();const errorEl=document.getElementById('checkout-error');errorEl.style.display='none';const btn=e.submitter;btn.disabled=true;btn.textContent='Registrando pedido...';try{
+ if(!PROJETO_ID_MERCADINHO)throw new Error('Projeto ainda não foi carregado. Atualize a página e tente novamente.');
+ const dados={nome:document.getElementById('checkout-nome').value.trim(),cpf:limparNumero(document.getElementById('checkout-cpf').value),telefone:document.getElementById('checkout-telefone').value.trim(),email:document.getElementById('checkout-email').value.trim(),cep:limparNumero(document.getElementById('checkout-cep').value),rua:document.getElementById('checkout-rua').value.trim(),numero:document.getElementById('checkout-numero').value.trim(),complemento:document.getElementById('checkout-complemento').value.trim(),bairro:document.getElementById('checkout-bairro').value.trim(),cidade:document.getElementById('checkout-cidade').value.trim(),uf:document.getElementById('checkout-uf').value.trim().toUpperCase(),referencia:document.getElementById('checkout-referencia').value.trim(),observacoes:document.getElementById('checkout-observacoes').value.trim()};
+ if(dados.nome.split(/\s+/).length<2)throw new Error('Informe o nome completo.');if(dados.cpf.length!==11)throw new Error('Informe um CPF válido com 11 dígitos.');if(dados.cep.length!==8)throw new Error('Informe um CEP válido com 8 dígitos.');
+ const itens=Object.entries(carrinho).map(([id,item])=>({produto_id:id,nome:item.nome,quantidade:Number(item.qtd)||0,preco_unitario:Number(item.preco)||0,unidade:item.unidade||'',imagem_url:item.img||null,subtotal:(Number(item.qtd)||0)*(Number(item.preco)||0)})).filter(i=>i.quantidade>0);if(itens.length===0)throw new Error('Não é possível gerar um pedido sem itens. Adicione pelo menos um produto ao carrinho.');const subtotal=itens.reduce((a,i)=>a+i.subtotal,0),frete=0,desconto=0,total=subtotal+frete-desconto;const numero='PED-'+new Date().toISOString().replace(/[-:TZ.]/g,'').slice(0,14)+'-'+Math.random().toString(36).slice(2,6).toUpperCase(),pedidoId=crypto.randomUUID();
+ const pedido={id:pedidoId,numero,projeto_id:PROJETO_ID_MERCADINHO,status:'novo',payment_status:'pendente',payment_method:null,customer_name:dados.nome,cpf:dados.cpf,phone:dados.telefone,email:dados.email||null,cep:dados.cep,rua:dados.rua,numero_endereco:dados.numero,complemento:dados.complemento||null,bairro:dados.bairro,cidade:dados.cidade,uf:dados.uf,referencia:dados.referencia||null,subtotal,frete,desconto,total,observacoes:dados.observacoes||null,original_payload:{projeto_slug:'mercadinho',cliente:dados,itens,subtotal,frete,desconto,total,criado_no_checkout:new Date().toISOString()}};
+ const {error:pedidoError}=await sb.from('pedidos').insert(pedido);if(pedidoError)throw pedidoError;const {error:itemError}=await sb.from('pedido_itens').insert(itens.map(i=>({...i,pedido_id:pedidoId})));if(itemError)throw itemError;const {error:pagError}=await sb.from('pagamentos').insert({id:crypto.randomUUID(),pedido_id:pedidoId,projeto_id:PROJETO_ID_MERCADINHO,forma:null,status:'pendente',valor:total});if(pagError)throw pagError;
+ let msg=`Olá! Gostaria de fazer o seguinte pedido na Fazendinha Turca:\n\nPedido: ${numero}\n\nCliente: ${dados.nome}\nCPF: ${dados.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4')}\nWhatsApp: ${dados.telefone}\n\nEndereço: ${dados.rua}, ${dados.numero}${dados.complemento?', '+dados.complemento:''}\n${dados.bairro} - ${dados.cidade}/${dados.uf}\nCEP: ${formatarCEP(dados.cep)}${dados.referencia?'\nReferência: '+dados.referencia:''}\n\nItens:\n`;itens.forEach(i=>msg+=`• ${i.quantidade}x ${i.nome} (${i.unidade}) - ${formatarPreco(i.subtotal)}\n`);msg+=`\nSubtotal: ${formatarPreco(subtotal)}\nFrete: ${formatarPreco(frete)}\nTotal: ${formatarPreco(total)}\nPagamento: Pendente`;if(dados.observacoes)msg+=`\nObservações: ${dados.observacoes}`;fecharCheckout();window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(msg)}`,'_blank','noopener,noreferrer');
+ }catch(err){console.error(err);errorEl.textContent='Não foi possível registrar o pedido: '+(err.message||'erro desconhecido');errorEl.style.display='block';}finally{btn.disabled=false;btn.textContent='Registrar e abrir WhatsApp';}});
 
 /* ===================== POPUP PROMOCIONAL ===================== */
 (function () {
@@ -1222,7 +1402,7 @@ document.getElementById('btn-checkout').addEventListener('click', () => {
     termoBusca = termoUrl.trim().toLowerCase();
   }
 })();
-renderCatalogo();
+carregarProdutosMercadinho();
 renderCarrinho();
 </script>
 

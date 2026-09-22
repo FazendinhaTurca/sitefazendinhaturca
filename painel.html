@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Central | Fazendinha Turca</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root {
+    --cream:#FAF3E6; --cream-2:#F1E8D6; --paper:#F4E9D3; --green-dark:#1E2E1B;
+    --brown:#7A5230; --brown-dark:#4E3420; --terracotta:#C1622D; --red:#B3282D;
+    --gold:#D9A441; --text:#2B2418; --ok:#3D5A32; --danger:#B3282D;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--cream-2); color:var(--text); font-family:'Segoe UI',Arial,sans-serif; }
+  h1,h2,h3 { font-family: Georgia, serif; margin:0; color: var(--brown-dark); }
+  button { font-family:inherit; cursor:pointer; }
+  a { color: inherit; }
+  input, select, textarea { font-family:inherit; font-size:0.88rem; padding:8px 10px; border:1px solid rgba(122,82,48,0.35); border-radius:6px; background:#fff; width:100%; }
+  label { font-size:0.78rem; font-weight:700; color:var(--brown-dark); display:block; margin:10px 0 4px; }
+  .btn { border:none; border-radius:7px; padding:9px 16px; font-weight:700; font-size:0.85rem; }
+  .btn-primary { background:var(--red); color:#fff; }
+  .btn-primary:hover { background:var(--terracotta); }
+  .btn-outline { background:none; border:1px solid var(--brown); color:var(--brown-dark); }
+  .btn-ghost { background:none; border:none; color:var(--brown-dark); text-decoration:underline; font-size:0.8rem; }
+  .btn-danger { background:#fff; border:1px solid var(--danger); color:var(--danger); }
+  .btn-sm { padding:5px 10px; font-size:0.75rem; border-radius:5px; }
+
+  /* ===== LOGIN ===== */
+  #login-screen { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .login-box { background:#fff; border-radius:14px; padding:36px 32px; width:100%; max-width:360px; box-shadow:0 10px 30px rgba(78,52,32,0.15); }
+  .login-box h1 { font-size:1.3rem; margin-bottom:4px; }
+  .login-box p.sub { font-size:0.82rem; color:var(--brown); margin-bottom:18px; }
+  .login-msg { font-size:0.8rem; margin-top:10px; }
+  .login-msg.erro { color:var(--danger); }
+  .login-msg.ok { color:var(--ok); }
+
+  /* ===== SHELL ===== */
+  #app-shell { display:none; min-height:100vh; }
+  #app-shell.show { display:flex; }
+  aside { width:230px; background:var(--brown-dark); color:var(--cream); flex-shrink:0; padding:20px 0; position:sticky; top:0; height:100vh; overflow-y:auto; }
+  aside .brand { padding:0 20px 18px; font-family:Georgia,serif; font-size:1.05rem; border-bottom:1px solid rgba(255,255,255,0.12); margin-bottom:10px; }
+  aside .brand small { display:block; font-size:0.68rem; opacity:0.7; font-family:'Segoe UI',Arial,sans-serif; margin-top:2px;}
+  .tab-btn { display:block; width:100%; text-align:left; background:none; border:none; color:var(--cream); padding:11px 20px; font-size:0.85rem; opacity:0.82; border-left:3px solid transparent; }
+  .tab-btn:hover { opacity:1; background:rgba(255,255,255,0.06); }
+  .tab-btn.active { opacity:1; background:rgba(255,255,255,0.1); border-left-color:var(--gold); font-weight:700; }
+  .sair-btn { margin:16px 20px 0; }
+  main { flex:1; padding:28px 34px; max-width:1180px; }
+  .panel-view { display:none; }
+  .panel-view.show { display:block; }
+  .view-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+
+  /* ===== CARDS / GRID ===== */
+  .cards-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:26px; }
+  .kpi-card { background:#fff; border-radius:10px; padding:16px 18px; box-shadow:0 2px 8px rgba(78,52,32,0.08); }
+  .kpi-card .num { font-size:1.7rem; font-weight:800; color:var(--red); }
+  .kpi-card .lbl { font-size:0.75rem; color:var(--brown); margin-top:2px; }
+
+  table { width:100%; border-collapse:collapse; background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(78,52,32,0.08); }
+  th, td { text-align:left; padding:10px 12px; font-size:0.82rem; border-bottom:1px solid rgba(122,82,48,0.12); }
+  th { background:var(--paper); color:var(--brown-dark); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.03em; }
+  tr:last-child td { border-bottom:none; }
+  td img.thumb { width:38px; height:38px; object-fit:cover; border-radius:6px; background:var(--cream-2); }
+  .badge { font-size:0.68rem; font-weight:700; padding:3px 9px; border-radius:12px; }
+  .badge.ativo { background:#e4f0dc; color:var(--ok); }
+  .badge.inativo { background:#f2e0e0; color:var(--danger); }
+  .badge.rascunho { background:#f1e8d6; color:var(--brown); }
+  .row-actions { display:flex; gap:6px; flex-wrap:wrap; }
+
+  /* ===== MODAL ===== */
+  .modal-overlay { position:fixed; inset:0; background:rgba(30,20,10,0.5); display:none; align-items:flex-start; justify-content:center; padding:30px 16px; overflow-y:auto; z-index:80; }
+  .modal-overlay.show { display:flex; }
+  .modal-box { background:#fff; border-radius:12px; width:100%; max-width:640px; padding:26px 28px 30px; }
+  .modal-box h3 { margin-bottom:14px; }
+  .modal-close { float:right; background:none; border:none; font-size:1.3rem; color:var(--brown); }
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:0 14px; }
+  .modal-actions { margin-top:20px; display:flex; gap:10px; justify-content:flex-end; }
+  .img-preview { width:70px; height:70px; object-fit:cover; border-radius:8px; background:var(--cream-2); margin-top:6px; }
+  .galeria-preview { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+  .galeria-preview img { width:54px; height:54px; object-fit:cover; border-radius:6px; }
+
+  /* editor rich text */
+  .rte-toolbar { display:flex; gap:4px; flex-wrap:wrap; background:var(--paper); border:1px solid rgba(122,82,48,0.35); border-bottom:none; border-radius:6px 6px 0 0; padding:6px; }
+  .rte-toolbar button { background:#fff; border:1px solid rgba(122,82,48,0.25); border-radius:4px; width:28px; height:26px; font-size:0.78rem; font-weight:700; color:var(--brown-dark); }
+  .rte-toolbar button:hover { background:var(--terracotta); color:#fff; }
+  .rte-content { min-height:140px; border:1px solid rgba(122,82,48,0.35); border-radius:0 0 6px 6px; padding:10px 12px; font-size:0.85rem; overflow-y:auto; }
+  .rte-content:focus { outline:2px solid var(--gold); }
+
+  .msg-box { font-size:0.8rem; padding:10px 12px; border-radius:6px; margin-bottom:14px; }
+  .msg-box.ok { background:#e4f0dc; color:var(--ok); }
+  .msg-box.erro { background:#f2e0e0; color:var(--danger); }
+  .empty-hint { color:var(--brown); font-style:italic; font-size:0.85rem; padding:20px 0; }
+  .sitemap-actions { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+  .toggle-status { cursor:pointer; }
+  @media (max-width: 860px) {
+    #app-shell.show { flex-direction:column; }
+    aside { width:100%; height:auto; position:relative; padding:14px 0; }
+    main { padding:20px; }
+    .grid-2 { grid-template-columns:1fr; }
+  }
+.categorias-box{background:#fff; border-radius:10px; padding:14px 16px; box-shadow:0 2px 8px rgba(78,52,32,0.08); margin-bottom:18px;}
+.categorias-chips{display:flex; flex-wrap:wrap; gap:8px;}
+.categoria-chip{display:inline-flex; align-items:center; gap:6px; background:#F4EEE0; border:1px solid #E3D9C2; border-radius:999px; padding:5px 6px 5px 14px; font-size:.85rem;}
+.categoria-chip.inativo{opacity:.5;}
+.categoria-chip button{border:none; background:#fff; border-radius:50%; width:22px; height:22px; cursor:pointer; font-size:.75rem; line-height:1;}
+.categoria-chip .cat-editar{color:#4E3420;}
+.categoria-chip .cat-excluir{color:#B23A2E;}
+.categorias-vazio{font-size:.85rem; color:#8A7A63;}
+
+  .order-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:end;background:#fff;padding:14px 16px;border-radius:10px;box-shadow:0 2px 8px rgba(78,52,32,.08);margin-bottom:16px;}
+  .order-toolbar .field{min-width:180px;}
+  .order-card{background:#fff;border-radius:10px;padding:16px 18px;box-shadow:0 2px 8px rgba(78,52,32,.08);margin-bottom:14px;}
+  .order-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;}
+  .order-meta{font-size:.78rem;color:var(--brown);margin-top:4px;}
+  .order-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;}
+  .order-box{background:var(--cream);border-radius:8px;padding:12px;}
+  .order-box h4{margin:0 0 8px;font-size:.8rem;color:var(--brown-dark);}
+  .order-items{font-size:.82rem;line-height:1.55;}
+  .order-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px;}
+  .finance-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px;}
+  .finance-filter{background:#fff;padding:14px 16px;border-radius:10px;box-shadow:0 2px 8px rgba(78,52,32,.08);margin-bottom:16px;}
+  .status-select{width:auto;min-width:145px;}
+  @media(max-width:700px){.order-grid{grid-template-columns:1fr}.order-toolbar .field{min-width:100%;}}
+</style>
+</head>
+<body>
+
+<!-- ===================== LOGIN ===================== -->
+<div id="login-screen">
+  <div class="login-box">
+    <h1>Painel Central</h1>
+    <p class="sub">Fazendinha Turca &middot; acesso restrito</p>
+    <label>E-mail</label>
+    <input type="email" id="login-email" autocomplete="username" value="fazendinhaturca@gmail.com">
+    <label>Senha</label>
+    <input type="password" id="login-senha" autocomplete="current-password">
+    <button class="btn btn-primary" id="btn-login" style="width:100%; margin-top:18px;">Entrar</button>
+    <button class="btn-ghost" id="btn-esqueci" style="margin-top:12px;">Esqueci minha senha</button>
+    <div class="login-msg" id="login-msg"></div>
+  </div>
+</div>
+
+<!-- ===================== SHELL ===================== -->
+<div id="app-shell">
+  <aside>
+    <div class="brand">Fazendinha Turca<small>Painel Central</small></div>
+    <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+    <button class="tab-btn" data-tab="mercadinho">Mercadinho</button>
+    <button class="tab-btn" data-tab="pedidos-mercadinho">Pedidos · Mercadinho</button>
+    <button class="tab-btn" data-tab="financeiro-mercadinho">Financeiro · Mercadinho</button>
+    <button class="tab-btn" data-tab="atelier">Atelier Verushka</button>
+    <button class="tab-btn" data-tab="pedidos-atelier">Pedidos · Ateliê</button>
+    <button class="tab-btn" data-tab="financeiro-atelier">Financeiro · Ateliê</button>
+    <button class="tab-btn" data-tab="blog">Blog</button>
+    <button class="tab-btn" data-tab="novo-projeto">Novo Projeto</button>
+    <button class="tab-btn" data-tab="banco">Banco de Dados</button>
+    <button class="tab-btn" data-tab="storage">Storage</button>
+    <button class="tab-btn" data-tab="sitemap">Sitemap</button>
+    <button class="tab-btn" data-tab="config">Configurações</button>
+    <button class="btn btn-outline sair-btn btn-sm" id="btn-logout" style="color:var(--cream); border-color:rgba(255,255,255,0.4);">Sair</button>
+  </aside>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section class="panel-view show" id="view-dashboard">
+      <div class="view-header"><h2>Dashboard</h2></div>
+      <div class="cards-row" id="dash-cards"></div>
+      <p class="empty-hint">Visão geral do sistema. Use o menu lateral para administrar cada área.</p>
+    </section>
+
+    <!-- MERCADINHO -->
+    <section class="panel-view" id="view-mercadinho">
+      <div class="view-header">
+        <h2>Mercadinho</h2>
+        <button class="btn btn-primary" data-novo-produto="mercadinho">+ Novo produto</button>
+      </div>
+      <div class="categorias-box">
+        <div class="view-header" style="margin-bottom:10px;">
+          <h3 style="margin:0; font-size:1rem;">Categorias do Mercadinho</h3>
+          <button class="btn btn-outline btn-sm" data-nova-categoria="mercadinho">+ Cadastrar categoria</button>
+        </div>
+        <div id="categorias-mercadinho" class="categorias-chips"></div>
+      </div>
+      <div id="tabela-mercadinho"></div>
+    </section>
+
+    <!-- ATELIER -->
+    <section class="panel-view" id="view-atelier">
+      <div class="view-header">
+        <h2>Atelier Verushka</h2>
+        <button class="btn btn-primary" data-novo-produto="atelier-verushka">+ Novo produto</button>
+      </div>
+      <div class="categorias-box">
+        <div class="view-header" style="margin-bottom:10px;">
+          <h3 style="margin:0; font-size:1rem;">Categorias do Ateliê</h3>
+          <button class="btn btn-outline btn-sm" data-nova-categoria="atelier-verushka">+ Cadastrar categoria</button>
+        </div>
+        <div id="categorias-atelier" class="categorias-chips"></div>
+      </div>
+      <div id="tabela-atelier"></div>
+    </section>
+
+    <!-- PEDIDOS MERCADINHO -->
+    <section class="panel-view" id="view-pedidos-mercadinho">
+      <div class="view-header"><h2>Pedidos · Mercadinho</h2><button class="btn btn-outline btn-sm" id="refresh-pedidos-mercadinho">Atualizar</button></div>
+      <div class="order-toolbar"><div class="field"><label>Status do pedido</label><select id="filtro-pedido-mercadinho"><option value="todos">Todos</option><option value="novo">Novo</option><option value="em_confirmacao">Em confirmação</option><option value="confirmado">Confirmado</option><option value="em_preparacao">Em preparação</option><option value="saiu_entrega">Saiu para entrega</option><option value="concluido">Concluído</option><option value="cancelado">Cancelado</option></select></div></div>
+      <div id="pedidos-mercadinho-container"></div>
+    </section>
+
+    <!-- FINANCEIRO MERCADINHO -->
+    <section class="panel-view" id="view-financeiro-mercadinho">
+      <div class="view-header"><h2>Financeiro · Mercadinho</h2><button class="btn btn-outline btn-sm" id="refresh-financeiro-mercadinho">Atualizar</button></div>
+      <div id="financeiro-mercadinho-container"></div>
+    </section>
+
+    <!-- PEDIDOS ATELIÊ -->
+    <section class="panel-view" id="view-pedidos-atelier">
+      <div class="view-header"><h2>Pedidos · Ateliê Verushka</h2><button class="btn btn-outline btn-sm" id="refresh-pedidos-atelier">Atualizar</button></div>
+      <div class="order-toolbar"><div class="field"><label>Status do pedido</label><select id="filtro-pedido-atelier"><option value="todos">Todos</option><option value="novo">Novo</option><option value="em_confirmacao">Em confirmação</option><option value="confirmado">Confirmado</option><option value="em_preparacao">Em preparação</option><option value="saiu_entrega">Saiu para entrega</option><option value="concluido">Concluído</option><option value="cancelado">Cancelado</option></select></div></div>
+      <div id="pedidos-atelier-container"></div>
+    </section>
+
+    <!-- FINANCEIRO ATELIÊ -->
+    <section class="panel-view" id="view-financeiro-atelier">
+      <div class="view-header"><h2>Financeiro · Ateliê Verushka</h2><button class="btn btn-outline btn-sm" id="refresh-financeiro-atelier">Atualizar</button></div>
+      <div id="financeiro-atelier-container"></div>
+    </section>
+
+    <!-- BLOG -->
+    <section class="panel-view" id="view-blog">
+      <div class="view-header">
+        <h2>Blog</h2>
+        <button class="btn btn-primary" id="btn-novo-artigo">+ Novo artigo</button>
+      </div>
+      <div id="tabela-blog"></div>
+    </section>
+
+    <!-- NOVO PROJETO -->
+    <section class="panel-view" id="view-novo-projeto">
+      <div class="view-header"><h2>Novo Projeto</h2></div>
+      <p class="empty-hint" style="margin-top:-8px;">Cria um novo showroom/landing page administrado pela mesma estrutura (produtos, categorias, imagens, carrinho/WhatsApp e sitemap).</p>
+      <form id="form-novo-projeto" style="max-width:520px; background:#fff; padding:20px 22px; border-radius:10px; box-shadow:0 2px 8px rgba(78,52,32,0.08);">
+        <div class="grid-2">
+          <div><label>Nome interno</label><input type="text" id="np-nome" required></div>
+          <div><label>Nome público</label><input type="text" id="np-nome-publico" required></div>
+        </div>
+        <label>Slug (identificador único)</label>
+        <input type="text" id="np-slug" placeholder="ex: novo-projeto" required>
+        <label>Descrição</label>
+        <textarea id="np-descricao" rows="2"></textarea>
+        <div class="grid-2">
+          <div><label>Categoria</label><input type="text" id="np-categoria"></div>
+          <div><label>Nome no menu</label><input type="text" id="np-menu-label"></div>
+        </div>
+        <div class="grid-2">
+          <div><label>Arquivo/URL da página pública</label><input type="text" id="np-menu-url" placeholder="ex: novo-projeto.html"></div>
+          <div><label>WhatsApp (só números)</label><input type="text" id="np-whatsapp" value="5522988328812"></div>
+        </div>
+        <div class="grid-2">
+          <div><label>Prazo entrega mín. (dias)</label><input type="number" id="np-prazo-min" value="3"></div>
+          <div><label>Prazo entrega máx. (dias)</label><input type="number" id="np-prazo-max" value="10"></div>
+        </div>
+        <label>Categorias iniciais (separadas por vírgula)</label>
+        <input type="text" id="np-categorias-iniciais" placeholder="ex: Sala, Quarto, Cozinha">
+        <div class="modal-actions"><button type="submit" class="btn btn-primary">Criar projeto</button></div>
+        <div class="msg-box" id="np-msg" style="display:none; margin-top:14px;"></div>
+      </form>
+    </section>
+
+    <!-- BANCO DE DADOS -->
+    <section class="panel-view" id="view-banco">
+      <div class="view-header"><h2>Banco de Dados</h2></div>
+      <div class="cards-row" id="banco-cards"></div>
+      <div id="banco-status"></div>
+    </section>
+
+    <!-- STORAGE -->
+    <section class="panel-view" id="view-storage">
+      <div class="view-header">
+        <h2>Storage</h2>
+        <button class="btn btn-outline" id="btn-recarregar-storage">Atualizar</button>
+      </div>
+      <p class="empty-hint" style="margin-top:-8px;">Bucket público <strong>projetos</strong>, organizado por pasta de cada projeto.</p>
+      <div id="storage-container"></div>
+    </section>
+
+    <!-- SITEMAP -->
+    <section class="panel-view" id="view-sitemap">
+      <div class="view-header"><h2>Sitemap</h2></div>
+      <div class="cards-row" id="sitemap-cards"></div>
+      <div class="sitemap-actions">
+        <button class="btn btn-primary" id="btn-atualizar-sitemap">Atualizar Sitemap (sincronizar URLs)</button>
+        <button class="btn btn-outline" id="btn-baixar-sitemap">Baixar sitemap.xml</button>
+      </div>
+      <div class="msg-box" id="sitemap-msg" style="display:none;"></div>
+      <div id="tabela-sitemap"></div>
+    </section>
+
+    <!-- CONFIGURAÇÕES -->
+    <section class="panel-view" id="view-config">
+      <div class="view-header"><h2>Configurações</h2></div>
+      <p class="empty-hint" style="margin-top:-8px;">Ajustes rápidos de cada projeto (WhatsApp, prazos e status).</p>
+      <div id="config-container"></div>
+    </section>
+  </main>
+</div>
+
+<!-- ===================== MODAL CATEGORIA ===================== -->
+<div class="modal-overlay" id="modal-categoria">
+  <div class="modal-box" style="max-width:420px;">
+    <button class="modal-close" data-close-modal="modal-categoria">&times;</button>
+    <h3 id="categoria-modal-titulo">Nova categoria</h3>
+    <form id="form-categoria">
+      <input type="hidden" id="cat-id">
+      <input type="hidden" id="cat-projeto-slug">
+      <label>Nome</label>
+      <input type="text" id="cat-nome" required>
+      <div class="grid-2">
+        <div><label>Ordem de exibição</label><input type="number" id="cat-ordem" value="0"></div>
+        <div>
+          <label>Status</label>
+          <select id="cat-status"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-danger" id="btn-excluir-categoria" style="display:none;">Excluir</button>
+        <button type="submit" class="btn btn-primary">Salvar categoria</button>
+      </div>
+      <div class="msg-box" id="cat-msg" style="display:none; margin-top:14px;"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== MODAL PRODUTO ===================== -->
+<div class="modal-overlay" id="modal-produto">
+  <div class="modal-box">
+    <button class="modal-close" data-close-modal="modal-produto">&times;</button>
+    <h3 id="produto-modal-titulo">Novo produto</h3>
+    <form id="form-produto">
+      <input type="hidden" id="pr-id">
+      <input type="hidden" id="pr-projeto-slug">
+      <div class="grid-2">
+        <div><label>Nome</label><input type="text" id="pr-nome" required></div>
+        <div>
+          <label>Categoria</label>
+          <select id="pr-categoria"></select>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div><label>Preço (R$)</label><input type="number" step="0.01" id="pr-preco" required></div>
+        <div><label>Ordem de exibição</label><input type="number" id="pr-ordem" value="0"></div>
+      </div>
+      <label>Descrição curta (quantidade/unidade)</label>
+      <input type="text" id="pr-descricao-curta" placeholder="ex: 300g, 2 unidades">
+
+      <label>Descrição completa</label>
+      <div class="rte-toolbar" data-target="pr-descricao-rte">
+        <button type="button" data-cmd="bold"><b>B</b></button>
+        <button type="button" data-cmd="italic"><i>I</i></button>
+        <button type="button" data-cmd="formatBlock" data-val="H2">H2</button>
+        <button type="button" data-cmd="formatBlock" data-val="H3">H3</button>
+        <button type="button" data-cmd="insertUnorderedList">&bull;</button>
+        <button type="button" data-cmd="insertOrderedList">1.</button>
+        <button type="button" data-cmd="createLink">&#128279;</button>
+        <button type="button" data-cmd="removeFormat">&#9099;</button>
+      </div>
+      <div class="rte-content" id="pr-descricao-rte" contenteditable="true"></div>
+
+      <label>Imagem principal</label>
+      <input type="file" id="pr-imagem" accept="image/*">
+      <img class="img-preview" id="pr-imagem-preview" style="display:none;">
+
+      <label>Galeria de imagens (pode selecionar várias)</label>
+      <input type="file" id="pr-galeria" accept="image/*" multiple>
+      <div class="galeria-preview" id="pr-galeria-preview"></div>
+
+      <div class="grid-2">
+        <div>
+          <label>Status</label>
+          <select id="pr-status"><option value="ativo">Ativo</option><option value="inativo">Inativo</option><option value="rascunho">Rascunho</option></select>
+        </div>
+        <div>
+          <label>Sob encomenda?</label>
+          <select id="pr-sob-encomenda"><option value="true">Sim</option><option value="false">Não</option></select>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div><label>Prazo mín. (dias)</label><input type="number" id="pr-prazo-min" value="3"></div>
+        <div><label>Prazo máx. (dias)</label><input type="number" id="pr-prazo-max" value="10"></div>
+      </div>
+
+      <label>SEO title</label><input type="text" id="pr-seo-title">
+      <label>SEO description</label><textarea id="pr-seo-desc" rows="2"></textarea>
+      <label>Alt text da imagem</label><input type="text" id="pr-alt-text">
+      <label>Slug (URL amigável)</label><input type="text" id="pr-slug">
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-danger" id="btn-excluir-produto" style="display:none;">Excluir</button>
+        <button type="submit" class="btn btn-primary">Salvar produto</button>
+      </div>
+      <div class="msg-box" id="pr-msg" style="display:none; margin-top:14px;"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== MODAL ARTIGO (BLOG) ===================== -->
+<div class="modal-overlay" id="modal-artigo">
+  <div class="modal-box">
+    <button class="modal-close" data-close-modal="modal-artigo">&times;</button>
+    <h3 id="artigo-modal-titulo">Novo artigo</h3>
+    <form id="form-artigo">
+      <input type="hidden" id="ar-id">
+      <label>Título</label><input type="text" id="ar-titulo" required>
+      <label>Slug (URL)</label><input type="text" id="ar-slug" required>
+      <label>Resumo</label><textarea id="ar-resumo" rows="2"></textarea>
+
+      <label>Conteúdo completo</label>
+      <div class="rte-toolbar" data-target="ar-conteudo-rte">
+        <button type="button" data-cmd="bold"><b>B</b></button>
+        <button type="button" data-cmd="italic"><i>I</i></button>
+        <button type="button" data-cmd="formatBlock" data-val="H2">H2</button>
+        <button type="button" data-cmd="formatBlock" data-val="H3">H3</button>
+        <button type="button" data-cmd="insertUnorderedList">&bull;</button>
+        <button type="button" data-cmd="insertOrderedList">1.</button>
+        <button type="button" data-cmd="createLink">&#128279;</button>
+        <button type="button" data-cmd="removeFormat">&#9099;</button>
+      </div>
+      <div class="rte-content" id="ar-conteudo-rte" contenteditable="true"></div>
+
+      <label>Imagem de capa</label>
+      <input type="file" id="ar-capa" accept="image/*">
+      <img class="img-preview" id="ar-capa-preview" style="display:none;">
+
+      <div class="grid-2">
+        <div><label>Categoria</label><input type="text" id="ar-categoria"></div>
+        <div><label>Autor</label><input type="text" id="ar-autor" value="Fazendinha Turca"></div>
+      </div>
+      <label>Tags (separadas por vírgula)</label><input type="text" id="ar-tags">
+      <div class="grid-2">
+        <div>
+          <label>Status</label>
+          <select id="ar-status"><option value="rascunho">Rascunho</option><option value="publicado">Publicado</option></select>
+        </div>
+        <div><label>Data de publicação</label><input type="date" id="ar-data-pub"></div>
+      </div>
+      <label>SEO title</label><input type="text" id="ar-seo-title">
+      <label>SEO description</label><textarea id="ar-seo-desc" rows="2"></textarea>
+      <label>Alt text da capa</label><input type="text" id="ar-alt-text">
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-danger" id="btn-excluir-artigo" style="display:none;">Excluir</button>
+        <button type="submit" class="btn btn-primary">Salvar artigo</button>
+      </div>
+      <div class="msg-box" id="ar-msg" style="display:none; margin-top:14px;"></div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-pedido">
+  <div class="modal-box" style="max-width:900px">
+    <button class="modal-close" data-close-modal="modal-pedido">&times;</button>
+    <h3>Pedido <span id="pedido-modal-numero"></span></h3>
+    <form id="form-pedido-admin">
+      <input type="hidden" id="pedido-modal-id">
+      <div class="grid-2">
+        <div><label>Cliente</label><input id="pedido-modal-cliente"></div><div><label>CPF</label><input id="pedido-modal-cpf"></div>
+        <div><label>WhatsApp</label><input id="pedido-modal-telefone"></div><div><label>E-mail</label><input id="pedido-modal-email"></div>
+        <div><label>CEP</label><input id="pedido-modal-cep"></div><div><label>Número</label><input id="pedido-modal-numero"></div>
+        <div><label>Rua / Logradouro</label><input id="pedido-modal-rua"></div><div><label>Complemento</label><input id="pedido-modal-complemento"></div>
+        <div><label>Bairro</label><input id="pedido-modal-bairro"></div><div><label>Cidade</label><input id="pedido-modal-cidade"></div>
+        <div><label>UF</label><input id="pedido-modal-uf"></div><div><label>Referência</label><input id="pedido-modal-referencia"></div>
+        <div><label>Status do pedido</label><select id="pedido-modal-status"><option value="novo">Novo</option><option value="em_confirmacao">Em confirmação</option><option value="confirmado">Confirmado</option><option value="em_preparacao">Em preparação</option><option value="saiu_entrega">Saiu para entrega</option><option value="concluido">Concluído</option><option value="cancelado">Cancelado</option></select></div>
+        <div><label>Forma de pagamento</label><select id="pedido-modal-forma"><option value="manual">Manual / Dinheiro</option><option value="pix">PIX</option><option value="link">Link de pagamento</option></select></div>
+        <div><label>Status do pagamento</label><select id="pedido-modal-pagamento"><option value="pendente">Pendente</option><option value="pago">Pago</option><option value="cancelado">Cancelado</option><option value="estornado">Estornado</option></select></div>
+        <div><label>Link de pagamento</label><input id="pedido-modal-link"></div>
+        <div class="full"><label>Observações</label><textarea id="pedido-modal-observacoes" rows="3"></textarea></div>
+      </div>
+      <div id="pedido-modal-itens" class="order-box" style="margin-top:14px"></div>
+      <div class="modal-actions"><button type="button" class="btn btn-outline" data-close-modal="modal-pedido">Cancelar</button><button type="submit" class="btn btn-primary">Salvar alterações</button></div>
+      <div class="msg-box" id="pedido-modal-msg" style="display:none;margin-top:12px"></div>
+    </form>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+/* ===================== CONFIG ===================== */
+const SUPABASE_URL = "https://iskdknoedbvbiqlosgii.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_m_dI-5n_6F_VGKPFb-EFpg_G1mnOZjQ";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const BUCKET = "projetos";
+
+let projetosCache = [];
+let categoriasCache = [];
+
+/* ===================== SANITIZAÇÃO BÁSICA DO HTML DO EDITOR ===================== */
+function sanitizarHtml(html) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  tmp.querySelectorAll('script,style,iframe,object,embed').forEach(el => el.remove());
+  tmp.querySelectorAll('*').forEach(el => {
+    [...el.attributes].forEach(attr => {
+      const n = attr.name.toLowerCase();
+      if (n.startsWith('on')) el.removeAttribute(attr.name);
+      if ((n === 'href' || n === 'src') && /^\s*javascript:/i.test(attr.value)) el.removeAttribute(attr.name);
+    });
+  });
+  return tmp.innerHTML;
+}
+
+/* ===================== TOOLBAR RTE ===================== */
+document.querySelectorAll('.rte-toolbar').forEach(bar => {
+  bar.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = bar.dataset.target;
+      document.getElementById(targetId).focus();
+      const cmd = btn.dataset.cmd;
+      if (cmd === 'createLink') {
+        const url = prompt('URL do link:');
+        if (url) document.execCommand(cmd, false, url);
+      } else if (btn.dataset.val) {
+        document.execCommand(cmd, false, btn.dataset.val);
+      } else {
+        document.execCommand(cmd, false, null);
+      }
+    });
+  });
+});
+
+/* ===================== AUTH ===================== */
+async function checarSessao() {
+  const { data } = await sb.auth.getSession();
+  if (data.session) { mostrarApp(); } else { mostrarLogin(); }
+}
+function mostrarLogin() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-shell').classList.remove('show');
+}
+function mostrarApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-shell').classList.add('show');
+  carregarTudo();
+}
+document.getElementById('btn-login').addEventListener('click', async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-senha').value;
+  const msg = document.getElementById('login-msg');
+  msg.textContent = 'Entrando...'; msg.className = 'login-msg';
+  const { error } = await sb.auth.signInWithPassword({ email, password: senha });
+  if (error) { msg.textContent = 'E-mail ou senha inválidos.'; msg.className = 'login-msg erro'; return; }
+  msg.textContent = ''; mostrarApp();
+});
+document.getElementById('btn-esqueci').addEventListener('click', async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const msg = document.getElementById('login-msg');
+  if (!email) { msg.textContent = 'Informe o e-mail para recuperar a senha.'; msg.className = 'login-msg erro'; return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+  msg.textContent = error ? 'Não foi possível enviar o e-mail de recuperação.' : 'E-mail de recuperação enviado (verifique sua caixa de entrada).';
+  msg.className = error ? 'login-msg erro' : 'login-msg ok';
+});
+document.getElementById('btn-logout').addEventListener('click', async () => {
+  await sb.auth.signOut();
+  mostrarLogin();
+});
+
+/* ===================== NAVEGAÇÃO DE ABAS ===================== */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.panel-view').forEach(v => v.classList.remove('show'));
+    document.getElementById('view-' + btn.dataset.tab).classList.add('show');
+  });
+});
+document.querySelectorAll('[data-close-modal]').forEach(btn => {
+  btn.addEventListener('click', () => document.getElementById(btn.dataset.closeModal).classList.remove('show'));
+});
+
+/* ===================== PEDIDOS / PAGAMENTOS / FINANCEIRO ===================== */
+const pedidoCaches = { mercadinho: [], 'atelier-verushka': [] };
+function escPedido(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function dinheiro(v){return 'R$ '+Number(v||0).toFixed(2).replace('.',',');}
+function labelStatus(v){return ({novo:'Novo',em_confirmacao:'Em confirmação',confirmado:'Confirmado',em_preparacao:'Em preparação',saiu_entrega:'Saiu para entrega',concluido:'Concluído',cancelado:'Cancelado'})[v]||v||'—';}
+function labelPagamento(v){return ({pendente:'Pendente',pago:'Pago',cancelado:'Cancelado',estornado:'Estornado'})[v]||v||'Pendente';}
+async function carregarPedidosProjeto(slug,containerId,filtroId){
+  const container=document.getElementById(containerId); const projeto=projetosCache.find(p=>p.slug===slug);
+  if(!projeto){container.innerHTML='<p class="empty-hint">Projeto não encontrado.</p>';return;}
+  container.innerHTML='<p class="empty-hint">Carregando pedidos...</p>';
+  let q=sb.from('pedidos').select('*, pedido_itens(*), pagamentos(*)').eq('projeto_id',projeto.id).order('criado_em',{ascending:false});
+  const filtro=document.getElementById(filtroId).value; if(filtro!=='todos')q=q.eq('status',filtro);
+  const {data,error}=await q; if(error){container.innerHTML='<div class="msg-box erro">Não foi possível carregar pedidos: '+escPedido(error.message)+'</div>';return;}
+  pedidoCaches[slug]=data||[];
+  if(!data?.length){container.innerHTML='<p class="empty-hint">Nenhum pedido registrado neste projeto ainda.</p>';return;}
+  container.innerHTML=data.map(p=>{const pag=(p.pagamentos&&p.pagamentos[0])||{};return `<div class="order-card"><div class="order-head"><div><strong>${escPedido(p.numero)}</strong><div class="order-meta">${new Date(p.criado_em).toLocaleString('pt-BR')} · ${escPedido(p.customer_name)}</div></div><div class="row-actions"><span class="badge rascunho">${labelStatus(p.status)}</span><span class="badge ${pag.status==='pago'?'ativo':'rascunho'}">Pagamento: ${labelPagamento(pag.status||p.payment_status)}</span></div></div><div class="order-grid"><div class="order-box"><h4>Itens</h4><div class="order-items">${(p.pedido_itens||[]).map(i=>`${escPedido(i.quantidade)}x ${escPedido(i.nome)} — ${dinheiro(i.subtotal)}`).join('<br>')||'—'}<hr><strong>Total: ${dinheiro(p.total)}</strong></div></div><div class="order-box"><h4>Cliente / entrega</h4><div class="order-items">${escPedido(p.customer_name)}<br>CPF: ${escPedido(p.cpf)}<br>WhatsApp: ${escPedido(p.phone)}<br>${escPedido(p.rua)}, ${escPedido(p.numero_endereco)}${p.complemento?', '+escPedido(p.complemento):''}<br>${escPedido(p.bairro)} · ${escPedido(p.cidade)}/${escPedido(p.uf)} · CEP ${escPedido(p.cep)}</div></div></div><div class="order-actions"><button class="btn btn-outline btn-sm" data-editar-pedido="${p.id}" data-projeto-slug="${slug}">Editar pedido</button><button class="btn btn-danger btn-sm" data-excluir-pedido="${p.id}" data-projeto-slug="${slug}">Excluir pedido</button><a class="btn btn-outline btn-sm" href="https://wa.me/${String(p.phone||'').replace(/\D/g,'')}" target="_blank" rel="noopener">WhatsApp</a></div></div>`}).join('');
+  container.querySelectorAll('[data-editar-pedido]').forEach(b=>b.addEventListener('click',()=>abrirPedidoModal(b.dataset.editarPedido,b.dataset.projetoSlug)));
+  container.querySelectorAll('[data-excluir-pedido]').forEach(b=>b.addEventListener('click',()=>excluirPedido(b.dataset.excluirPedido,b.dataset.projetoSlug)));
+}
+async function excluirPedido(id,slug){
+  const p=pedidoCaches[slug].find(x=>x.id===id);
+  if(!p)return;
+  if(!confirm(`Excluir definitivamente o pedido ${p.numero}?\n\nOs itens, pagamento e histórico vinculados também serão removidos.`))return;
+  try{
+    const {error}=await sb.from('pedidos').delete().eq('id',id).eq('projeto_id',projetosCache.find(x=>x.slug===slug)?.id);
+    if(error)throw error;
+    await carregarPedidosProjeto(slug,slug==='mercadinho'?'pedidos-mercadinho-container':'pedidos-atelier-container',slug==='mercadinho'?'filtro-pedido-mercadinho':'filtro-pedido-atelier');
+    if(document.getElementById('view-financeiro-'+(slug==='mercadinho'?'mercadinho':'atelier')).classList.contains('show')) await carregarFinanceiroProjeto(slug,'financeiro-'+(slug==='mercadinho'?'mercadinho':'atelier')+'-container');
+  }catch(err){alert('Não foi possível excluir o pedido: '+(err.message||err));}
+}
+async function abrirPedidoModal(id,slug){
+  const p=pedidoCaches[slug].find(x=>x.id===id); if(!p)return; const pag=(p.pagamentos&&p.pagamentos[0])||{};
+  document.getElementById('pedido-modal-id').value=p.id; document.getElementById('pedido-modal-numero').textContent=p.numero;
+  const map={cliente:p.customer_name,cpf:p.cpf,telefone:p.phone,email:p.email,cep:p.cep,numero:p.numero_endereco,rua:p.rua,complemento:p.complemento,bairro:p.bairro,cidade:p.cidade,uf:p.uf,referencia:p.referencia,observacoes:p.observacoes};
+  Object.entries(map).forEach(([k,v])=>document.getElementById('pedido-modal-'+k).value=v||'');
+  document.getElementById('pedido-modal-status').value=p.status||'novo';document.getElementById('pedido-modal-forma').value=pag.forma||'manual';document.getElementById('pedido-modal-pagamento').value=pag.status||p.payment_status||'pendente';document.getElementById('pedido-modal-link').value=pag.link_pagamento||'';
+  document.getElementById('pedido-modal-itens').innerHTML='<h4>Pedido original / itens atuais</h4>'+(p.pedido_itens||[]).map(i=>`<div>${escPedido(i.quantidade)}x ${escPedido(i.nome)} — ${dinheiro(i.preco_unitario)} = ${dinheiro(i.subtotal)}</div>`).join('');
+  document.getElementById('pedido-modal-msg').style.display='none';document.getElementById('modal-pedido').classList.add('show');
+  document.getElementById('form-pedido-admin').dataset.projetoSlug=slug;
+}
+document.getElementById('form-pedido-admin').addEventListener('submit',async e=>{e.preventDefault();const id=document.getElementById('pedido-modal-id').value,slug=e.currentTarget.dataset.projetoSlug,msg=document.getElementById('pedido-modal-msg');msg.style.display='none';
+  const p=pedidoCaches[slug].find(x=>x.id===id); if(!p)return; const old={customer_name:p.customer_name,status:p.status,payment_status:(p.pagamentos?.[0]?.status||p.payment_status),rua:p.rua,numero_endereco:p.numero_endereco,total:p.total};
+  const novo={customer_name:document.getElementById('pedido-modal-cliente').value.trim(),cpf:document.getElementById('pedido-modal-cpf').value.trim(),phone:document.getElementById('pedido-modal-telefone').value.trim(),email:document.getElementById('pedido-modal-email').value.trim()||null,cep:document.getElementById('pedido-modal-cep').value.trim(),numero_endereco:document.getElementById('pedido-modal-numero').value.trim(),rua:document.getElementById('pedido-modal-rua').value.trim(),complemento:document.getElementById('pedido-modal-complemento').value.trim()||null,bairro:document.getElementById('pedido-modal-bairro').value.trim(),cidade:document.getElementById('pedido-modal-cidade').value.trim(),uf:document.getElementById('pedido-modal-uf').value.trim().toUpperCase(),referencia:document.getElementById('pedido-modal-referencia').value.trim()||null,status:document.getElementById('pedido-modal-status').value,observacoes:document.getElementById('pedido-modal-observacoes').value.trim()||null,atualizado_em:new Date().toISOString()};
+  try{const {error}=await sb.from('pedidos').update(novo).eq('id',id);if(error)throw error;const forma=document.getElementById('pedido-modal-forma').value,ps=document.getElementById('pedido-modal-pagamento').value,link=document.getElementById('pedido-modal-link').value.trim()||null;const {error:pe}=await sb.from('pagamentos').update({forma,status:ps,link_pagamento:link,confirmado_em:ps==='pago'?new Date().toISOString():null,atualizado_em:new Date().toISOString()}).eq('pedido_id',id);if(pe)throw pe;await sb.from('pedido_historico').insert({pedido_id:id,tipo:'edicao_admin',descricao:'Pedido atualizado manualmente no painel.',dados_anteriores:old,dados_novos:{...novo,payment_status:ps,forma}});document.getElementById('modal-pedido').classList.remove('show');await carregarPedidosProjeto(slug,slug==='mercadinho'?'pedidos-mercadinho-container':'pedidos-atelier-container',slug==='mercadinho'?'filtro-pedido-mercadinho':'filtro-pedido-atelier');}catch(err){msg.className='msg-box erro';msg.textContent='Erro ao salvar: '+(err.message||'');msg.style.display='block';}
+});
+async function carregarFinanceiroProjeto(slug,containerId){const c=document.getElementById(containerId),projeto=projetosCache.find(p=>p.slug===slug);if(!projeto)return;c.innerHTML='<p class="empty-hint">Carregando...</p>';const {data,error}=await sb.from('pagamentos').select('*, pedidos(numero,status,total,criado_em,customer_name)').eq('projeto_id',projeto.id).order('criado_em',{ascending:false});if(error){c.innerHTML='<div class="msg-box erro">'+escPedido(error.message)+'</div>';return;}const rows=data||[],total=rows.reduce((a,r)=>a+Number(r.valor||0),0),pago=rows.filter(r=>r.status==='pago').reduce((a,r)=>a+Number(r.valor||0),0),pend=rows.filter(r=>r.status==='pendente').reduce((a,r)=>a+Number(r.valor||0),0);c.innerHTML=`<div class="finance-grid"><div class="kpi-card"><div class="num">${dinheiro(total)}</div><div class="lbl">Total registrado</div></div><div class="kpi-card"><div class="num">${dinheiro(pago)}</div><div class="lbl">Pago</div></div><div class="kpi-card"><div class="num">${dinheiro(pend)}</div><div class="lbl">Pendente</div></div></div><table><thead><tr><th>Pedido</th><th>Cliente</th><th>Forma</th><th>Status</th><th>Valor</th><th>Data</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${escPedido(r.pedidos?.numero)}</td><td>${escPedido(r.pedidos?.customer_name)}</td><td>${escPedido(r.forma||'A confirmar')}</td><td><select class="status-select" data-finance-status="${r.id}" data-pedido-id="${r.pedido_id}" data-projeto-slug="${slug}"><option value="pendente" ${r.status==='pendente'?'selected':''}>Pendente</option><option value="pago" ${r.status==='pago'?'selected':''}>Pago</option><option value="cancelado" ${r.status==='cancelado'?'selected':''}>Cancelado</option><option value="estornado" ${r.status==='estornado'?'selected':''}>Estornado</option></select></td><td>${dinheiro(r.valor)}</td><td>${r.criado_em?new Date(r.criado_em).toLocaleString('pt-BR'):''}</td></tr>`).join('')||'<tr><td colspan="6">Nenhum pagamento registrado.</td></tr>'}</tbody></table>`;c.querySelectorAll('[data-finance-status]').forEach(sel=>sel.addEventListener('change',()=>alterarStatusFinanceiro(sel.dataset.financeStatus,sel.dataset.pedidoId,sel.value,slug,containerId)));}
+async function alterarStatusFinanceiro(pagamentoId,pedidoId,status,slug,containerId){try{const {error:pe}=await sb.from('pagamentos').update({status,confirmado_em:status==='pago'?new Date().toISOString():null,atualizado_em:new Date().toISOString()}).eq('id',pagamentoId);if(pe)throw pe;const {error:oe}=await sb.from('pedidos').update({payment_status:status,atualizado_em:new Date().toISOString()}).eq('id',pedidoId);if(oe)throw oe;await carregarFinanceiroProjeto(slug,containerId);}catch(err){alert('Não foi possível alterar o status: '+(err.message||err));await carregarFinanceiroProjeto(slug,containerId);}}
+['mercadinho','atelier-verushka'].forEach(slug=>{const key=slug==='mercadinho'?'mercadinho':'atelier';document.getElementById('filtro-pedido-'+key).addEventListener('change',()=>carregarPedidosProjeto(slug,key==='mercadinho'?'pedidos-mercadinho-container':'pedidos-atelier-container','filtro-pedido-'+key));document.getElementById('refresh-pedidos-'+key).addEventListener('click',()=>carregarPedidosProjeto(slug,key==='mercadinho'?'pedidos-mercadinho-container':'pedidos-atelier-container','filtro-pedido-'+key));document.getElementById('refresh-financeiro-'+key).addEventListener('click',()=>carregarFinanceiroProjeto(slug,'financeiro-'+key+'-container'));});
+
+/* ===================== CARREGAMENTO GERAL ===================== */
+async function carregarTudo() {
+  document.querySelectorAll('[data-novo-produto]').forEach(btn => btn.disabled = true);
+
+  const { data: projetos } = await sb.from('projetos').select('*').order('criado_em');
+  projetosCache = projetos || [];
+  const { data: cats } = await sb.from('categorias').select('*').order('ordem');
+  categoriasCache = cats || [];
+
+  document.querySelectorAll('[data-novo-produto]').forEach(btn => btn.disabled = false);
+
+  await Promise.all([
+    carregarDashboard(),
+    carregarProdutosTabela('mercadinho', 'tabela-mercadinho'),
+    carregarProdutosTabela('atelier-verushka', 'tabela-atelier'),
+    carregarPedidosProjeto('mercadinho','pedidos-mercadinho-container','filtro-pedido-mercadinho'),
+    carregarPedidosProjeto('atelier-verushka','pedidos-atelier-container','filtro-pedido-atelier'),
+    carregarFinanceiroProjeto('mercadinho','financeiro-mercadinho-container'),
+    carregarFinanceiroProjeto('atelier-verushka','financeiro-atelier-container'),
+    carregarBlogTabela(),
+    carregarBanco(),
+    carregarSitemap(),
+    carregarConfig(),
+    carregarCategoriasPainel()
+  ]);
+  carregarStorage();
+}
+
+/* ===================== DASHBOARD ===================== */
+async function carregarDashboard() {
+  const mercadinho = projetosCache.find(p => p.slug === 'mercadinho');
+  const atelier = projetosCache.find(p => p.slug === 'atelier-verushka');
+
+  const [{ count: cArtigos }] = await Promise.all([
+    sb.from('blog_artigos').select('*', { count: 'exact', head: true }).eq('status', 'publicado')
+  ]);
+
+  const produtosMercadinho = mercadinho ? await sb.from('produtos').select('*', { count: 'exact', head: true }).eq('projeto_id', mercadinho.id) : { count: 0 };
+  const categoriasMercadinho = mercadinho ? categoriasCache.filter(c => c.projeto_id === mercadinho.id).length : 0;
+  const produtosAtelier = atelier ? await sb.from('produtos').select('*', { count: 'exact', head: true }).eq('projeto_id', atelier.id) : { count: 0 };
+  const categoriasAtelier = atelier ? categoriasCache.filter(c => c.projeto_id === atelier.id).length : 0;
+
+  const cards = [
+    ['Projetos ativos', projetosCache.filter(p => p.status === 'ativo').length],
+    ['Mercadinho — produtos', produtosMercadinho.count || 0],
+    ['Mercadinho — categorias', categoriasMercadinho],
+    ['Ateliê — produtos', produtosAtelier.count || 0],
+    ['Ateliê — categorias', categoriasAtelier],
+    ['Blog — artigos publicados', cArtigos || 0]
+  ];
+  document.getElementById('dash-cards').innerHTML = cards.map(([lbl, num]) =>
+    `<div class="kpi-card"><div class="num">${num}</div><div class="lbl">${lbl}</div></div>`).join('');
+}
+
+/* ===================== PRODUTOS (Mercadinho + Atelier) ===================== */
+async function carregarProdutosTabela(projetoSlug, containerId) {
+  const projeto = projetosCache.find(p => p.slug === projetoSlug);
+  const container = document.getElementById(containerId);
+  if (!projeto) { container.innerHTML = '<p class="empty-hint">Projeto não encontrado.</p>'; return; }
+
+  const { data: produtos, error } = await sb
+    .from('produtos')
+    .select('*, categorias(nome)')
+    .eq('projeto_id', projeto.id)
+    .order('ordem');
+
+  if (error) { container.innerHTML = '<p class="empty-hint">Erro ao carregar produtos.</p>'; return; }
+  if (!produtos || produtos.length === 0) { container.innerHTML = '<p class="empty-hint">Nenhum produto cadastrado ainda.</p>'; return; }
+
+  container.innerHTML = `<table><thead><tr>
+    <th></th><th>Nome</th><th>Categoria</th><th>Preço</th><th>Status</th><th>Ordem</th><th></th>
+  </tr></thead><tbody>${produtos.map(p => `
+    <tr>
+      <td>${p.imagem_principal_url ? `<img class="thumb" src="${p.imagem_principal_url}">` : `<div class="thumb"></div>`}</td>
+      <td>${p.nome}</td>
+      <td>${p.categorias ? p.categorias.nome : '-'}</td>
+      <td>R$ ${Number(p.preco).toFixed(2).replace('.', ',')}</td>
+      <td><span class="badge ${p.status}">${p.status}</span></td>
+      <td>${p.ordem}</td>
+      <td class="row-actions">
+        <button class="btn btn-outline btn-sm" data-editar-produto="${p.id}" data-projeto="${projetoSlug}">Editar</button>
+        <button class="btn btn-outline btn-sm toggle-status" data-toggle-produto="${p.id}" data-status="${p.status}">${p.status === 'ativo' ? 'Desativar' : 'Ativar'}</button>
+      </td>
+    </tr>`).join('')}</tbody></table>`;
+
+  container.querySelectorAll('[data-editar-produto]').forEach(btn => {
+    btn.addEventListener('click', () => abrirModalProduto(btn.dataset.projeto, btn.dataset.editarProduto));
+  });
+  container.querySelectorAll('[data-toggle-produto]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const novoStatus = btn.dataset.status === 'ativo' ? 'inativo' : 'ativo';
+      await sb.from('produtos').update({ status: novoStatus }).eq('id', btn.dataset.toggleProduto);
+      carregarProdutosTabela(projetoSlug, containerId);
+      carregarDashboard();
+    });
+  });
+}
+
+document.querySelectorAll('[data-novo-produto]').forEach(btn => {
+  btn.addEventListener('click', () => abrirModalProduto(btn.dataset.novoProduto, null));
+});
+
+async function abrirModalProduto(projetoSlug, produtoId) {
+  const projeto = projetosCache.find(p => p.slug === projetoSlug);
+  if (!projeto) {
+    alert('Ainda carregando os dados do painel. Aguarde um instante e tente novamente.');
+    return;
+  }
+  const form = document.getElementById('form-produto');
+  form.reset();
+  document.getElementById('pr-id').value = produtoId || '';
+  document.getElementById('pr-projeto-slug').value = projetoSlug;
+  document.getElementById('pr-descricao-rte').innerHTML = '';
+  document.getElementById('pr-imagem-preview').style.display = 'none';
+  document.getElementById('pr-galeria-preview').innerHTML = '';
+  document.getElementById('pr-msg').style.display = 'none';
+  document.getElementById('btn-excluir-produto').style.display = produtoId ? 'inline-block' : 'none';
+
+  // popular categorias do projeto
+  const cats = categoriasCache.filter(c => c.projeto_id === projeto.id);
+  document.getElementById('pr-categoria').innerHTML = cats.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+
+  if (produtoId) {
+    document.getElementById('produto-modal-titulo').textContent = 'Editar produto';
+    const { data: p } = await sb.from('produtos').select('*').eq('id', produtoId).single();
+    if (p) {
+      document.getElementById('pr-nome').value = p.nome || '';
+      document.getElementById('pr-categoria').value = p.categoria_id || '';
+      document.getElementById('pr-preco').value = p.preco || 0;
+      document.getElementById('pr-ordem').value = p.ordem || 0;
+      document.getElementById('pr-descricao-curta').value = p.descricao_curta || '';
+      document.getElementById('pr-descricao-rte').innerHTML = p.descricao || '';
+      document.getElementById('pr-status').value = p.status || 'ativo';
+      document.getElementById('pr-sob-encomenda').value = String(p.sob_encomenda);
+      document.getElementById('pr-prazo-min').value = p.prazo_entrega_min || 3;
+      document.getElementById('pr-prazo-max').value = p.prazo_entrega_max || 10;
+      document.getElementById('pr-seo-title').value = p.seo_title || '';
+      document.getElementById('pr-seo-desc').value = p.seo_description || '';
+      document.getElementById('pr-alt-text').value = p.alt_text || '';
+      document.getElementById('pr-slug').value = p.slug || '';
+      if (p.imagem_principal_url) {
+        document.getElementById('pr-imagem-preview').src = p.imagem_principal_url;
+        document.getElementById('pr-imagem-preview').style.display = 'block';
+      }
+      (p.galeria || []).forEach(url => {
+        document.getElementById('pr-galeria-preview').insertAdjacentHTML('beforeend', `<img src="${url}">`);
+      });
+      form.dataset.imagemAtual = p.imagem_principal_url || '';
+      form.dataset.galeriaAtual = JSON.stringify(p.galeria || []);
+    }
+  } else {
+    document.getElementById('produto-modal-titulo').textContent = 'Novo produto';
+    form.dataset.imagemAtual = '';
+    form.dataset.galeriaAtual = '[]';
+  }
+  document.getElementById('modal-produto').classList.add('show');
+}
+
+/* ===================== CATEGORIAS (por projeto) ===================== */
+async function recarregarCategoriasCache() {
+  const { data: cats } = await sb.from('categorias').select('*').order('ordem');
+  categoriasCache = cats || [];
+}
+
+function renderCategoriasProjeto(projetoSlug, containerId) {
+  const projeto = projetosCache.find(p => p.slug === projetoSlug);
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  if (!projeto) { container.innerHTML = '<span class="categorias-vazio">Carregando...</span>'; return; }
+
+  const cats = categoriasCache.filter(c => c.projeto_id === projeto.id).sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+  if (cats.length === 0) {
+    container.innerHTML = '<span class="categorias-vazio">Nenhuma categoria cadastrada ainda.</span>';
+    return;
+  }
+  container.innerHTML = cats.map(c => `
+    <span class="categoria-chip ${c.status !== 'ativo' ? 'inativo' : ''}">
+      ${c.nome}
+      <button type="button" class="cat-editar" data-editar-categoria="${c.id}" data-projeto="${projetoSlug}" aria-label="Editar categoria">&#9998;</button>
+      <button type="button" class="cat-excluir" data-excluir-categoria="${c.id}" data-projeto="${projetoSlug}" aria-label="Excluir categoria">&times;</button>
+    </span>`).join('');
+
+  container.querySelectorAll('[data-editar-categoria]').forEach(btn => {
+    btn.addEventListener('click', () => abrirModalCategoria(btn.dataset.projeto, btn.dataset.editarCategoria));
+  });
+  container.querySelectorAll('[data-excluir-categoria]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Excluir esta categoria? Produtos que a usam ficarão sem categoria.')) return;
+      await sb.from('categorias').delete().eq('id', btn.dataset.excluirCategoria);
+      await recarregarCategoriasCache();
+      carregarCategoriasPainel();
+      carregarProdutosTabela(btn.dataset.projeto, btn.dataset.projeto === 'mercadinho' ? 'tabela-mercadinho' : 'tabela-atelier');
+      carregarDashboard();
+    });
+  });
+}
+
+function carregarCategoriasPainel() {
+  renderCategoriasProjeto('mercadinho', 'categorias-mercadinho');
+  renderCategoriasProjeto('atelier-verushka', 'categorias-atelier');
+}
+
+document.querySelectorAll('[data-nova-categoria]').forEach(btn => {
+  btn.addEventListener('click', () => abrirModalCategoria(btn.dataset.novaCategoria, null));
+});
+
+async function abrirModalCategoria(projetoSlug, categoriaId) {
+  const projeto = projetosCache.find(p => p.slug === projetoSlug);
+  if (!projeto) { alert('Ainda carregando os dados do painel. Aguarde um instante e tente novamente.'); return; }
+
+  const form = document.getElementById('form-categoria');
+  form.reset();
+  document.getElementById('cat-id').value = categoriaId || '';
+  document.getElementById('cat-projeto-slug').value = projetoSlug;
+  document.getElementById('cat-msg').style.display = 'none';
+  document.getElementById('btn-excluir-categoria').style.display = categoriaId ? 'inline-block' : 'none';
+
+  if (categoriaId) {
+    document.getElementById('categoria-modal-titulo').textContent = 'Editar categoria';
+    const c = categoriasCache.find(x => x.id === categoriaId);
+    if (c) {
+      document.getElementById('cat-nome').value = c.nome || '';
+      document.getElementById('cat-ordem').value = c.ordem || 0;
+      document.getElementById('cat-status').value = c.status || 'ativo';
+    }
+  } else {
+    document.getElementById('categoria-modal-titulo').textContent = 'Nova categoria';
+  }
+  document.getElementById('modal-categoria').classList.add('show');
+}
+
+document.getElementById('form-categoria').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('cat-msg');
+  msg.style.display = 'block'; msg.className = 'msg-box'; msg.textContent = 'Salvando...';
+
+  const projetoSlug = document.getElementById('cat-projeto-slug').value;
+  const projeto = projetosCache.find(p => p.slug === projetoSlug);
+  const categoriaId = document.getElementById('cat-id').value;
+  if (!projeto) { msg.className = 'msg-box erro'; msg.textContent = 'Projeto não identificado.'; return; }
+
+  const nome = document.getElementById('cat-nome').value.trim();
+  const payload = {
+    projeto_id: projeto.id,
+    nome,
+    slug: slugify(nome),
+    ordem: parseInt(document.getElementById('cat-ordem').value) || 0,
+    status: document.getElementById('cat-status').value
+  };
+
+  try {
+    if (categoriaId) {
+      const { error } = await sb.from('categorias').update(payload).eq('id', categoriaId);
+      if (error) throw error;
+    } else {
+      const { error } = await sb.from('categorias').insert(payload);
+      if (error) throw error;
+    }
+    msg.className = 'msg-box ok'; msg.textContent = 'Categoria salva com sucesso!';
+    await recarregarCategoriasCache();
+    carregarCategoriasPainel();
+    carregarDashboard();
+    setTimeout(() => document.getElementById('modal-categoria').classList.remove('show'), 700);
+  } catch (err) {
+    console.error(err);
+    msg.className = 'msg-box erro'; msg.textContent = 'Erro ao salvar: ' + (err.message || 'tente novamente.');
+  }
+});
+
+document.getElementById('btn-excluir-categoria').addEventListener('click', async () => {
+  const categoriaId = document.getElementById('cat-id').value;
+  if (!categoriaId || !confirm('Excluir esta categoria definitivamente?')) return;
+  await sb.from('categorias').delete().eq('id', categoriaId);
+  document.getElementById('modal-categoria').classList.remove('show');
+  await recarregarCategoriasCache();
+  carregarCategoriasPainel();
+  carregarDashboard();
+});
+
+/* Converte imagem para WebP no navegador: reduz as dimensões em ~30% (preservando a proporção,
+   sem deformar) e converte para WebP com qualidade adequada, evitando arquivos pesados no storage. */
+function converterParaWebp(file, fatorReducao = 0.7, larguraMinima = 500, qualidade = 0.82) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = e => { img.src = e.target.result; };
+    reader.onerror = reject;
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      // Reduz ~30% das dimensões originais, mas nunca abaixo de larguraMinima (evita perder qualidade em fotos já pequenas)
+      if (w > larguraMinima) {
+        const novaLargura = Math.max(Math.round(w * fatorReducao), larguraMinima);
+        h = Math.round(h * (novaLargura / w));
+        w = novaLargura;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Falha ao converter imagem')), 'image/webp', qualidade);
+    };
+    img.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function enviarImagemStorage(file, pastaProjeto, subpasta) {
+  const blob = await converterParaWebp(file);
+  const nomeArquivo = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`;
+  const caminho = `${pastaProjeto}/${subpasta}/${nomeArquivo}`;
+  const { error } = await sb.storage.from(BUCKET).upload(caminho, blob, { contentType: 'image/webp', upsert: true });
+  if (error) throw error;
+  const { data } = sb.storage.from(BUCKET).getPublicUrl(caminho);
+  return data.publicUrl;
+}
+
+function slugify(nome) {
+  return (nome || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+
+document.getElementById('form-produto').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('pr-msg');
+  msg.style.display = 'block'; msg.className = 'msg-box'; msg.textContent = 'Salvando...';
+  const form = e.target;
+  const projetoSlug = document.getElementById('pr-projeto-slug').value;
+  const projeto = projetosCache.find(p => p.slug === projetoSlug);
+  const produtoId = document.getElementById('pr-id').value;
+
+  if (!projeto) {
+    msg.className = 'msg-box erro';
+    msg.textContent = 'Não foi possível identificar o projeto deste produto. Feche o formulário e tente novamente.';
+    return;
+  }
+
+  try {
+    let imagemUrl = form.dataset.imagemAtual || null;
+    const arquivoImagem = document.getElementById('pr-imagem').files[0];
+    if (arquivoImagem) imagemUrl = await enviarImagemStorage(arquivoImagem, projetoSlug, 'produtos');
+
+    let galeria = JSON.parse(form.dataset.galeriaAtual || '[]');
+    const arquivosGaleria = document.getElementById('pr-galeria').files;
+    for (const f of arquivosGaleria) {
+      const url = await enviarImagemStorage(f, projetoSlug, 'produtos');
+      galeria.push(url);
+    }
+
+    const nome = document.getElementById('pr-nome').value.trim();
+    const payload = {
+      projeto_id: projeto.id,
+      categoria_id: document.getElementById('pr-categoria').value || null,
+      nome,
+      slug: document.getElementById('pr-slug').value.trim() || slugify(nome),
+      descricao_curta: document.getElementById('pr-descricao-curta').value,
+      descricao: sanitizarHtml(document.getElementById('pr-descricao-rte').innerHTML),
+      preco: parseFloat(document.getElementById('pr-preco').value) || 0,
+      imagem_principal_url: imagemUrl,
+      galeria,
+      status: document.getElementById('pr-status').value,
+      ordem: parseInt(document.getElementById('pr-ordem').value) || 0,
+      sob_encomenda: document.getElementById('pr-sob-encomenda').value === 'true',
+      prazo_entrega_min: parseInt(document.getElementById('pr-prazo-min').value) || null,
+      prazo_entrega_max: parseInt(document.getElementById('pr-prazo-max').value) || null,
+      seo_title: document.getElementById('pr-seo-title').value,
+      seo_description: document.getElementById('pr-seo-desc').value,
+      alt_text: document.getElementById('pr-alt-text').value
+    };
+
+    if (produtoId) {
+      const { error } = await sb.from('produtos').update(payload).eq('id', produtoId);
+      if (error) throw error;
+    } else {
+      const { error } = await sb.from('produtos').insert(payload);
+      if (error) throw error;
+    }
+
+    msg.className = 'msg-box ok'; msg.textContent = 'Produto salvo com sucesso!';
+    await carregarProdutosTabela(projetoSlug, projetoSlug === 'mercadinho' ? 'tabela-mercadinho' : 'tabela-atelier');
+    await carregarDashboard();
+    await atualizarSitemapAutomatico(false);
+    setTimeout(() => document.getElementById('modal-produto').classList.remove('show'), 700);
+  } catch (err) {
+    console.error(err);
+    msg.className = 'msg-box erro'; msg.textContent = 'Erro ao salvar: ' + (err.message || 'tente novamente.');
+  }
+});
+
+document.getElementById('btn-excluir-produto').addEventListener('click', async () => {
+  const produtoId = document.getElementById('pr-id').value;
+  const projetoSlug = document.getElementById('pr-projeto-slug').value;
+  if (!produtoId || !confirm('Excluir este produto definitivamente?')) return;
+  await sb.from('produtos').delete().eq('id', produtoId);
+  document.getElementById('modal-produto').classList.remove('show');
+  carregarProdutosTabela(projetoSlug, projetoSlug === 'mercadinho' ? 'tabela-mercadinho' : 'tabela-atelier');
+  carregarDashboard();
+});
+
+/* ===================== BLOG ===================== */
+async function carregarBlogTabela() {
+  const container = document.getElementById('tabela-blog');
+  const { data: artigos, error } = await sb.from('blog_artigos').select('*').order('criado_em', { ascending: false });
+  if (error) { container.innerHTML = '<p class="empty-hint">Erro ao carregar artigos.</p>'; return; }
+  if (!artigos || artigos.length === 0) { container.innerHTML = '<p class="empty-hint">Nenhum artigo cadastrado ainda.</p>'; return; }
+
+  container.innerHTML = `<table><thead><tr><th></th><th>Título</th><th>Categoria</th><th>Status</th><th>Publicação</th><th></th></tr></thead><tbody>
+    ${artigos.map(a => `
+    <tr>
+      <td>${a.imagem_capa_url ? `<img class="thumb" src="${a.imagem_capa_url}">` : `<div class="thumb"></div>`}</td>
+      <td>${a.titulo}</td>
+      <td>${a.categoria || '-'}</td>
+      <td><span class="badge ${a.status}">${a.status}</span></td>
+      <td>${a.data_publicacao ? new Date(a.data_publicacao).toLocaleDateString('pt-BR') : '-'}</td>
+      <td class="row-actions">
+        <button class="btn btn-outline btn-sm" data-editar-artigo="${a.id}">Editar</button>
+        <button class="btn btn-outline btn-sm" data-toggle-artigo="${a.id}" data-status="${a.status}">${a.status === 'publicado' ? 'Despublicar' : 'Publicar'}</button>
+      </td>
+    </tr>`).join('')}</tbody></table>`;
+
+  container.querySelectorAll('[data-editar-artigo]').forEach(btn => btn.addEventListener('click', () => abrirModalArtigo(btn.dataset.editarArtigo)));
+  container.querySelectorAll('[data-toggle-artigo]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const novoStatus = btn.dataset.status === 'publicado' ? 'rascunho' : 'publicado';
+      const payload = { status: novoStatus };
+      if (novoStatus === 'publicado') payload.data_publicacao = new Date().toISOString();
+      await sb.from('blog_artigos').update(payload).eq('id', btn.dataset.toggleArtigo);
+      carregarBlogTabela(); carregarDashboard(); atualizarSitemapAutomatico(false);
+    });
+  });
+}
+
+document.getElementById('btn-novo-artigo').addEventListener('click', () => abrirModalArtigo(null));
+
+async function abrirModalArtigo(artigoId) {
+  const form = document.getElementById('form-artigo');
+  form.reset();
+  document.getElementById('ar-id').value = artigoId || '';
+  document.getElementById('ar-conteudo-rte').innerHTML = '';
+  document.getElementById('ar-capa-preview').style.display = 'none';
+  document.getElementById('ar-msg').style.display = 'none';
+  document.getElementById('btn-excluir-artigo').style.display = artigoId ? 'inline-block' : 'none';
+  form.dataset.capaAtual = '';
+
+  if (artigoId) {
+    document.getElementById('artigo-modal-titulo').textContent = 'Editar artigo';
+    const { data: a } = await sb.from('blog_artigos').select('*').eq('id', artigoId).single();
+    if (a) {
+      document.getElementById('ar-titulo').value = a.titulo || '';
+      document.getElementById('ar-slug').value = a.slug || '';
+      document.getElementById('ar-resumo').value = a.resumo || '';
+      document.getElementById('ar-conteudo-rte').innerHTML = a.conteudo || '';
+      document.getElementById('ar-categoria').value = a.categoria || '';
+      document.getElementById('ar-autor').value = a.autor || 'Fazendinha Turca';
+      document.getElementById('ar-tags').value = (a.tags || []).join(', ');
+      document.getElementById('ar-status').value = a.status || 'rascunho';
+      document.getElementById('ar-data-pub').value = a.data_publicacao ? a.data_publicacao.slice(0, 10) : '';
+      document.getElementById('ar-seo-title').value = a.seo_title || '';
+      document.getElementById('ar-seo-desc').value = a.seo_description || '';
+      document.getElementById('ar-alt-text').value = a.alt_text || '';
+      if (a.imagem_capa_url) {
+        document.getElementById('ar-capa-preview').src = a.imagem_capa_url;
+        document.getElementById('ar-capa-preview').style.display = 'block';
+      }
+      form.dataset.capaAtual = a.imagem_capa_url || '';
+    }
+  } else {
+    document.getElementById('artigo-modal-titulo').textContent = 'Novo artigo';
+  }
+  document.getElementById('modal-artigo').classList.add('show');
+}
+
+document.getElementById('form-artigo').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('ar-msg');
+  msg.style.display = 'block'; msg.className = 'msg-box'; msg.textContent = 'Salvando...';
+  const form = e.target;
+  const artigoId = document.getElementById('ar-id').value;
+
+  try {
+    let capaUrl = form.dataset.capaAtual || null;
+    const arquivoCapa = document.getElementById('ar-capa').files[0];
+    if (arquivoCapa) capaUrl = await enviarImagemStorage(arquivoCapa, 'blog', 'capas');
+
+    const titulo = document.getElementById('ar-titulo').value.trim();
+    const payload = {
+      titulo,
+      slug: document.getElementById('ar-slug').value.trim() || slugify(titulo),
+      resumo: document.getElementById('ar-resumo').value,
+      conteudo: sanitizarHtml(document.getElementById('ar-conteudo-rte').innerHTML),
+      imagem_capa_url: capaUrl,
+      categoria: document.getElementById('ar-categoria').value,
+      autor: document.getElementById('ar-autor').value || 'Fazendinha Turca',
+      tags: document.getElementById('ar-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+      status: document.getElementById('ar-status').value,
+      data_publicacao: document.getElementById('ar-data-pub').value ? new Date(document.getElementById('ar-data-pub').value).toISOString() : null,
+      seo_title: document.getElementById('ar-seo-title').value,
+      seo_description: document.getElementById('ar-seo-desc').value,
+      alt_text: document.getElementById('ar-alt-text').value
+    };
+
+    if (artigoId) {
+      const { error } = await sb.from('blog_artigos').update(payload).eq('id', artigoId);
+      if (error) throw error;
+    } else {
+      const { error } = await sb.from('blog_artigos').insert(payload);
+      if (error) throw error;
+    }
+    msg.className = 'msg-box ok'; msg.textContent = 'Artigo salvo com sucesso!';
+    await carregarBlogTabela();
+    await carregarDashboard();
+    await atualizarSitemapAutomatico(false);
+    setTimeout(() => document.getElementById('modal-artigo').classList.remove('show'), 700);
+  } catch (err) {
+    console.error(err);
+    msg.className = 'msg-box erro'; msg.textContent = 'Erro ao salvar: ' + (err.message || 'tente novamente.');
+  }
+});
+
+document.getElementById('btn-excluir-artigo').addEventListener('click', async () => {
+  const artigoId = document.getElementById('ar-id').value;
+  if (!artigoId || !confirm('Excluir este artigo definitivamente?')) return;
+  await sb.from('blog_artigos').delete().eq('id', artigoId);
+  document.getElementById('modal-artigo').classList.remove('show');
+  carregarBlogTabela(); carregarDashboard();
+});
+
+/* ===================== NOVO PROJETO ===================== */
+document.getElementById('form-novo-projeto').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('np-msg');
+  msg.style.display = 'block'; msg.className = 'msg-box'; msg.textContent = 'Criando projeto...';
+  try {
+    const slug = slugify(document.getElementById('np-slug').value);
+    const payload = {
+      slug,
+      nome: document.getElementById('np-nome').value,
+      nome_publico: document.getElementById('np-nome-publico').value,
+      descricao: document.getElementById('np-descricao').value,
+      categoria: document.getElementById('np-categoria').value,
+      menu_label: document.getElementById('np-menu-label').value,
+      menu_url: document.getElementById('np-menu-url').value,
+      whatsapp_numero: document.getElementById('np-whatsapp').value,
+      prazo_entrega_min: parseInt(document.getElementById('np-prazo-min').value) || null,
+      prazo_entrega_max: parseInt(document.getElementById('np-prazo-max').value) || null,
+      status: 'ativo'
+    };
+    const { data: novoProjeto, error } = await sb.from('projetos').insert(payload).select().single();
+    if (error) throw error;
+
+    const catsTexto = document.getElementById('np-categorias-iniciais').value;
+    if (catsTexto.trim()) {
+      const nomes = catsTexto.split(',').map(s => s.trim()).filter(Boolean);
+      const rows = nomes.map((n, i) => ({ projeto_id: novoProjeto.id, nome: n, slug: slugify(n), ordem: i + 1 }));
+      await sb.from('categorias').insert(rows);
+    }
+
+    msg.className = 'msg-box ok';
+    msg.textContent = `Projeto "${novoProjeto.nome_publico}" criado! Ele já aparece no menu dinâmico (config.projetos) e pode receber produtos. Crie a página pública (ex: ${payload.menu_url || slug + '.html'}) seguindo o mesmo padrão do atelie.html.`;
+    e.target.reset();
+    const { data: projetos } = await sb.from('projetos').select('*').order('criado_em');
+    projetosCache = projetos || [];
+    carregarDashboard(); carregarConfig(); carregarSitemap();
+  } catch (err) {
+    console.error(err);
+    msg.className = 'msg-box erro'; msg.textContent = 'Erro ao criar projeto: ' + (err.message || '');
+  }
+});
+
+/* ===================== BANCO DE DADOS ===================== */
+async function carregarBanco() {
+  const [{ count: cP }, { count: cC }, { count: cPr }, { count: cA }] = await Promise.all([
+    sb.from('projetos').select('*', { count: 'exact', head: true }),
+    sb.from('categorias').select('*', { count: 'exact', head: true }),
+    sb.from('produtos').select('*', { count: 'exact', head: true }),
+    sb.from('blog_artigos').select('*', { count: 'exact', head: true })
+  ]);
+  document.getElementById('banco-cards').innerHTML = [
+    ['Projetos', cP || 0], ['Categorias', cC || 0], ['Produtos', cPr || 0], ['Artigos', cA || 0]
+  ].map(([lbl, num]) => `<div class="kpi-card"><div class="num">${num}</div><div class="lbl">${lbl}</div></div>`).join('');
+  document.getElementById('banco-status').innerHTML = '<p class="empty-hint">✅ Conexão com o Supabase funcionando normalmente.</p>';
+}
+
+/* ===================== STORAGE ===================== */
+document.getElementById('btn-recarregar-storage').addEventListener('click', carregarStorage);
+async function carregarStorage() {
+  const container = document.getElementById('storage-container');
+  container.innerHTML = '<p class="empty-hint">Carregando...</p>';
+  try {
+    const { data: pastas, error } = await sb.storage.from(BUCKET).list('', { limit: 100 });
+    if (error) throw error;
+    if (!pastas || pastas.length === 0) { container.innerHTML = '<p class="empty-hint">Nenhum arquivo enviado ainda.</p>'; return; }
+
+    let html = '';
+    for (const pasta of pastas) {
+      if (!pasta.id && pasta.name) {
+        // é uma "pasta" (sem metadata de arquivo)
+        const resumo = await resumoPasta(pasta.name);
+        html += `<h3 style="margin:18px 0 8px; font-size:0.95rem;">${pasta.name}</h3>
+          <p class="empty-hint" style="padding:4px 0;">${resumo.arquivos} arquivo(s) &middot; ${formatarBytes(resumo.tamanho)}</p>`;
+      }
+    }
+    container.innerHTML = html || '<p class="empty-hint">Nenhuma pasta encontrada.</p>';
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = '<p class="empty-hint">Erro ao carregar o Storage.</p>';
+  }
+}
+async function resumoPasta(caminho, prof = 0) {
+  let arquivos = 0, tamanho = 0;
+  const { data: itens } = await sb.storage.from(BUCKET).list(caminho, { limit: 200 });
+  for (const item of (itens || [])) {
+    if (item.metadata && item.metadata.size != null) {
+      arquivos++; tamanho += item.metadata.size;
+    } else if (prof < 4) {
+      const sub = await resumoPasta(`${caminho}/${item.name}`, prof + 1);
+      arquivos += sub.arquivos; tamanho += sub.tamanho;
+    }
+  }
+  return { arquivos, tamanho };
+}
+function formatarBytes(b) {
+  if (!b) return '0 KB';
+  const kb = b / 1024;
+  if (kb < 1024) return kb.toFixed(1) + ' KB';
+  return (kb / 1024).toFixed(2) + ' MB';
+}
+
+/* ===================== SITEMAP ===================== */
+async function carregarSitemap() {
+  const { data: urls } = await sb.from('sitemap_urls').select('*').order('criado_em', { ascending: false });
+  const ativos = (urls || []).filter(u => u.ativo);
+  document.getElementById('sitemap-cards').innerHTML = [
+    ['URLs no sitemap', ativos.length],
+    ['Última atualização', urls && urls[0] ? new Date(urls[0].atualizado_em).toLocaleDateString('pt-BR') : '-']
+  ].map(([lbl, num]) => `<div class="kpi-card"><div class="num">${num}</div><div class="lbl">${lbl}</div></div>`).join('');
+
+  const container = document.getElementById('tabela-sitemap');
+  if (!urls || urls.length === 0) { container.innerHTML = '<p class="empty-hint">Nenhuma URL cadastrada.</p>'; return; }
+  container.innerHTML = `<table><thead><tr><th>URL</th><th>Origem</th><th>Prioridade</th><th>Status</th></tr></thead><tbody>
+    ${urls.map(u => `<tr><td>${u.url}</td><td>${u.origem}</td><td>${u.priority}</td><td><span class="badge ${u.ativo ? 'ativo' : 'inativo'}">${u.ativo ? 'ativa' : 'inativa'}</span></td></tr>`).join('')}
+  </tbody></table>`;
+}
+
+async function atualizarSitemapAutomatico(mostrarMsg = true) {
+  const msg = document.getElementById('sitemap-msg');
+  if (mostrarMsg) { msg.style.display = 'block'; msg.className = 'msg-box'; msg.textContent = 'Sincronizando URLs...'; }
+  try {
+    const base = 'https://fazendinhaturca.com.br/';
+    const { data: produtos } = await sb.from('produtos').select('slug, projeto_id, status, atualizado_em, projetos(menu_url, status)').eq('status', 'ativo');
+    const { data: artigos } = await sb.from('blog_artigos').select('slug, status, atualizado_em').eq('status', 'publicado');
+
+    const urlsAtivas = new Set();
+    urlsAtivas.add(base);
+    urlsAtivas.add(`${base}blog.html`);
+    (produtos || []).forEach(p => {
+      if (p.projetos && p.projetos.status === 'ativo' && p.projetos.menu_url) {
+        urlsAtivas.add(`${base}${p.projetos.menu_url}#produto-${p.slug}`);
+      }
+    });
+    (artigos || []).forEach(a => urlsAtivas.add(`${base}blog.html?post=${a.slug}`));
+    projetosCache.filter(p => p.status === 'ativo' && p.menu_url).forEach(p => urlsAtivas.add(`${base}${p.menu_url}`));
+
+    for (const url of urlsAtivas) {
+      await sb.from('sitemap_urls').upsert({ url, origem: 'produto', ativo: true }, { onConflict: 'url' });
+    }
+    if (mostrarMsg) { msg.className = 'msg-box ok'; msg.textContent = 'Sitemap sincronizado com sucesso!'; }
+    await carregarSitemap();
+  } catch (err) {
+    console.error(err);
+    if (mostrarMsg) { msg.className = 'msg-box erro'; msg.textContent = 'Erro ao sincronizar sitemap.'; }
+  }
+}
+document.getElementById('btn-atualizar-sitemap').addEventListener('click', () => atualizarSitemapAutomatico(true));
+
+document.getElementById('btn-baixar-sitemap').addEventListener('click', async () => {
+  const { data: urls } = await sb.from('sitemap_urls').select('*').eq('ativo', true).order('priority', { ascending: false });
+  const hoje = new Date().toISOString().slice(0, 10);
+  let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+  (urls || []).forEach(u => {
+    xml += `\n<url>\n<loc>${u.url}</loc>\n<lastmod>${hoje}</lastmod>\n<changefreq>${u.changefreq || 'weekly'}</changefreq>\n<priority>${u.priority || 0.7}</priority>\n</url>\n`;
+  });
+  xml += '\n</urlset>\n';
+  const blob = new Blob([xml], { type: 'application/xml' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'sitemap.xml';
+  a.click();
+});
+
+/* ===================== CONFIGURAÇÕES ===================== */
+async function carregarConfig() {
+  const container = document.getElementById('config-container');
+  container.innerHTML = projetosCache.map(p => `
+    <div style="background:#fff; border-radius:10px; padding:16px 18px; margin-bottom:14px; box-shadow:0 2px 8px rgba(78,52,32,0.08);">
+      <h3 style="font-size:1rem; margin-bottom:10px;">${p.nome_publico} <span class="badge ${p.status}">${p.status}</span></h3>
+      <div class="grid-2">
+        <div><label>WhatsApp</label><input type="text" id="cfg-whats-${p.id}" value="${p.whatsapp_numero || ''}"></div>
+        <div>
+          <label>Status</label>
+          <select id="cfg-status-${p.id}">
+            <option value="ativo" ${p.status === 'ativo' ? 'selected' : ''}>Ativo</option>
+            <option value="inativo" ${p.status === 'inativo' ? 'selected' : ''}>Inativo</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-sm" style="margin-top:10px;" data-salvar-config="${p.id}">Salvar</button>
+    </div>
+  `).join('');
+
+  container.querySelectorAll('[data-salvar-config]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.salvarConfig;
+      await sb.from('projetos').update({
+        whatsapp_numero: document.getElementById(`cfg-whats-${id}`).value,
+        status: document.getElementById(`cfg-status-${id}`).value
+      }).eq('id', id);
+      const { data: projetos } = await sb.from('projetos').select('*').order('criado_em');
+      projetosCache = projetos || [];
+      carregarDashboard(); carregarSitemap();
+    });
+  });
+}
+
+/* ===================== INIT ===================== */
+checarSessao();
+</script>
+</body>
+</html>

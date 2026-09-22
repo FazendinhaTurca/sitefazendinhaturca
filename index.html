@@ -525,6 +525,13 @@
     letter-spacing: 0.4px;
   }
   .promo-cta:hover { background: var(--green-dark); }
+
+  /* Animações de entrada ao rolar */
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.in-view { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+  }
 </style>
 
 <!-- Schema.org: negócio local (Araruama) + catálogo de produtos + FAQ -->
@@ -683,6 +690,8 @@
     <a href="#inicio">INÍCIO</a>
     <a href="#produtos">PRODUTOS</a>
     <a href="produtos.html">MERCADINHO</a>
+    <a href="atelie.html">ATELIÊ</a>
+    <a href="blog.html">BLOG</a>
     <a href="#onde-entregamos">ONDE ENTREGAMOS</a>
     <a href="#sobre">SOBRE</a>
     <a href="https://wa.me/5522988328812?text=Ol%C3%A1%21%20Quero%20falar%20com%20a%20Fazendinha%20Turca." target="_blank" rel="noopener noreferrer">CONTATO</a>
@@ -911,5 +920,25 @@
 })();
 </script>
 
+<script>
+/* ===================== ANIMAÇÕES DE ENTRADA AO ROLAR ===================== */
+(function () {
+  const prefereReduzirMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefereReduzirMovimento || !('IntersectionObserver' in window)) return;
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.section-heading, .card, .info-section, .grid-heading-wrap').forEach((el, i) => {
+    el.classList.add('reveal');
+    el.style.transitionDelay = Math.min(i % 8, 6) * 60 + 'ms';
+    observer.observe(el);
+  });
+})();
+</script>
 </body>
 </html>
