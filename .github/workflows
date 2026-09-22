@@ -1,0 +1,45 @@
+name: Atualizar sitemap.xml
+
+on:
+  push:
+    branches: [main]
+    # Evita loop: ignora pushes que só alteraram o próprio sitemap.xml
+    paths-ignore:
+      - 'sitemap.xml'
+  schedule:
+    # Todo dia às 06:00 UTC (03:00 em Brasília), para capturar artigos
+    # de blog publicados pelo painel administrativo sem precisar de push.
+    - cron: '0 6 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  atualizar-sitemap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Gerar sitemap.xml
+        run: node scripts/generate-sitemap.js
+
+      - name: Commitar sitemap.xml (somente se houver alteração)
+        run: |
+          if git diff --quiet -- sitemap.xml; then
+            echo "Nenhuma alteração no sitemap.xml."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sitemap.xml
+          git commit -m "chore: atualizar sitemap.xml automaticamente"
+          git push
