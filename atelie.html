@@ -38,6 +38,30 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Qual é o prazo de entrega das peças do ateliê?",
+      "acceptedAnswer": { "@type": "Answer", "text": "As peças são feitas sob encomenda, com prazo de 3 a 10 dias, variando conforme a complexidade do item escolhido." }
+    },
+    {
+      "@type": "Question",
+      "name": "Dá para personalizar uma peça em Hama Beads?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Sim, a coleção Personalizados foi criada justamente para isso. Fale pelo WhatsApp para combinar cores, tamanho e tema da peça." }
+    },
+    {
+      "@type": "Question",
+      "name": "Como faço um pedido no Ateliê da Verushka?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Escolha a peça no catálogo, adicione ao carrinho e finalize o pedido pelo WhatsApp para confirmar detalhes, valor e prazo de entrega." }
+    }
+  ]
+}
+</script>
+<script type="application/ld+json" id="atelie-itemlist-schema"></script>
 
 <style>
   :root {
@@ -61,6 +85,21 @@
     font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   }
   h1,h2,h3 { font-family: Georgia, 'Times New Roman', serif; margin: 0; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+  .seo-content {
+    max-width: 900px; margin: 46px auto 0; padding: 0 28px;
+    color: var(--brown-dark); font-size: 13.5px; line-height: 1.7;
+  }
+  .seo-content h2 { font-size: 18px; color: var(--brown-dark); margin-bottom: 10px; }
+  .seo-content p { margin: 0 0 14px; }
+  .faq-section { max-width: 900px; margin: 34px auto 50px; padding: 0 28px; }
+  .faq-section h2 { font-size: 18px; color: var(--brown-dark); margin-bottom: 14px; }
+  .faq-item { margin-bottom: 16px; }
+  .faq-item h3 { font-size: 14px; color: var(--red-turco); margin-bottom: 4px; }
+  .faq-item p { font-size: 13px; color: var(--brown-dark); margin: 0; line-height: 1.6; }
   a { text-decoration: none; color: inherit; }
   img { display: block; max-width: 100%; }
   button { font-family: inherit; cursor: pointer; }
@@ -297,6 +336,7 @@
   </div>
 </header>
 
+<h1 class="sr-only">Ateliê da Verushka — Peças Artesanais em Hama Beads | Fazendinha Turca, Araruama-RJ</h1>
 <div class="hero-banner-wrap">
   <img class="full-banner" src="images/atelie/topo-lojinha.png" alt="Ateliê da Verushka - Peças artesanais feitas com Hama Beads" width="1024" height="348">
 </div>
@@ -319,6 +359,28 @@
 
 <section class="amor-banner-section">
   <img class="full-banner" src="images/atelie/feito-a-mao.png" alt="Feito à mão com amor - cada peça é criada pela Verushka com dedicação e atenção aos detalhes" width="1024" height="168">
+</section>
+
+<section class="seo-content">
+  <h2>Peças artesanais em Hama Beads feitas à mão em Araruama-RJ</h2>
+  <p>O Ateliê da Verushka é a linha de artesanato da Fazendinha Turca: porta-copos, quadros, chaveiros e peças de decoração montados manualmente com Hama Beads, inspirados na Vila da Fazendinha e na cultura turca. Cada coleção — Decoração, Quadros, Presentes, Coleção Turca, Personalizados e mais — reúne peças únicas para sala, quarto, cozinha ou escritório.</p>
+  <p>As peças são feitas sob encomenda, com prazo de entrega de 3 a 10 dias conforme o item escolhido. O pedido é fechado direto pelo WhatsApp, com atendimento personalizado para presentes e encomendas especiais.</p>
+</section>
+
+<section class="faq-section">
+  <h2>Perguntas frequentes sobre o Ateliê</h2>
+  <div class="faq-item">
+    <h3>Qual é o prazo de entrega das peças do ateliê?</h3>
+    <p>As peças são feitas sob encomenda, com prazo de 3 a 10 dias, variando conforme a complexidade do item escolhido.</p>
+  </div>
+  <div class="faq-item">
+    <h3>Dá para personalizar uma peça em Hama Beads?</h3>
+    <p>Sim, a coleção Personalizados foi criada justamente para isso. Fale pelo WhatsApp para combinar cores, tamanho e tema da peça.</p>
+  </div>
+  <div class="faq-item">
+    <h3>Como faço um pedido no Ateliê da Verushka?</h3>
+    <p>Escolha a peça no catálogo, adicione ao carrinho e finalize o pedido pelo WhatsApp para confirmar detalhes, valor e prazo de entrega.</p>
+  </div>
 </section>
 
 <section class="produtos-section" id="produtos">
@@ -511,10 +573,54 @@ async function carregarDados() {
 
     renderFiltros();
     renderProdutos();
+    atualizarSchemaProdutos();
   } catch (e) {
     console.error(e);
     container.innerHTML = '<div class="estado-msg">Não foi possível carregar as peças do ateliê no momento. Tente novamente em instantes.</div>';
   }
+}
+
+/* Gera o JSON-LD (ItemList de Products) a partir das peças reais cadastradas
+   no painel, mantendo o schema.org sempre sincronizado com o que é exibido. */
+function atualizarSchemaProdutos() {
+  const el = document.getElementById('atelie-itemlist-schema');
+  if (!el || !produtos.length) return;
+
+  const baseUrl = 'https://www.fazendinhaturca.com.br/';
+  const itemListElement = produtos.map((p, i) => {
+    const fotos = fotosDoProduto(p);
+    return {
+      "@type": "ListItem",
+      "position": i + 1,
+      "item": {
+        "@type": "Product",
+        "name": p.nome,
+        "description": p.descricao_curta || p.descricao || `${p.nome}, peça artesanal em Hama Beads do Ateliê da Verushka.`,
+        "image": fotos[0] ? (fotos[0].startsWith('http') ? fotos[0] : baseUrl + fotos[0].replace(/^\//, '')) : baseUrl + 'images/atelie/topo-lojinha.png',
+        "category": p.categorias?.nome || undefined,
+        "brand": { "@type": "Brand", "name": "Ateliê da Verushka" },
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "BRL",
+          "price": Number(p.preco || 0).toFixed(2),
+          "availability": "https://schema.org/InStock",
+          "areaServed": "Araruama, RJ",
+          "url": baseUrl + 'atelie.html'
+        }
+      }
+    };
+  });
+
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "@id": baseUrl + "atelie.html#itens",
+    "name": "Peças do Ateliê da Verushka",
+    "numberOfItems": itemListElement.length,
+    "itemListElement": itemListElement
+  };
+
+  el.textContent = JSON.stringify(schema);
 }
 
 /* ===================== RENDER FILTROS DE CATEGORIA ===================== */

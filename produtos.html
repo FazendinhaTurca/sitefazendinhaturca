@@ -231,6 +231,44 @@
   }
   .busca-wrap input:focus { border-color: var(--green-light); }
 
+  /* CONTEÚDO SEO (texto estático, sempre presente no HTML) */
+  .seo-content {
+    max-width: 900px;
+    margin: 56px auto 0;
+    padding: 0 16px;
+    color: #4B4432;
+    font-size: 13.5px;
+    line-height: 1.7;
+  }
+  .seo-content h2 {
+    font-size: 18px;
+    color: var(--green-dark);
+    margin-bottom: 10px;
+  }
+  .seo-content p { margin: 0 0 14px; }
+  .faq-section {
+    max-width: 900px;
+    margin: 40px auto 60px;
+    padding: 0 16px;
+  }
+  .faq-section h2 {
+    font-size: 18px;
+    color: var(--green-dark);
+    margin-bottom: 14px;
+  }
+  .faq-item { margin-bottom: 16px; }
+  .faq-item h3 {
+    font-size: 14px;
+    color: var(--brown-dark);
+    margin-bottom: 4px;
+  }
+  .faq-item p {
+    font-size: 13px;
+    color: #4B4432;
+    margin: 0;
+    line-height: 1.6;
+  }
+
   /* GRID DE PRODUTOS */
   .produtos-grid {
     max-width: 1100px;
@@ -732,123 +770,35 @@
       ]
     },
     {
-      "@type": "ItemList",
-      "@id": "https://www.fazendinhaturca.com.br/produtos.html#itens",
-      "name": "Frutas, Legumes e Verduras da Fazendinha Turca",
-      "itemListElement": [
+      "@type": "FAQPage",
+      "@id": "https://www.fazendinhaturca.com.br/produtos.html#faq",
+      "mainEntity": [
         {
-          "@type": "ListItem",
-          "position": 1,
-          "item": {
-            "@type": "Product",
-            "name": "Mini Melancia Amarela",
-            "description": "Mini melancia de polpa amarela e doce, ideal para o consumo individual. Entrega no Centro de Araruama-RJ.",
-            "image": "https://www.fazendinhaturca.com.br/images/produtos/mini-melancia-amarela.webp",
-            "brand": { "@type": "Brand", "name": "Fazendinha Turca" },
-            "offers": {
-              "@type": "Offer",
-              "priceCurrency": "BRL",
-              "price": "15.00",
-              "availability": "https://schema.org/InStock",
-              "areaServed": "Araruama, RJ"
-            }
-          }
+          "@type": "Question",
+          "name": "Qual é a área de entrega da Fazendinha Turca?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Entregamos no Centro de Araruama-RJ e região próxima. Confira a área exata de entrega diretamente pelo WhatsApp antes de fechar o pedido." }
         },
         {
-          "@type": "ListItem",
-          "position": 2,
-          "item": {
-            "@type": "Product",
-            "name": "Mini Melancia Vermelha",
-            "description": "Mini melancia de polpa vermelha, doce e refrescante, tamanho individual. Entrega no Centro de Araruama-RJ.",
-            "image": "https://www.fazendinhaturca.com.br/images/produtos/mini-melancia-vermelha.webp",
-            "brand": { "@type": "Brand", "name": "Fazendinha Turca" },
-            "offers": {
-              "@type": "Offer",
-              "priceCurrency": "BRL",
-              "price": "15.00",
-              "availability": "https://schema.org/InStock",
-              "areaServed": "Araruama, RJ"
-            }
-          }
+          "@type": "Question",
+          "name": "Como faço um pedido no catálogo online?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Basta escolher os produtos no catálogo, adicionar ao carrinho e finalizar o pedido pelo WhatsApp. Nossa equipe confirma disponibilidade, valor da entrega e horário." }
         },
         {
-          "@type": "ListItem",
-          "position": 3,
-          "item": {
-            "@type": "Product",
-            "name": "Manga",
-            "description": "Manga fresca da estação, colhida no ponto ideal de maturação. Entrega no Centro de Araruama-RJ.",
-            "image": "https://www.fazendinhaturca.com.br/images/produtos/manga.webp",
-            "brand": { "@type": "Brand", "name": "Fazendinha Turca" },
-            "offers": {
-              "@type": "Offer",
-              "priceCurrency": "BRL",
-              "price": "10.00",
-              "availability": "https://schema.org/InStock",
-              "areaServed": "Araruama, RJ"
-            }
-          }
+          "@type": "Question",
+          "name": "Os produtos são da estação e colhidos na região de Araruama?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Sim. Trabalhamos com frutas, legumes e verduras frescos, priorizando produtos da estação e de produtores da região dos Lagos, no Rio de Janeiro." }
         },
         {
-          "@type": "ListItem",
-          "position": 4,
-          "item": {
-            "@type": "Product",
-            "name": "Morango",
-            "description": "Morangos frescos e selecionados da estação. Entrega no Centro de Araruama-RJ.",
-            "image": "https://www.fazendinhaturca.com.br/images/produtos/morango.webp",
-            "brand": { "@type": "Brand", "name": "Fazendinha Turca" },
-            "offers": {
-              "@type": "Offer",
-              "priceCurrency": "BRL",
-              "price": "15.00",
-              "availability": "https://schema.org/InStock",
-              "areaServed": "Araruama, RJ"
-            }
-          }
-        },
-        {
-          "@type": "ListItem",
-          "position": 5,
-          "item": {
-            "@type": "Product",
-            "name": "Mel",
-            "description": "Mel natural, sem aditivos, direto da produção local. Entrega no Centro de Araruama-RJ.",
-            "image": "https://www.fazendinhaturca.com.br/images/produtos/mel.webp",
-            "brand": { "@type": "Brand", "name": "Fazendinha Turca" },
-            "offers": {
-              "@type": "Offer",
-              "priceCurrency": "BRL",
-              "price": "30.00",
-              "availability": "https://schema.org/InStock",
-              "areaServed": "Araruama, RJ"
-            }
-          }
-        },
-        {
-          "@type": "ListItem",
-          "position": 6,
-          "item": {
-            "@type": "Product",
-            "name": "Ovos",
-            "description": "Ovos frescos, vendidos em dúzia. Entrega no Centro de Araruama-RJ.",
-            "image": "https://www.fazendinhaturca.com.br/images/produtos/ovos.webp",
-            "brand": { "@type": "Brand", "name": "Fazendinha Turca" },
-            "offers": {
-              "@type": "Offer",
-              "priceCurrency": "BRL",
-              "price": "15.00",
-              "availability": "https://schema.org/InStock",
-              "areaServed": "Araruama, RJ"
-            }
-          }
+          "@type": "Question",
+          "name": "Quais formas de pagamento são aceitas?",
+          "acceptedAnswer": { "@type": "Answer", "text": "As formas de pagamento são combinadas diretamente no WhatsApp no momento da confirmação do pedido." }
         }
       ]
     }
   ]
 }
 </script>
+<script type="application/ld+json" id="produtos-itemlist-schema"></script>
 </head>
 <body>
 
@@ -889,6 +839,32 @@
 </div>
 
 <div id="catalogo-container"></div>
+
+<section class="seo-content">
+  <h2>Frutas, legumes e verduras frescas com entrega em Araruama-RJ</h2>
+  <p>A Fazendinha Turca leva até você frutas da estação, legumes e verduras frescas, com prioridade para produtos colhidos na região dos Lagos, no Rio de Janeiro. O catálogo é atualizado com frequência conforme a safra e a disponibilidade da fazenda, então sempre vale a pena voltar para conferir novidades como mini melancia, manga, morango, mel natural, ovos caipiras, mandioca e outros itens da horta.</p>
+  <p>Todo pedido feito pelo catálogo é confirmado diretamente pelo WhatsApp, onde a equipe informa disponibilidade, valor da entrega e prazo para o Centro de Araruama-RJ e região próxima. É a forma mais simples de comprar direto da fazenda sem sair de casa.</p>
+</section>
+
+<section class="faq-section">
+  <h2>Perguntas frequentes sobre o catálogo</h2>
+  <div class="faq-item">
+    <h3>Qual é a área de entrega da Fazendinha Turca?</h3>
+    <p>Entregamos no Centro de Araruama-RJ e região próxima. Confira a área exata de entrega diretamente pelo WhatsApp antes de fechar o pedido.</p>
+  </div>
+  <div class="faq-item">
+    <h3>Como faço um pedido no catálogo online?</h3>
+    <p>Basta escolher os produtos no catálogo, adicionar ao carrinho e finalizar o pedido pelo WhatsApp. Nossa equipe confirma disponibilidade, valor da entrega e horário.</p>
+  </div>
+  <div class="faq-item">
+    <h3>Os produtos são da estação e colhidos na região de Araruama?</h3>
+    <p>Sim. Trabalhamos com frutas, legumes e verduras frescos, priorizando produtos da estação e de produtores da região dos Lagos, no Rio de Janeiro.</p>
+  </div>
+  <div class="faq-item">
+    <h3>Quais formas de pagamento são aceitas?</h3>
+    <p>As formas de pagamento são combinadas diretamente no WhatsApp no momento da confirmação do pedido.</p>
+  </div>
+</section>
 
 <button class="cart-float" id="cart-float">
   &#128722; Ver carrinho <span id="cart-float-count"></span>
@@ -1085,6 +1061,48 @@ async function carregarProdutosMercadinho() {
 
   montarFiltrosCategorias();
   renderCatalogo();
+  atualizarSchemaProdutos();
+}
+
+/* Gera o JSON-LD (ItemList de Products) a partir dos produtos reais carregados
+   do painel administrativo, mantendo os dados estruturados sempre sincronizados
+   com o catálogo exibido — evita divergência entre schema.org e conteúdo real. */
+function atualizarSchemaProdutos() {
+  const el = document.getElementById('produtos-itemlist-schema');
+  if (!el || !PRODUTOS.length) return;
+
+  const baseUrl = 'https://www.fazendinhaturca.com.br/';
+  const itemListElement = PRODUTOS.map((p, i) => ({
+    "@type": "ListItem",
+    "position": i + 1,
+    "item": {
+      "@type": "Product",
+      "name": p.nome,
+      "description": p.qtd || `${p.nome} fresco, disponível no catálogo da Fazendinha Turca com entrega em Araruama-RJ.`,
+      "image": p.img ? (p.img.startsWith('http') ? p.img : baseUrl + p.img.replace(/^\//, '')) : baseUrl + 'images/hero-frutas.webp',
+      "category": p.cat || undefined,
+      "brand": { "@type": "Brand", "name": "Fazendinha Turca" },
+      "offers": {
+        "@type": "Offer",
+        "priceCurrency": "BRL",
+        "price": Number(p.preco || 0).toFixed(2),
+        "availability": "https://schema.org/InStock",
+        "areaServed": "Araruama, RJ",
+        "url": baseUrl + 'produtos.html'
+      }
+    }
+  }));
+
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "@id": baseUrl + "produtos.html#itens",
+    "name": "Frutas, Legumes e Verduras da Fazendinha Turca",
+    "numberOfItems": itemListElement.length,
+    "itemListElement": itemListElement
+  };
+
+  el.textContent = JSON.stringify(schema);
 }
 
 /* Recria os botões de filtro de categoria a partir das categorias cadastradas no painel,
