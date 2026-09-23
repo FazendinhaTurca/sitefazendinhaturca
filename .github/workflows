@@ -6,10 +6,11 @@ on:
     # Evita loop: ignora pushes que só alteraram o próprio sitemap.xml
     paths-ignore:
       - 'sitemap.xml'
+      - 'produtos/**'
+      - 'atelie/**'
   schedule:
-    # Todo dia às 06:00 UTC (03:00 em Brasília), para capturar artigos
-    # de blog publicados pelo painel administrativo sem precisar de push.
-    - cron: '0 6 * * *'
+    # Sincroniza produtos do Supabase e recria as páginas estáticas a cada 15 minutos.
+    - cron: '*/15 * * * *'
   workflow_dispatch: {}
 
 permissions:
@@ -29,17 +30,17 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Gerar sitemap.xml
-        run: node scripts/generate-sitemap.js
+      - name: Gerar páginas estáticas dos produtos e sitemap.xml
+        run: node scripts/generate-product-pages.js
 
       - name: Commitar sitemap.xml (somente se houver alteração)
         run: |
-          if git diff --quiet -- sitemap.xml; then
+          if git diff --quiet -- sitemap.xml produtos atelie; then
             echo "Nenhuma alteração no sitemap.xml."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add sitemap.xml
+          git add sitemap.xml produtos atelie
           git commit -m "chore: atualizar sitemap.xml automaticamente"
           git push
