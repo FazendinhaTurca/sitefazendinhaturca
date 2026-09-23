@@ -120,17 +120,134 @@ function clearGenerated(dir) {
   }
 }
 
-function template(p, project, category) {
+const ATELIE_AREA = [
+  'Brasil',
+  'Araruama, RJ',
+  'Rio de Janeiro',
+  'Santa Catarina',
+  'Florianópolis, SC',
+  'Minas Gerais',
+  'Amazonas',
+  'Pará'
+];
+
+const ATELIE_BANNERS = [
+  'topo-lojinha',
+  'menu-colecoes',
+  'colecao-destaque-vila',
+  'feito-a-mao',
+  'rodape-vila'
+].map(n => `${SITE_URL}/images/atelie/${n}.webp`);
+
+function cut(text, max) {
+  const t = String(text).replace(/\s+/g, ' ').trim();
+  if (t.length <= max) return t;
+  const c = t.slice(0, max - 1);
+  return c.slice(0, c.lastIndexOf(' ') > 40 ? c.lastIndexOf(' ') : c.length)
+    .replace(/[\s,.;:-]+$/, '') + '…';
+}
+
+// SEO do Ateliê: usa o que foi digitado no painel só quando é bom o bastante
+// (título >= 30 e descrição >= 80 caracteres); senão gera automaticamente.
+function atelieTitle(p) {
+  const custom = String(p.seo_title || '').trim();
+  if (custom.length >= 30) return custom;
+  const candidates = [
+    `${p.nome} | Hama Beads – Ateliê da Verushka`,
+    `${p.nome} | Ateliê da Verushka`,
+    p.nome
+  ];
+  return candidates.find(t => t.length <= 65) || p.nome;
+}
+
+function atelieDescription(p) {
+  const custom = stripHtml(p.seo_description || '');
+  if (custom.length >= 80) return cut(custom, 158);
+  const short = stripHtml(p.descricao_curta || '').replace(/[.\s]+$/, '');
+  const jaCitaHama = /hama|hamma/i.test(short);
+  const tail = `${jaCitaHama ? ' Feito' : ' Hama Beads feito'} à mão em Araruama-RJ, sob encomenda em 3 a 10 dias. Envio para todo o Brasil.`;
+  const full = `${p.nome}${short ? ` – ${short}.` : '.'}${tail}`;
+  return full.length <= 158
+    ? full
+    : cut(`${p.nome}. Hama Beads feito à mão em Araruama-RJ, sob encomenda em 3 a 10 dias. Envio para todo o Brasil.`, 158);
+}
+
+function atelieAlt(p) {
+  const custom = String(p.alt_text || '').trim();
+  return custom.length >= 15
+    ? custom
+    : `${p.nome} em Hama Beads – artesanato do Ateliê da Verushka`;
+}
+
+const ATELIE_CSS = `    .faq,.related{
+      max-width:900px;
+      margin:28px auto 0;
+      background:#fff;
+      padding:28px;
+      border-radius:14px
+    }
+
+    .faq h2,.related h2{
+      color:var(--green);
+      margin-top:0
+    }
+
+    .faq h3{
+      font-size:1.05rem;
+      margin:18px 0 4px;
+      color:var(--green2)
+    }
+
+    .faq p{
+      margin:0
+    }
+
+    .related-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+      gap:16px
+    }
+
+    .related-grid a{
+      color:var(--brown);
+      text-decoration:none;
+      display:block
+    }
+
+    .related-grid img{
+      width:100%;
+      aspect-ratio:1/1;
+      object-fit:cover;
+      border-radius:10px;
+      border:1px solid #eadfce
+    }
+
+    .related-grid span{
+      display:block;
+      font-weight:700;
+      margin-top:6px;
+      font-size:.95rem
+    }
+
+    .related-grid strong{
+      color:var(--red)
+    }
+
+`;
+
+function template(p, project, category, siblings = []) {
   const isAtelie = project.slug === 'atelier-verushka';
 
   const canonical = productUrl(project.slug, p.slug);
 
-  const title =
-    p.seo_title ||
+  const title = isAtelie
+    ? atelieTitle(p)
+    : p.seo_title ||
     `${p.nome} | ${project.nome_publico || 'Fazendinha Turca'}`;
 
-  const description =
-    p.seo_description ||
+  const description = isAtelie
+    ? atelieDescription(p)
+    : p.seo_description ||
     stripHtml(
       p.descricao_curta ||
       p.descricao ||
@@ -139,7 +256,7 @@ function template(p, project, category) {
       }.`
     );
 
-  const alt = p.alt_text || p.nome;
+  const alt = isAtelie ? atelieAlt(p) : p.alt_text || p.nome;
 
   const mainImage = absoluteUrl(p.imagem_principal_url);
 
@@ -187,11 +304,18 @@ function template(p, project, category) {
     name: p.nome,
     description,
     image: images,
+    ...(isAtelie ? { url: canonical, mainEntityOfPage: canonical } : {}),
     sku: p.id,
     brand: {
       '@type': 'Brand',
       name: brand
     },
+    ...(isAtelie
+      ? {
+          material: 'Hama Beads',
+          manufacturer: { '@id': `${SITE_URL}/atelie.html#atelie` }
+        }
+      : {}),
     ...(categoryName
       ? { category: categoryName }
       : {}),
@@ -201,13 +325,123 @@ function template(p, project, category) {
       priceCurrency: 'BRL',
       price: Number(p.preco || 0).toFixed(2),
       availability: 'https://schema.org/InStock',
-      seller: {
-        '@type': 'Organization',
-        name: brand,
-        url: SITE_URL
-      }
+      ...(isAtelie
+        ? {
+            itemCondition: 'https://schema.org/NewCondition',
+            areaServed: ATELIE_AREA
+          }
+        : {}),
+      seller: isAtelie
+        ? { '@id': `${SITE_URL}/atelie.html#atelie` }
+        : {
+            '@type': 'Organization',
+            name: brand,
+            url: SITE_URL
+          }
     }
   };
+
+  const heroAttrs = isAtelie
+    ? ' fetchpriority="high" decoding="async"'
+    : '';
+
+  const robots = isAtelie
+    ? 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+    : 'index,follow';
+
+  const extraHead = isAtelie
+    ? `
+
+  <link rel="alternate" hreflang="pt-BR" href="${esc(canonical)}">
+  <link rel="alternate" hreflang="x-default" href="${esc(canonical)}">
+  <link rel="preload" as="image" href="${esc(mainImage)}" fetchpriority="high">
+  <meta name="geo.region" content="BR-RJ">
+  <meta name="geo.placename" content="Araruama">
+  <meta name="geo.position" content="-22.8728;-42.3436">
+  <meta name="ICBM" content="-22.8728, -42.3436">
+  <meta name="theme-color" content="#244b2f">`
+    : '';
+
+  const extraOg = isAtelie
+    ? `
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:image:alt" content="${esc(alt)}">
+  <meta property="product:price:amount" content="${Number(p.preco || 0).toFixed(2)}">
+  <meta property="product:price:currency" content="BRL">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${esc(title)}">
+  <meta name="twitter:description" content="${esc(description)}">
+  <meta name="twitter:image" content="${esc(mainImage)}">
+  <meta name="twitter:image:alt" content="${esc(alt)}">`
+    : '';
+
+  const extraCss = isAtelie ? ATELIE_CSS : '';
+
+  const seoCopyHtml = isAtelie
+    ? `<h2>Sobre ${esc(p.nome)}</h2>
+
+    <p>${esc(p.nome)} é uma peça artesanal em Hama Beads${
+        categoryName ? `, da categoria ${esc(categoryName)}` : ''
+      }, feita à mão pelo Ateliê da Verushka em Araruama-RJ, na Região dos Lagos do Rio de Janeiro.</p>
+
+    <p>Cada peça é montada conta por conta e produzida sob encomenda, com prazo de entrega de 3 a 10 dias. O pedido é fechado pelo WhatsApp, onde também dá para combinar cores, tamanho e personalização.</p>
+
+    <p>Enviamos para todo o Brasil, incluindo Florianópolis e Santa Catarina, Minas Gerais, Amazonas e Pará. Informe o seu CEP e combine o frete pelo WhatsApp.</p>`
+    : `<h2>Sobre ${esc(p.nome)}</h2>
+
+    <p>${esc(description)}</p>`;
+
+  const faqHtml = isAtelie
+    ? `
+
+  <section class="faq">
+
+    <h2>Perguntas frequentes</h2>
+
+    <h3>Qual é o prazo de entrega de ${esc(p.nome)}?</h3>
+    <p>As peças são feitas sob encomenda, com prazo de 3 a 10 dias, variando conforme o item.</p>
+
+    <h3>O Ateliê da Verushka envia para outros estados?</h3>
+    <p>Sim. Enviamos para todo o Brasil, incluindo Santa Catarina (Florianópolis), Minas Gerais, Amazonas e Pará. O frete é combinado pelo WhatsApp.</p>
+
+    <h3>Dá para personalizar cores ou tamanho?</h3>
+    <p>Sim. Fale com a gente pelo WhatsApp para combinar cores, tamanho e tema da peça.</p>
+
+  </section>`
+    : '';
+
+  const related = isAtelie
+    ? siblings
+        .filter(x => x.id !== p.id)
+        .sort(
+          (a, b) =>
+            (b.categoria_id === p.categoria_id) -
+            (a.categoria_id === p.categoria_id)
+        )
+        .slice(0, 4)
+    : [];
+
+  const relatedHtml = related.length
+    ? `
+
+  <section class="related">
+
+    <h2>Outras peças do Ateliê da Verushka</h2>
+
+    <div class="related-grid">
+      ${related
+        .map(
+          x => `<a href="${esc(x.url)}">
+        <img src="${esc(x.img)}" alt="${esc(x.alt)}" width="300" height="300" loading="lazy" decoding="async">
+        <span>${esc(x.nome)}</span>
+        <strong>${money(x.preco)}</strong>
+      </a>`
+        )
+        .join('\n      ')}
+    </div>
+
+  </section>`
+    : '';
 
   const breadcrumb = {
     '@context': 'https://schema.org',
@@ -242,15 +476,15 @@ function template(p, project, category) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${esc(title)}</title>
   <meta name="description" content="${esc(description)}">
-  <meta name="robots" content="index,follow">
-  <link rel="canonical" href="${esc(canonical)}">
+  <meta name="robots" content="${robots}">
+  <link rel="canonical" href="${esc(canonical)}">${extraHead}
 
   <meta property="og:type" content="product">
   <meta property="og:title" content="${esc(title)}">
   <meta property="og:description" content="${esc(description)}">
   <meta property="og:url" content="${esc(canonical)}">
   <meta property="og:image" content="${esc(mainImage)}">
-  <meta property="og:site_name" content="Fazendinha Turca">
+  <meta property="og:site_name" content="Fazendinha Turca">${extraOg}
 
   <style>
     :root{
@@ -407,7 +641,7 @@ function template(p, project, category) {
       color:var(--green)
     }
 
-    footer{
+${extraCss}    footer{
       padding:25px 22px;
       text-align:center;
       color:#765f4d;
@@ -473,7 +707,7 @@ function template(p, project, category) {
         src="${esc(mainImage)}"
         alt="${esc(alt)}"
         width="900"
-        height="900"
+        height="900"${heroAttrs}
       >
 
       ${
@@ -540,11 +774,9 @@ function template(p, project, category) {
 
   <section class="seo-copy">
 
-    <h2>Sobre ${esc(p.nome)}</h2>
+    ${seoCopyHtml}
 
-    <p>${esc(description)}</p>
-
-  </section>
+  </section>${faqHtml}${relatedHtml}
 
 </main>
 
@@ -584,6 +816,25 @@ async function main() {
     clearGenerated(dir);
   }
 
+  const atelieProjectId = projects.find(
+    pr => pr.slug === 'atelier-verushka'
+  )?.id;
+
+  const atelieSiblings = products
+    .filter(x => x.projeto_id === atelieProjectId && x.slug)
+    .map(x => {
+      const sl = safeSlug(x.slug);
+      return {
+        id: x.id,
+        categoria_id: x.categoria_id,
+        nome: x.nome,
+        preco: x.preco,
+        url: productUrl('atelier-verushka', sl),
+        img: absoluteUrl(x.imagem_principal_url),
+        alt: `${x.nome} em Hama Beads`
+      };
+    });
+
   const sitemap = new Map();
 
   const today = new Date()
@@ -605,7 +856,8 @@ async function main() {
   sitemap.set(`${SITE_URL}/atelie.html`, {
     lastmod: today,
     priority: '0.9',
-    changefreq: 'weekly'
+    changefreq: 'weekly',
+    images: ATELIE_BANNERS
   });
 
   sitemap.set(`${SITE_URL}/blog.html`, {
@@ -663,7 +915,8 @@ async function main() {
           slug
         },
         project,
-        category
+        category,
+        atelieSiblings
       ),
       'utf8'
     );
@@ -678,7 +931,19 @@ async function main() {
         ? String(p.atualizado_em).slice(0, 10)
         : today,
       priority: '0.8',
-      changefreq: 'weekly'
+      changefreq: 'weekly',
+      ...(project.slug === 'atelier-verushka'
+        ? {
+            images: [
+              ...new Set([
+                absoluteUrl(p.imagem_principal_url),
+                ...(Array.isArray(p.galeria)
+                  ? p.galeria.filter(Boolean).map(absoluteUrl)
+                  : [])
+              ])
+            ]
+          }
+        : {})
     });
 
     generated++;
@@ -686,7 +951,7 @@ async function main() {
 
   const xml = [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/image-sitemap/1.1">'
   ];
 
   for (const [url, meta] of sitemap) {
@@ -695,6 +960,13 @@ async function main() {
     xml.push(`    <lastmod>${esc(meta.lastmod)}</lastmod>`);
     xml.push(`    <changefreq>${meta.changefreq}</changefreq>`);
     xml.push(`    <priority>${meta.priority}</priority>`);
+
+    for (const img of meta.images || []) {
+      xml.push('    <image:image>');
+      xml.push(`      <image:loc>${esc(img)}</image:loc>`);
+      xml.push('    </image:image>');
+    }
+
     xml.push('  </url>');
   }
 
