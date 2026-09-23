@@ -45,6 +45,7 @@
   .tab-btn:hover { opacity:1; background:rgba(255,255,255,0.06); }
   .tab-btn.active { opacity:1; background:rgba(255,255,255,0.1); border-left-color:var(--gold); font-weight:700; }
   .sair-btn { margin:16px 20px 0; }
+  .mobile-menu-scroll { display:block; }
   main { flex:1; padding:28px 34px; max-width:1180px; }
   .panel-view { display:none; }
   .panel-view.show { display:block; }
@@ -77,13 +78,7 @@
   .modal-actions { margin-top:20px; display:flex; gap:10px; justify-content:flex-end; }
   .img-preview { width:70px; height:70px; object-fit:cover; border-radius:8px; background:var(--cream-2); margin-top:6px; }
   .galeria-preview { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
-  .galeria-item { position:relative; width:70px; height:70px; }
-  .galeria-item img { width:70px; height:70px; object-fit:cover; border-radius:6px; display:block; }
-  .galeria-item .imagem-excluir { position:absolute; top:-7px; right:-7px; width:22px; height:22px; border:2px solid #fff; border-radius:50%; background:#b3261e; color:#fff; font-size:15px; line-height:17px; padding:0; cursor:pointer; z-index:2; box-shadow:0 1px 4px rgba(0,0,0,.25); }
-  .galeria-item .imagem-excluir:hover { background:#8f1d18; transform:scale(1.06); }
-  .imagem-principal-wrap { position:relative; display:inline-block; margin-top:6px; }
-  .imagem-principal-wrap .imagem-excluir { position:absolute; top:-7px; right:-7px; width:22px; height:22px; border:2px solid #fff; border-radius:50%; background:#b3261e; color:#fff; font-size:15px; line-height:17px; padding:0; cursor:pointer; z-index:2; box-shadow:0 1px 4px rgba(0,0,0,.25); }
-  .imagem-principal-wrap .imagem-excluir:hover { background:#8f1d18; transform:scale(1.06); }
+  .galeria-preview img { width:54px; height:54px; object-fit:cover; border-radius:6px; }
 
   /* editor rich text */
   .rte-toolbar { display:flex; gap:4px; flex-wrap:wrap; background:var(--paper); border:1px solid rgba(122,82,48,0.35); border-bottom:none; border-radius:6px 6px 0 0; padding:6px; }
@@ -98,11 +93,136 @@
   .empty-hint { color:var(--brown); font-style:italic; font-size:0.85rem; padding:20px 0; }
   .sitemap-actions { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
   .toggle-status { cursor:pointer; }
+  /* ===== RESPONSIVO MOBILE ===== */
   @media (max-width: 860px) {
     #app-shell.show { flex-direction:column; }
-    aside { width:100%; height:auto; position:relative; padding:14px 0; }
-    main { padding:20px; }
+
+    /* No celular o menu lateral vira uma barra superior */
+    aside {
+      width:100%;
+      height:auto;
+      position:sticky;
+      top:0;
+      z-index:70;
+      padding:0;
+      overflow:visible;
+      box-shadow:0 2px 10px rgba(30,20,10,.16);
+    }
+    aside .brand {
+      padding:12px 16px 9px;
+      margin:0;
+      border-bottom:1px solid rgba(255,255,255,.12);
+      font-size:1rem;
+    }
+    aside .brand small { font-size:.64rem; }
+    .mobile-menu-scroll {
+      display:flex;
+      align-items:stretch;
+      overflow-x:auto;
+      overflow-y:hidden;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
+      white-space:nowrap;
+      border-bottom:1px solid rgba(255,255,255,.10);
+    }
+    .mobile-menu-scroll::-webkit-scrollbar { display:none; }
+
+    /* Navegação horizontal: não comprime os botões e permite deslizar com o dedo */
+    aside .tab-btn {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:auto;
+      min-height:44px;
+      padding:9px 14px;
+      border-left:0;
+      border-bottom:3px solid transparent;
+      white-space:nowrap;
+      font-size:.78rem;
+      flex:0 0 auto;
+    }
+    aside .tab-btn.active {
+      border-left:0;
+      border-bottom-color:var(--gold);
+    }
+    aside .tab-btn:hover { background:rgba(255,255,255,.06); }
+
+    /* A lista de opções ocupa uma única linha e rola horizontalmente */
+    aside .tab-btn:first-of-type { margin-left:2px; }
+    aside .sair-btn {
+      align-self:flex-start;
+      margin:5px 12px 9px;
+      padding:6px 12px;
+    }
+
+    /* Os botões do menu são transformados em uma faixa rolável */
+    aside .tab-btn {
+      /* Cada botão continua no fluxo; o container é criado pelo próprio aside via flex-wrap controlado abaixo. */
+    }
+    main {
+      width:100%;
+      max-width:none;
+      padding:18px 14px 28px;
+    }
     .grid-2 { grid-template-columns:1fr; }
+    .view-header { align-items:flex-start; }
+    .view-header h2 { font-size:1.35rem; }
+    .cards-row { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .kpi-card { padding:13px 12px; }
+    .kpi-card .num { font-size:1.4rem; }
+
+    /* Tabelas podem ser largas: preserva as colunas e deixa o usuário deslizar */
+    table { display:block; overflow-x:auto; white-space:nowrap; -webkit-overflow-scrolling:touch; }
+
+    .modal-overlay { padding:12px 8px; }
+    .modal-box { padding:20px 16px 24px; border-radius:10px; }
+    .modal-actions { flex-direction:column-reverse; }
+    .modal-actions .btn { width:100%; min-height:44px; }
+
+    input, select, textarea { min-height:42px; font-size:16px; }
+    .btn { min-height:42px; }
+    .row-actions { gap:8px; }
+    .row-actions .btn { min-height:40px; }
+    .order-toolbar { padding:12px; }
+    .order-toolbar .field { min-width:100%; }
+    .order-grid { grid-template-columns:1fr; }
+  }
+
+  @media (max-width: 860px) {
+    /* Coloca os botões do menu dentro de uma faixa horizontal sem alterar o HTML existente. */
+    aside {
+      padding-bottom:0;
+    }
+    aside .tab-btn {
+      margin-top:0;
+    }
+    aside .tab-btn + .tab-btn {
+      margin-left:0;
+    }
+    aside .tab-btn:last-of-type {
+      margin-right:0;
+    }
+    aside {
+      /* O conteúdo do menu permanece acessível em telas estreitas */
+    }
+  }
+
+  @media (max-width: 480px) {
+    aside .brand {
+      padding:10px 14px 8px;
+    }
+    aside .tab-btn {
+      min-height:42px;
+      padding:8px 12px;
+      font-size:.75rem;
+    }
+    main { padding:15px 10px 24px; }
+    .cards-row { grid-template-columns:1fr 1fr; gap:8px; }
+    .kpi-card .lbl { font-size:.68rem; }
+    .view-header { gap:8px; }
+    .view-header .btn { width:100%; }
+    .sitemap-actions { flex-direction:column; }
+    .sitemap-actions .btn { width:100%; }
   }
 .categorias-box{background:#fff; border-radius:10px; padding:14px 16px; box-shadow:0 2px 8px rgba(78,52,32,0.08); margin-bottom:18px;}
 .categorias-chips{display:flex; flex-wrap:wrap; gap:8px;}
@@ -150,6 +270,7 @@
 <div id="app-shell">
   <aside>
     <div class="brand">Fazendinha Turca<small>Painel Central</small></div>
+    <nav class="mobile-menu-scroll" aria-label="Menu do painel">
     <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
     <button class="tab-btn" data-tab="mercadinho">Mercadinho</button>
     <button class="tab-btn" data-tab="pedidos-mercadinho">Pedidos · Mercadinho</button>
@@ -163,6 +284,8 @@
     <button class="tab-btn" data-tab="storage">Storage</button>
     <button class="tab-btn" data-tab="sitemap">Sitemap</button>
     <button class="tab-btn" data-tab="config">Configurações</button>
+  </aside>
+    </nav>
     <button class="btn btn-outline sair-btn btn-sm" id="btn-logout" style="color:var(--cream); border-color:rgba(255,255,255,0.4);">Sair</button>
   </aside>
 
@@ -374,10 +497,7 @@
 
       <label>Imagem principal</label>
       <input type="file" id="pr-imagem" accept="image/*">
-      <div class="imagem-principal-wrap" id="pr-imagem-wrap" style="display:none;">
-        <img class="img-preview" id="pr-imagem-preview">
-        <button type="button" class="imagem-excluir" id="pr-imagem-excluir" aria-label="Excluir imagem principal" title="Excluir imagem">&times;</button>
-      </div>
+      <img class="img-preview" id="pr-imagem-preview" style="display:none;">
 
       <label>Galeria de imagens (pode selecionar várias)</label>
       <input type="file" id="pr-galeria" accept="image/*" multiple>
@@ -746,12 +866,9 @@ async function abrirModalProduto(projetoSlug, produtoId) {
   document.getElementById('pr-id').value = produtoId || '';
   document.getElementById('pr-projeto-slug').value = projetoSlug;
   document.getElementById('pr-descricao-rte').innerHTML = '';
-  document.getElementById('pr-imagem-wrap').style.display = 'none';
-  document.getElementById('pr-imagem-preview').removeAttribute('src');
+  document.getElementById('pr-imagem-preview').style.display = 'none';
   document.getElementById('pr-galeria-preview').innerHTML = '';
   document.getElementById('pr-msg').style.display = 'none';
-  form.dataset.imagemPrincipalExcluida = 'false';
-  form.dataset.galeriaExcluidas = '[]';
   document.getElementById('btn-excluir-produto').style.display = produtoId ? 'inline-block' : 'none';
 
   // popular categorias do projeto
@@ -778,21 +895,18 @@ async function abrirModalProduto(projetoSlug, produtoId) {
       document.getElementById('pr-slug').value = p.slug || '';
       if (p.imagem_principal_url) {
         document.getElementById('pr-imagem-preview').src = p.imagem_principal_url;
-        document.getElementById('pr-imagem-wrap').style.display = 'inline-block';
+        document.getElementById('pr-imagem-preview').style.display = 'block';
       }
+      (p.galeria || []).forEach(url => {
+        document.getElementById('pr-galeria-preview').insertAdjacentHTML('beforeend', `<img src="${url}">`);
+      });
       form.dataset.imagemAtual = p.imagem_principal_url || '';
-      form.dataset.imagemOriginal = p.imagem_principal_url || '';
       form.dataset.galeriaAtual = JSON.stringify(p.galeria || []);
-      form.dataset.galeriaOriginal = JSON.stringify(p.galeria || []);
-      renderGaleriaPreview();
-      renderImagemPrincipalPreview();
     }
   } else {
     document.getElementById('produto-modal-titulo').textContent = 'Novo produto';
     form.dataset.imagemAtual = '';
-    form.dataset.imagemOriginal = '';
     form.dataset.galeriaAtual = '[]';
-    form.dataset.galeriaOriginal = '[]';
   }
   document.getElementById('modal-produto').classList.add('show');
 }
@@ -954,109 +1068,6 @@ async function enviarImagemStorage(file, pastaProjeto, subpasta) {
   return data.publicUrl;
 }
 
-function obterArquivosGaleriaSelecionados() {
-  return Array.from(document.getElementById('pr-galeria').files || []);
-}
-
-function definirArquivosGaleriaSelecionados(files) {
-  const input = document.getElementById('pr-galeria');
-  const dt = new DataTransfer();
-  files.forEach(file => dt.items.add(file));
-  input.files = dt.files;
-}
-
-function renderGaleriaPreview() {
-  const form = document.getElementById('form-produto');
-  const container = document.getElementById('pr-galeria-preview');
-  const urls = JSON.parse(form.dataset.galeriaAtual || '[]');
-  const arquivos = obterArquivosGaleriaSelecionados();
-
-  container.innerHTML = '';
-
-  urls.forEach(url => {
-    const item = document.createElement('div');
-    item.className = 'galeria-item';
-    item.innerHTML = `<img src="${url}" alt="Imagem do produto">
-      <button type="button" class="imagem-excluir" aria-label="Excluir imagem" title="Excluir imagem">&times;</button>`;
-    item.querySelector('.imagem-excluir').addEventListener('click', () => {
-      if (!confirm('Deseja excluir esta imagem?')) return;
-      const atual = JSON.parse(form.dataset.galeriaAtual || '[]');
-      form.dataset.galeriaAtual = JSON.stringify(atual.filter(x => x !== url));
-      renderGaleriaPreview();
-    });
-    container.appendChild(item);
-  });
-
-  arquivos.forEach((file, index) => {
-    const item = document.createElement('div');
-    item.className = 'galeria-item';
-    const img = document.createElement('img');
-    img.alt = file.name;
-    img.src = URL.createObjectURL(file);
-    img.onload = () => URL.revokeObjectURL(img.src);
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'imagem-excluir';
-    btn.setAttribute('aria-label', 'Remover imagem antes do envio');
-    btn.title = 'Remover imagem antes do envio';
-    btn.innerHTML = '&times;';
-    btn.addEventListener('click', () => {
-      const restantes = obterArquivosGaleriaSelecionados().filter((_, i) => i !== index);
-      definirArquivosGaleriaSelecionados(restantes);
-      renderGaleriaPreview();
-    });
-    item.append(img, btn);
-    container.appendChild(item);
-  });
-}
-
-function renderImagemPrincipalPreview() {
-  const form = document.getElementById('form-produto');
-  const wrap = document.getElementById('pr-imagem-wrap');
-  const preview = document.getElementById('pr-imagem-preview');
-  const arquivo = document.getElementById('pr-imagem').files[0];
-  const urlAtual = form.dataset.imagemAtual || '';
-
-  if (arquivo) {
-    const objectUrl = URL.createObjectURL(arquivo);
-    preview.src = objectUrl;
-    preview.onload = () => URL.revokeObjectURL(objectUrl);
-    wrap.style.display = 'inline-block';
-  } else if (urlAtual) {
-    preview.src = urlAtual;
-    wrap.style.display = 'inline-block';
-  } else {
-    preview.removeAttribute('src');
-    wrap.style.display = 'none';
-  }
-}
-
-async function removerArquivosStorage(urls) {
-  const caminhos = urls.filter(Boolean).map(url => {
-    const marker = `/storage/v1/object/public/${BUCKET}/`;
-    const pos = url.indexOf(marker);
-    return pos >= 0 ? decodeURIComponent(url.slice(pos + marker.length)) : null;
-  }).filter(Boolean);
-
-  if (!caminhos.length) return;
-  const { error } = await sb.storage.from(BUCKET).remove(caminhos);
-  if (error) throw error;
-}
-
-document.getElementById('pr-imagem').addEventListener('change', renderImagemPrincipalPreview);
-document.getElementById('pr-galeria').addEventListener('change', renderGaleriaPreview);
-
-document.getElementById('pr-imagem-excluir').addEventListener('click', () => {
-  const form = document.getElementById('form-produto');
-  const arquivo = document.getElementById('pr-imagem').files[0];
-  if (!arquivo && !(form.dataset.imagemAtual || '')) return;
-  if (!confirm('Deseja excluir esta imagem?')) return;
-
-  form.dataset.imagemAtual = '';
-  document.getElementById('pr-imagem').value = '';
-  renderImagemPrincipalPreview();
-});
-
 function slugify(nome) {
   return (nome || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -1070,7 +1081,6 @@ document.getElementById('form-produto').addEventListener('submit', async (e) => 
   const projetoSlug = document.getElementById('pr-projeto-slug').value;
   const projeto = projetosCache.find(p => p.slug === projetoSlug);
   const produtoId = document.getElementById('pr-id').value;
-  const arquivosEnviados = [];
 
   if (!projeto) {
     msg.className = 'msg-box erro';
@@ -1079,28 +1089,16 @@ document.getElementById('form-produto').addEventListener('submit', async (e) => 
   }
 
   try {
-    const imagemOriginal = form.dataset.imagemOriginal || '';
     let imagemUrl = form.dataset.imagemAtual || null;
     const arquivoImagem = document.getElementById('pr-imagem').files[0];
-
-    if (arquivoImagem) {
-      imagemUrl = await enviarImagemStorage(arquivoImagem, projetoSlug, 'produtos');
-      arquivosEnviados.push(imagemUrl);
-    }
+    if (arquivoImagem) imagemUrl = await enviarImagemStorage(arquivoImagem, projetoSlug, 'produtos');
 
     let galeria = JSON.parse(form.dataset.galeriaAtual || '[]');
-    const arquivosGaleria = obterArquivosGaleriaSelecionados();
+    const arquivosGaleria = document.getElementById('pr-galeria').files;
     for (const f of arquivosGaleria) {
       const url = await enviarImagemStorage(f, projetoSlug, 'produtos');
-      arquivosEnviados.push(url);
       galeria.push(url);
     }
-
-    const galeriaOriginal = JSON.parse(form.dataset.galeriaOriginal || '[]');
-    const imagensParaExcluir = galeriaOriginal.filter(url => !galeria.includes(url));
-
-    // Se a imagem principal foi substituída ou removida, a antiga também deve sair do Storage.
-    if (imagemOriginal && imagemOriginal !== imagemUrl) imagensParaExcluir.push(imagemOriginal);
 
     const nome = document.getElementById('pr-nome').value.trim();
     const payload = {
@@ -1131,42 +1129,14 @@ document.getElementById('form-produto').addEventListener('submit', async (e) => 
       if (error) throw error;
     }
 
-    // O banco já foi atualizado; agora remove fisicamente do Storage as imagens que
-    // deixaram de pertencer ao produto. Duplicatas são eliminadas para segurança.
-    try {
-      await removerArquivosStorage([...new Set(imagensParaExcluir)]);
-    } catch (storageError) {
-      console.warn('Produto salvo, mas algumas imagens antigas não puderam ser removidas do Storage:', storageError);
-      msg.className = 'msg-box ok';
-      msg.textContent = 'Produto salvo. Algumas imagens antigas não puderam ser removidas do Storage.';
-    }
-
-    form.dataset.imagemOriginal = imagemUrl || '';
-    form.dataset.imagemAtual = imagemUrl || '';
-    form.dataset.galeriaOriginal = JSON.stringify(galeria);
-    form.dataset.galeriaAtual = JSON.stringify(galeria);
-
-    if (!msg.classList.contains('ok')) {
-      msg.className = 'msg-box ok';
-      msg.textContent = 'Produto salvo com sucesso!';
-    }
-
+    msg.className = 'msg-box ok'; msg.textContent = 'Produto salvo com sucesso!';
     await carregarProdutosTabela(projetoSlug, projetoSlug === 'mercadinho' ? 'tabela-mercadinho' : 'tabela-atelier');
     await carregarDashboard();
     await atualizarSitemapAutomatico(false);
-    setTimeout(() => document.getElementById('modal-produto').classList.remove('show'), 900);
+    setTimeout(() => document.getElementById('modal-produto').classList.remove('show'), 700);
   } catch (err) {
     console.error(err);
-
-    // Se o salvamento falhar depois de algum upload, evita deixar arquivos órfãos.
-    if (arquivosEnviados.length) {
-      try { await removerArquivosStorage(arquivosEnviados); } catch (cleanupError) {
-        console.warn('Não foi possível limpar uploads após falha:', cleanupError);
-      }
-    }
-
-    msg.className = 'msg-box erro';
-    msg.textContent = 'Erro ao salvar: ' + (err.message || 'tente novamente.');
+    msg.className = 'msg-box erro'; msg.textContent = 'Erro ao salvar: ' + (err.message || 'tente novamente.');
   }
 });
 
@@ -1174,25 +1144,7 @@ document.getElementById('btn-excluir-produto').addEventListener('click', async (
   const produtoId = document.getElementById('pr-id').value;
   const projetoSlug = document.getElementById('pr-projeto-slug').value;
   if (!produtoId || !confirm('Excluir este produto definitivamente?')) return;
-
-  const { data: produto, error: buscaErro } = await sb.from('produtos')
-    .select('imagem_principal_url, galeria')
-    .eq('id', produtoId)
-    .single();
-  if (buscaErro) { alert('Não foi possível localizar as imagens do produto.'); return; }
-
-  const { error } = await sb.from('produtos').delete().eq('id', produtoId);
-  if (error) { alert('Erro ao excluir produto: ' + error.message); return; }
-
-  try {
-    await removerArquivosStorage([
-      produto.imagem_principal_url,
-      ...(produto.galeria || [])
-    ]);
-  } catch (storageError) {
-    console.warn('Produto excluído, mas algumas imagens não puderam ser removidas do Storage:', storageError);
-  }
-
+  await sb.from('produtos').delete().eq('id', produtoId);
   document.getElementById('modal-produto').classList.remove('show');
   carregarProdutosTabela(projetoSlug, projetoSlug === 'mercadinho' ? 'tabela-mercadinho' : 'tabela-atelier');
   carregarDashboard();
@@ -1448,22 +1400,29 @@ async function atualizarSitemapAutomatico(mostrarMsg = true) {
   if (mostrarMsg) { msg.style.display = 'block'; msg.className = 'msg-box'; msg.textContent = 'Sincronizando URLs...'; }
   try {
     const base = 'https://fazendinhaturca.com.br/';
-    const { data: produtos } = await sb.from('produtos').select('slug, projeto_id, status, atualizado_em, projetos(menu_url, status)').eq('status', 'ativo');
+    const { data: produtos } = await sb.from('produtos').select('slug, projeto_id, status, atualizado_em, projetos(menu_url, slug, status)').eq('status', 'ativo');
     const { data: artigos } = await sb.from('blog_artigos').select('slug, status, atualizado_em').eq('status', 'publicado');
 
-    const urlsAtivas = new Set();
-    urlsAtivas.add(base);
-    urlsAtivas.add(`${base}blog.html`);
+    // URLs antigas de produto (inclusive as que usavam #produto-slug) deixam de ser válidas.
+    // O gerador do GitHub cria as páginas HTML estáticas correspondentes às novas URLs.
+    await sb.from('sitemap_urls').update({ ativo: false }).eq('origem', 'produto');
+
+    const urlsAtivas = new Map();
+    urlsAtivas.set(base, { origem: 'pagina', priority: 1.0 });
+    urlsAtivas.set(`${base}produtos.html`, { origem: 'pagina', priority: 0.9 });
+    urlsAtivas.set(`${base}atelie.html`, { origem: 'pagina', priority: 0.9 });
+    urlsAtivas.set(`${base}blog.html`, { origem: 'pagina', priority: 0.8 });
     (produtos || []).forEach(p => {
-      if (p.projetos && p.projetos.status === 'ativo' && p.projetos.menu_url) {
-        urlsAtivas.add(`${base}${p.projetos.menu_url}#produto-${p.slug}`);
+      if (p.projetos && p.projetos.status === 'ativo' && p.projetos.slug && p.slug) {
+        const pasta = p.projetos.slug === 'atelier-verushka' ? 'atelie' : (p.projetos.slug === 'mercadinho' ? 'produtos' : null);
+        if (pasta) urlsAtivas.set(`${base}${pasta}/${encodeURIComponent(p.slug)}.html`, { origem: 'produto', priority: 0.8 });
       }
     });
-    (artigos || []).forEach(a => urlsAtivas.add(`${base}blog.html?post=${a.slug}`));
-    projetosCache.filter(p => p.status === 'ativo' && p.menu_url).forEach(p => urlsAtivas.add(`${base}${p.menu_url}`));
+    (artigos || []).forEach(a => urlsAtivas.set(`${base}blog.html?post=${encodeURIComponent(a.slug)}`, { origem: 'artigo', priority: 0.7 }));
+    projetosCache.filter(p => p.status === 'ativo' && p.menu_url).forEach(p => urlsAtivas.set(`${base}${p.menu_url}`, { origem: 'pagina', priority: 0.9 }));
 
-    for (const url of urlsAtivas) {
-      await sb.from('sitemap_urls').upsert({ url, origem: 'produto', ativo: true }, { onConflict: 'url' });
+    for (const [url, meta] of urlsAtivas) {
+      await sb.from('sitemap_urls').upsert({ url, origem: meta.origem, ativo: true, priority: meta.priority }, { onConflict: 'url' });
     }
     if (mostrarMsg) { msg.className = 'msg-box ok'; msg.textContent = 'Sitemap sincronizado com sucesso!'; }
     await carregarSitemap();

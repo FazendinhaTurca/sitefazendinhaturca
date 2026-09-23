@@ -166,6 +166,8 @@
   .produto-body { padding: 12px 14px 16px; flex: 1; display: flex; flex-direction: column; }
   .produto-cat { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--brown); margin-bottom: 3px; }
   .produto-nome { font-weight: 700; font-size: 0.92rem; margin-bottom: 4px; color: var(--brown-dark); }
+  .produto-nome a { color: inherit; text-decoration: none; }
+  .produto-nome a:hover { text-decoration: underline; }
   .produto-preco { color: var(--red-turco); font-weight: 700; margin-bottom: 10px; }
   .produto-actions { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
   .qtd-stepper { display: flex; align-items: center; justify-content: space-between; background: var(--cream); border-radius: 8px; padding: 4px 8px; }
@@ -682,7 +684,7 @@ function renderProdutos() {
       <div class="produto-img-wrap" role="button" tabindex="0" aria-haspopup="dialog" aria-label="Ver fotos de ${esc(p.nome)}">${imgHtml}${badgeFotos}</div>
       <div class="produto-body">
         <div class="produto-cat">${esc(p.categorias ? p.categorias.nome : '')}</div>
-        <div class="produto-nome">${esc(p.nome)}</div>
+        <div class="produto-nome"><a href="atelie/${encodeURIComponent(p.slug)}.html" aria-label="Ver página de ${esc(p.nome)}" onclick="event.stopPropagation()">${esc(p.nome)}</a></div>
         <div class="produto-preco">${formatarPreco(p.preco)}</div>
         <div class="produto-actions">
           <div class="qtd-stepper">
