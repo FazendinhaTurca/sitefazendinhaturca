@@ -649,6 +649,8 @@
   .promo-box img {
     width: 100%;
     height: auto;
+    max-height: calc(100vh - 130px);
+    object-fit: contain;
     display: block;
   }
   .promo-close {
@@ -928,8 +930,8 @@
 <div class="promo-overlay" id="promo-overlay">
   <div class="promo-box">
     <button class="promo-close" id="promo-close" aria-label="Fechar">&times;</button>
-    <img src="images/popup-promocional.webp" alt="Promoção da Colheita - 12 Bananas por R$8,00 em setembro" width="900" height="900" fetchpriority="high">
-    <a class="promo-cta" href="produtos.html#Banana%20Prata" id="promo-cta">VER PROMOÇÃO &#127820;</a>
+    <img src="images/popup-mini-frutas.webp" alt="Promoção da Colheita - Mini Frutas: mini melancia 1 unidade por R$10,00, mini maracujá 2 unidades, mini mamão 3 unidades e mini maçã 4 unidades, todas por R$10,00" width="900" height="1070" fetchpriority="high">
+    <a class="promo-cta" href="produtos.html?busca=mini" id="promo-cta">VER PROMOÇÃO &#127820;</a>
   </div>
 </div>
 

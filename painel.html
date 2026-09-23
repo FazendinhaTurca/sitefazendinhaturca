@@ -233,6 +233,10 @@
 .categoria-chip .cat-excluir{color:#B23A2E;}
 .categorias-vazio{font-size:.85rem; color:#8A7A63;}
 
+  .produto-filtros .field-busca{flex:2 1 240px;}
+  .produto-filtros .field{flex:1 1 200px;min-width:180px;}
+  .produto-filtros label{margin-top:0;}
+  .produto-filtros .filtro-info{font-size:.78rem;color:var(--brown);margin-left:auto;align-self:center;}
   .order-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:end;background:#fff;padding:14px 16px;border-radius:10px;box-shadow:0 2px 8px rgba(78,52,32,.08);margin-bottom:16px;}
   .order-toolbar .field{min-width:180px;}
   .order-card{background:#fff;border-radius:10px;padding:16px 18px;box-shadow:0 2px 8px rgba(78,52,32,.08);margin-bottom:14px;}
@@ -310,6 +314,12 @@
         </div>
         <div id="categorias-mercadinho" class="categorias-chips"></div>
       </div>
+      <div class="order-toolbar produto-filtros">
+        <div class="field field-busca"><label for="busca-produto-mercadinho">Buscar por nome</label><input type="search" id="busca-produto-mercadinho" placeholder="Digite o nome do produto" autocomplete="off"></div>
+        <div class="field"><label for="filtro-categoria-mercadinho">Categoria</label><select id="filtro-categoria-mercadinho"><option value="todas">Todas as categorias</option></select></div>
+        <button type="button" class="btn btn-outline btn-sm" id="limpar-filtros-mercadinho">Limpar filtros</button>
+        <span class="filtro-info" id="contagem-produtos-mercadinho" aria-live="polite"></span>
+      </div>
       <div id="tabela-mercadinho"></div>
     </section>
 
@@ -325,6 +335,12 @@
           <button class="btn btn-outline btn-sm" data-nova-categoria="atelier-verushka">+ Cadastrar categoria</button>
         </div>
         <div id="categorias-atelier" class="categorias-chips"></div>
+      </div>
+      <div class="order-toolbar produto-filtros">
+        <div class="field field-busca"><label for="busca-produto-atelier">Buscar por nome</label><input type="search" id="busca-produto-atelier" placeholder="Digite o nome do produto" autocomplete="off"></div>
+        <div class="field"><label for="filtro-categoria-atelier">Categoria</label><select id="filtro-categoria-atelier"><option value="todas">Todas as categorias</option></select></div>
+        <button type="button" class="btn btn-outline btn-sm" id="limpar-filtros-atelier">Limpar filtros</button>
+        <span class="filtro-info" id="contagem-produtos-atelier" aria-live="polite"></span>
       </div>
       <div id="tabela-atelier"></div>
     </section>
@@ -808,6 +824,35 @@ async function carregarDashboard() {
 }
 
 /* ===================== PRODUTOS (Mercadinho + Atelier) ===================== */
+const produtosPainelCache = {};
+const sufixoProjeto = slug => slug === 'mercadinho' ? 'mercadinho' : 'atelier';
+
+function normalizarBusca(texto) {
+  return String(texto || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}
+
+/* Preenche o filtro de categorias com as categorias do projeto (mantém a seleção atual, se ainda existir) */
+function popularFiltroCategorias(projetoSlug) {
+  const projeto = projetosCache.find(p => p.slug === projetoSlug);
+  const select = document.getElementById('filtro-categoria-' + sufixoProjeto(projetoSlug));
+  if (!select || !projeto) return;
+  const atual = select.value || 'todas';
+  select.innerHTML = '';
+  const add = (valor, texto) => {
+    const o = document.createElement('option');
+    o.value = valor;
+    o.textContent = texto;
+    select.appendChild(o);
+  };
+  add('todas', 'Todas as categorias');
+  categoriasCache
+    .filter(c => c.projeto_id === projeto.id)
+    .sort((a, b) => (a.ordem || 0) - (b.ordem || 0))
+    .forEach(c => add(String(c.id), c.nome));
+  add('sem-categoria', 'Sem categoria');
+  select.value = Array.from(select.options).some(o => o.value === atual) ? atual : 'todas';
+}
+
 async function carregarProdutosTabela(projetoSlug, containerId) {
   const projeto = projetosCache.find(p => p.slug === projetoSlug);
   const container = document.getElementById(containerId);
@@ -820,7 +865,44 @@ async function carregarProdutosTabela(projetoSlug, containerId) {
     .order('ordem');
 
   if (error) { container.innerHTML = '<p class="empty-hint">Erro ao carregar produtos.</p>'; return; }
-  if (!produtos || produtos.length === 0) { container.innerHTML = '<p class="empty-hint">Nenhum produto cadastrado ainda.</p>'; return; }
+  produtosPainelCache[projetoSlug] = produtos || [];
+  popularFiltroCategorias(projetoSlug);
+  renderProdutosTabela(projetoSlug, containerId);
+}
+
+/* Aplica os filtros (nome + categoria) sobre os produtos já carregados — não faz nova consulta ao banco */
+function renderProdutosTabela(projetoSlug, containerId) {
+  const container = document.getElementById(containerId);
+  const suf = sufixoProjeto(projetoSlug);
+  const todos = produtosPainelCache[projetoSlug] || [];
+  const info = document.getElementById('contagem-produtos-' + suf);
+
+  if (todos.length === 0) {
+    if (info) info.textContent = '';
+    container.innerHTML = '<p class="empty-hint">Nenhum produto cadastrado ainda.</p>';
+    return;
+  }
+
+  const termo = normalizarBusca(document.getElementById('busca-produto-' + suf).value);
+  const categoria = document.getElementById('filtro-categoria-' + suf).value;
+
+  const produtos = todos.filter(p => {
+    const okNome = !termo || normalizarBusca(p.nome).includes(termo);
+    const okCategoria = categoria === 'todas'
+      || (categoria === 'sem-categoria' ? !p.categoria_id : String(p.categoria_id) === categoria);
+    return okNome && okCategoria;
+  });
+
+  if (info) {
+    info.textContent = produtos.length === todos.length
+      ? todos.length + (todos.length === 1 ? ' produto' : ' produtos')
+      : produtos.length + ' de ' + todos.length + ' produtos';
+  }
+
+  if (produtos.length === 0) {
+    container.innerHTML = '<p class="empty-hint">Nenhum produto encontrado com esses filtros.</p>';
+    return;
+  }
 
   container.innerHTML = `<table><thead><tr>
     <th></th><th>Nome</th><th>Categoria</th><th>Preço</th><th>Status</th><th>Ordem</th><th></th>
@@ -850,6 +932,21 @@ async function carregarProdutosTabela(projetoSlug, containerId) {
     });
   });
 }
+
+/* Eventos dos filtros de produtos (Mercadinho e Ateliê) */
+[['mercadinho', 'tabela-mercadinho'], ['atelier-verushka', 'tabela-atelier']].forEach(([slug, containerId]) => {
+  const suf = sufixoProjeto(slug);
+  const busca = document.getElementById('busca-produto-' + suf);
+  const categoria = document.getElementById('filtro-categoria-' + suf);
+  busca.addEventListener('input', () => renderProdutosTabela(slug, containerId));
+  categoria.addEventListener('change', () => renderProdutosTabela(slug, containerId));
+  document.getElementById('limpar-filtros-' + suf).addEventListener('click', () => {
+    busca.value = '';
+    categoria.value = 'todas';
+    renderProdutosTabela(slug, containerId);
+    busca.focus();
+  });
+});
 
 document.querySelectorAll('[data-novo-produto]').forEach(btn => {
   btn.addEventListener('click', () => abrirModalProduto(btn.dataset.novoProduto, null));
@@ -953,6 +1050,8 @@ function renderCategoriasProjeto(projetoSlug, containerId) {
 function carregarCategoriasPainel() {
   renderCategoriasProjeto('mercadinho', 'categorias-mercadinho');
   renderCategoriasProjeto('atelier-verushka', 'categorias-atelier');
+  popularFiltroCategorias('mercadinho');
+  popularFiltroCategorias('atelier-verushka');
 }
 
 document.querySelectorAll('[data-nova-categoria]').forEach(btn => {
