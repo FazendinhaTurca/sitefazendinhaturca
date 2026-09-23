@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/image-sitemap/1.1">
   <url>
     <loc>https://www.fazendinhaturca.com.br/</loc>
     <lastmod>2026-09-23</lastmod>
@@ -17,6 +17,21 @@
     <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://www.fazendinhaturca.com.br/images/atelie/topo-lojinha.webp</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://www.fazendinhaturca.com.br/images/atelie/menu-colecoes.webp</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://www.fazendinhaturca.com.br/images/atelie/colecao-destaque-vila.webp</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://www.fazendinhaturca.com.br/images/atelie/feito-a-mao.webp</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://www.fazendinhaturca.com.br/images/atelie/rodape-vila.webp</image:loc>
+    </image:image>
   </url>
   <url>
     <loc>https://www.fazendinhaturca.com.br/blog.html</loc>
@@ -35,6 +50,12 @@
     <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790096180493-0mjy36.webp</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790096181116-1txvsz.webp</image:loc>
+    </image:image>
   </url>
   <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/mamao.html</loc>
@@ -47,12 +68,21 @@
     <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790100592930-q3902t.webp</image:loc>
+    </image:image>
   </url>
   <url>
     <loc>https://www.fazendinhaturca.com.br/atelie/chaveiro-coracao-turco.html</loc>
     <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790096249025-d826l0.webp</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790096249626-hxjeax.webp</image:loc>
+    </image:image>
   </url>
   <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/abacaxi.html</loc>
@@ -71,12 +101,24 @@
     <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790099101152-hvskoe.webp</image:loc>
+    </image:image>
   </url>
   <url>
     <loc>https://www.fazendinhaturca.com.br/atelie/ima-geladeira-fazendinha.html</loc>
     <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790096621689-kptfit.webp</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790096623036-jx7wum.webp</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790096623427-fgfmnb.webp</image:loc>
+    </image:image>
   </url>
   <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/manga.html</loc>
@@ -95,6 +137,12 @@
     <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790101916116-lzywvg.webp</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790101917064-4xdw0n.webp</image:loc>
+    </image:image>
   </url>
   <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/tangerina-azeda.html</loc>
@@ -107,6 +155,9 @@
     <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790104288262-n1033x.webp</image:loc>
+    </image:image>
   </url>
   <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/tomate.html</loc>
@@ -119,12 +170,18 @@
     <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790095925827-f66lhj.webp</image:loc>
+    </image:image>
   </url>
   <url>
     <loc>https://www.fazendinhaturca.com.br/atelie/porta-copos-balao.html</loc>
     <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790104628986-3yyysp.webp</image:loc>
+    </image:image>
   </url>
   <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/mini-tomate.html</loc>
@@ -143,6 +200,9 @@
     <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790105799704-37zuv2.webp</image:loc>
+    </image:image>
   </url>
   <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/mini-pepino.html</loc>
