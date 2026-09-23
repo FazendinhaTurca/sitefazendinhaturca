@@ -235,18 +235,80 @@ const ATELIE_CSS = `    .faq,.related{
 
 `;
 
+const MERCADO_NOME = 'Mercadinho da Fazendinha Turca';
+
+const MERCADO_AREA = {
+  '@type': 'City',
+  name: 'Araruama',
+  containedInPlace: { '@type': 'State', name: 'Rio de Janeiro' }
+};
+
+// Produtos de origem animal (fazendas parceiras, criação livre)
+function mercadoAnimal(p) {
+  return /^(ovos?|leite|mel|queijo)(-|$)/.test(safeSlug(p.slug || p.nome));
+}
+
+function mercadoQtd(p) {
+  const q = stripHtml(p.descricao_curta || '');
+  return q && q.length <= 30 ? q : '';
+}
+
+function moneyTxt(value) {
+  return money(value).replace(/\u00a0/g, ' ');
+}
+
+function mercadoTitle(p) {
+  const custom = String(p.seo_title || '').trim();
+  if (custom.length >= 30) return custom;
+  const candidates = [
+    `Comprar ${p.nome} em Araruama-RJ | Mercadinho Fazendinha Turca`,
+    `Comprar ${p.nome} em Araruama-RJ | Fazendinha Turca`,
+    `${p.nome} em Araruama-RJ`
+  ];
+  return candidates.find(t => t.length <= 65) || p.nome;
+}
+
+function mercadoDescription(p) {
+  const custom = stripHtml(p.seo_description || '');
+  if (custom.length >= 80) return cut(custom, 158);
+  const qtd = mercadoQtd(p);
+  const preco = moneyTxt(p.preco);
+  const build = withQtd => {
+    const item = `${p.nome}${withQtd && qtd ? ` (${qtd})` : ''}`;
+    return mercadoAnimal(p)
+      ? `Comprar ${item} por ${preco}: produto natural de fazenda parceira, com criação livre. Entrega somente em Araruama-RJ. Peça pelo WhatsApp.`
+      : `Comprar ${item} por ${preco} no ${MERCADO_NOME}: produtos naturais com entrega em Araruama-RJ. Peça pelo WhatsApp.`;
+  };
+  const full = build(true);
+  return full.length <= 158 ? full : cut(build(false), 158);
+}
+
+function mercadoAlt(p) {
+  const custom = String(p.alt_text || '').trim();
+  if (custom.length >= 15) return custom;
+  return mercadoAnimal(p)
+    ? `${p.nome} de fazenda parceira – ${MERCADO_NOME}, Araruama-RJ`
+    : `${p.nome} natural do ${MERCADO_NOME} em Araruama-RJ`;
+}
+
 function template(p, project, category, siblings = []) {
   const isAtelie = project.slug === 'atelier-verushka';
+  const isMercado = project.slug === 'mercadinho';
+  const isShop = isAtelie || isMercado;
 
   const canonical = productUrl(project.slug, p.slug);
 
   const title = isAtelie
     ? atelieTitle(p)
+    : isMercado
+    ? mercadoTitle(p)
     : p.seo_title ||
     `${p.nome} | ${project.nome_publico || 'Fazendinha Turca'}`;
 
   const description = isAtelie
     ? atelieDescription(p)
+    : isMercado
+    ? mercadoDescription(p)
     : p.seo_description ||
     stripHtml(
       p.descricao_curta ||
@@ -256,7 +318,11 @@ function template(p, project, category, siblings = []) {
       }.`
     );
 
-  const alt = isAtelie ? atelieAlt(p) : p.alt_text || p.nome;
+  const alt = isAtelie
+    ? atelieAlt(p)
+    : isMercado
+    ? mercadoAlt(p)
+    : p.alt_text || p.nome;
 
   const mainImage = absoluteUrl(p.imagem_principal_url);
 
@@ -297,6 +363,8 @@ function template(p, project, category, siblings = []) {
     ? 'Ateliê da Verushka'
     : 'Fazendinha Turca';
 
+  const crumb = isMercado ? MERCADO_NOME : brand;
+
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -304,7 +372,7 @@ function template(p, project, category, siblings = []) {
     name: p.nome,
     description,
     image: images,
-    ...(isAtelie ? { url: canonical, mainEntityOfPage: canonical } : {}),
+    ...(isShop ? { url: canonical, mainEntityOfPage: canonical } : {}),
     sku: p.id,
     brand: {
       '@type': 'Brand',
@@ -314,6 +382,22 @@ function template(p, project, category, siblings = []) {
       ? {
           material: 'Hama Beads',
           manufacturer: { '@id': `${SITE_URL}/atelie.html#atelie` }
+        }
+      : {}),
+    ...(isMercado
+      ? {
+          additionalProperty: [
+            ...(mercadoQtd(p)
+              ? [{ '@type': 'PropertyValue', name: 'Quantidade', value: mercadoQtd(p) }]
+              : []),
+            {
+              '@type': 'PropertyValue',
+              name: 'Origem',
+              value: mercadoAnimal(p)
+                ? 'Fazendas parceiras com criação livre dos animais'
+                : 'Produção natural'
+            }
+          ]
         }
       : {}),
     ...(categoryName
@@ -331,8 +415,21 @@ function template(p, project, category, siblings = []) {
             areaServed: ATELIE_AREA
           }
         : {}),
+      ...(isMercado
+        ? {
+            itemCondition: 'https://schema.org/NewCondition',
+            areaServed: MERCADO_AREA
+          }
+        : {}),
       seller: isAtelie
         ? { '@id': `${SITE_URL}/atelie.html#atelie` }
+        : isMercado
+        ? {
+            '@type': 'Organization',
+            '@id': `${SITE_URL}/#negocio`,
+            name: 'Fazendinha Turca',
+            url: SITE_URL
+          }
         : {
             '@type': 'Organization',
             name: brand,
@@ -341,15 +438,15 @@ function template(p, project, category, siblings = []) {
     }
   };
 
-  const heroAttrs = isAtelie
+  const heroAttrs = isShop
     ? ' fetchpriority="high" decoding="async"'
     : '';
 
-  const robots = isAtelie
+  const robots = isShop
     ? 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
     : 'index,follow';
 
-  const extraHead = isAtelie
+  const extraHead = isShop
     ? `
 
   <link rel="alternate" hreflang="pt-BR" href="${esc(canonical)}">
@@ -362,7 +459,7 @@ function template(p, project, category, siblings = []) {
   <meta name="theme-color" content="#244b2f">`
     : '';
 
-  const extraOg = isAtelie
+  const extraOg = isShop
     ? `
   <meta property="og:locale" content="pt_BR">
   <meta property="og:image:alt" content="${esc(alt)}">
@@ -375,7 +472,11 @@ function template(p, project, category, siblings = []) {
   <meta name="twitter:image:alt" content="${esc(alt)}">`
     : '';
 
-  const extraCss = isAtelie ? ATELIE_CSS : '';
+  const extraCss = isShop ? ATELIE_CSS : '';
+
+  const qtd = isMercado ? mercadoQtd(p) : '';
+  const animal = isMercado && mercadoAnimal(p);
+  const precoTxt = moneyTxt(p.preco);
 
   const seoCopyHtml = isAtelie
     ? `<h2>Sobre ${esc(p.nome)}</h2>
@@ -387,46 +488,90 @@ function template(p, project, category, siblings = []) {
     <p>Cada peça é montada conta por conta e produzida sob encomenda, com prazo de entrega de 3 a 10 dias. O pedido é fechado pelo WhatsApp, onde também dá para combinar cores, tamanho e personalização.</p>
 
     <p>Enviamos para todo o Brasil, incluindo Florianópolis e Santa Catarina, Minas Gerais, Amazonas e Pará. Informe o seu CEP e combine o frete pelo WhatsApp.</p>`
+    : isMercado
+    ? `<h2>Sobre ${esc(p.nome)}</h2>
+
+    <p>${esc(p.nome)}: produto ${animal ? 'natural de origem animal' : 'natural'}${
+        categoryName && categoryName !== 'Outros Produtos'
+          ? `, da categoria ${esc(categoryName)}`
+          : ''
+      }, vendido no ${MERCADO_NOME}${
+        qtd ? ` em porção de ${esc(qtd)}` : ''
+      } por ${esc(precoTxt)}.</p>
+
+    <p>${
+      animal
+        ? `Vem de fazendas parceiras onde os animais são criados livres, e a retirada respeita a quantidade. Trabalhamos com produtos naturais.`
+        : `Trabalhamos com produtos naturais, escolhidos com cuidado para a sua mesa.`
+    }</p>
+
+    <p>A entrega é feita somente em Araruama-RJ. Faça o pedido pelo WhatsApp e combine a entrega.</p>`
     : `<h2>Sobre ${esc(p.nome)}</h2>
 
     <p>${esc(description)}</p>`;
 
-  const faqHtml = isAtelie
+  const faqItems = isAtelie
+    ? [
+        [`Qual é o prazo de entrega de ${p.nome}?`, 'As peças são feitas sob encomenda, com prazo de 3 a 10 dias, variando conforme o item.'],
+        ['O Ateliê da Verushka envia para outros estados?', 'Sim. Enviamos para todo o Brasil, incluindo Santa Catarina (Florianópolis), Minas Gerais, Amazonas e Pará. O frete é combinado pelo WhatsApp.'],
+        ['Dá para personalizar cores ou tamanho?', 'Sim. Fale com a gente pelo WhatsApp para combinar cores, tamanho e tema da peça.']
+      ]
+    : isMercado
+    ? [
+        [`Onde o ${MERCADO_NOME} entrega ${p.nome}?`, 'A entrega é feita somente em Araruama-RJ.'],
+        animal
+          ? ['De onde vem este produto?', 'De fazendas parceiras onde os animais são criados livres. A retirada respeita a quantidade.']
+          : ['Os produtos são naturais?', 'Sim. O mercadinho trabalha com produtos naturais.'],
+        [`Como faço o pedido de ${p.nome}?`, 'Clique em "Tenho interesse neste produto" para chamar no WhatsApp, confirme a quantidade e combine a entrega em Araruama.']
+      ]
+    : [];
+
+  const faqHtml = faqItems.length
     ? `
 
   <section class="faq">
 
-    <h2>Perguntas frequentes</h2>
+    <h2>Perguntas frequentes</h2>${faqItems
+      .map(
+        ([q, a]) => `
 
-    <h3>Qual é o prazo de entrega de ${esc(p.nome)}?</h3>
-    <p>As peças são feitas sob encomenda, com prazo de 3 a 10 dias, variando conforme o item.</p>
-
-    <h3>O Ateliê da Verushka envia para outros estados?</h3>
-    <p>Sim. Enviamos para todo o Brasil, incluindo Santa Catarina (Florianópolis), Minas Gerais, Amazonas e Pará. O frete é combinado pelo WhatsApp.</p>
-
-    <h3>Dá para personalizar cores ou tamanho?</h3>
-    <p>Sim. Fale com a gente pelo WhatsApp para combinar cores, tamanho e tema da peça.</p>
+    <h3>${esc(q)}</h3>
+    <p>${esc(a)}</p>`
+      )
+      .join('')}
 
   </section>`
     : '';
 
-  const related = isAtelie
+  // peças relacionadas: mesma categoria primeiro, girando a lista para que
+  // cada página aponte para vizinhos diferentes (distribui os links internos)
+  const posicao = new Map(siblings.map((x, i) => [x.id, i]));
+  const eu = posicao.get(p.id) ?? 0;
+  const dist = x =>
+    (posicao.get(x.id) - eu + siblings.length) % siblings.length;
+
+  const related = isShop
     ? siblings
         .filter(x => x.id !== p.id)
         .sort(
           (a, b) =>
             (b.categoria_id === p.categoria_id) -
-            (a.categoria_id === p.categoria_id)
+              (a.categoria_id === p.categoria_id) ||
+            dist(a) - dist(b)
         )
         .slice(0, 4)
     : [];
+
+  const relatedTitle = isMercado
+    ? `Outros produtos do ${MERCADO_NOME}`
+    : 'Outras peças do Ateliê da Verushka';
 
   const relatedHtml = related.length
     ? `
 
   <section class="related">
 
-    <h2>Outras peças do Ateliê da Verushka</h2>
+    <h2>${esc(relatedTitle)}</h2>
 
     <div class="related-grid">
       ${related
@@ -457,7 +602,7 @@ function template(p, project, category, siblings = []) {
       {
         '@type': 'ListItem',
         position: 2,
-        name: brand,
+        name: crumb,
         item: back
       },
       {
@@ -693,7 +838,7 @@ ${extraCss}    footer{
   <div class="breadcrumb">
     <a href="${SITE_URL}/">Fazendinha Turca</a>
     ›
-    <a href="${back}">${esc(brand)}</a>
+    <a href="${back}">${esc(crumb)}</a>
     ›
     ${esc(p.nome)}
   </div>
@@ -765,7 +910,7 @@ ${extraCss}    footer{
       <br>
 
       <a class="back" href="${back}">
-        ← Voltar para ${esc(brand)}
+        ← Voltar para ${esc(crumb)}
       </a>
 
     </section>
@@ -781,7 +926,7 @@ ${extraCss}    footer{
 </main>
 
 <footer>
-  © ${new Date().getFullYear()} Fazendinha Turca · ${esc(brand)}
+  © ${new Date().getFullYear()} Fazendinha Turca · ${esc(crumb)}
 </footer>
 
 </body>
@@ -816,24 +961,32 @@ async function main() {
     clearGenerated(dir);
   }
 
-  const atelieProjectId = projects.find(
-    pr => pr.slug === 'atelier-verushka'
-  )?.id;
+  const siblingsOf = slugProjeto => {
+    const id = projects.find(pr => pr.slug === slugProjeto)?.id;
+    return products
+      .filter(x => x.projeto_id === id && x.slug)
+      .map(x => {
+        const sl = safeSlug(x.slug);
+        return {
+          id: x.id,
+          categoria_id: x.categoria_id,
+          nome: x.nome,
+          preco: x.preco,
+          url: productUrl(slugProjeto, sl),
+          img: absoluteUrl(x.imagem_principal_url),
+          alt: `${x.nome} – ${
+            slugProjeto === 'mercadinho'
+              ? 'Mercadinho da Fazendinha Turca'
+              : 'Hama Beads, Ateliê da Verushka'
+          }`
+        };
+      });
+  };
 
-  const atelieSiblings = products
-    .filter(x => x.projeto_id === atelieProjectId && x.slug)
-    .map(x => {
-      const sl = safeSlug(x.slug);
-      return {
-        id: x.id,
-        categoria_id: x.categoria_id,
-        nome: x.nome,
-        preco: x.preco,
-        url: productUrl('atelier-verushka', sl),
-        img: absoluteUrl(x.imagem_principal_url),
-        alt: `${x.nome} em Hama Beads`
-      };
-    });
+  const siblingsByProject = {
+    mercadinho: siblingsOf('mercadinho'),
+    'atelier-verushka': siblingsOf('atelier-verushka')
+  };
 
   const sitemap = new Map();
 
@@ -850,7 +1003,8 @@ async function main() {
   sitemap.set(`${SITE_URL}/produtos.html`, {
     lastmod: today,
     priority: '0.9',
-    changefreq: 'weekly'
+    changefreq: 'weekly',
+    images: [`${SITE_URL}/images/hero-frutas.webp`]
   });
 
   sitemap.set(`${SITE_URL}/atelie.html`, {
@@ -916,7 +1070,7 @@ async function main() {
         },
         project,
         category,
-        atelieSiblings
+        siblingsByProject[project.slug] || []
       ),
       'utf8'
     );
@@ -932,18 +1086,14 @@ async function main() {
         : today,
       priority: '0.8',
       changefreq: 'weekly',
-      ...(project.slug === 'atelier-verushka'
-        ? {
-            images: [
-              ...new Set([
-                absoluteUrl(p.imagem_principal_url),
-                ...(Array.isArray(p.galeria)
-                  ? p.galeria.filter(Boolean).map(absoluteUrl)
-                  : [])
-              ])
-            ]
-          }
-        : {})
+      images: [
+        ...new Set([
+          absoluteUrl(p.imagem_principal_url),
+          ...(Array.isArray(p.galeria)
+            ? p.galeria.filter(Boolean).map(absoluteUrl)
+            : [])
+        ])
+      ]
     });
 
     generated++;
