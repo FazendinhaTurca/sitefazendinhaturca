@@ -58,12 +58,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://www.fazendinhaturca.com.br/produtos/mamao.html</loc>
-    <lastmod>2026-09-17</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://www.fazendinhaturca.com.br/atelie/quadro-capadocia.html</loc>
     <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
@@ -71,6 +65,12 @@
     <image:image>
       <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790100592930-q3902t.webp</image:loc>
     </image:image>
+  </url>
+  <url>
+    <loc>https://www.fazendinhaturca.com.br/produtos/mamao.html</loc>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.fazendinhaturca.com.br/atelie/chaveiro-coracao-turco.html</loc>
@@ -91,12 +91,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.fazendinhaturca.com.br/produtos/mini-manga.html</loc>
-    <lastmod>2026-09-17</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://www.fazendinhaturca.com.br/atelie/mini-casa-decorativa.html</loc>
     <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
@@ -104,6 +98,12 @@
     <image:image>
       <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790099101152-hvskoe.webp</image:loc>
     </image:image>
+  </url>
+  <url>
+    <loc>https://www.fazendinhaturca.com.br/produtos/mini-manga.html</loc>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.fazendinhaturca.com.br/atelie/ima-geladeira-fazendinha.html</loc>
@@ -152,7 +152,7 @@
   </url>
   <url>
     <loc>https://www.fazendinhaturca.com.br/atelie/porta-copo-floral.html</loc>
-    <lastmod>2026-09-22</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
