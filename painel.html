@@ -375,7 +375,10 @@
     <section class="panel-view" id="view-blog">
       <div class="view-header">
         <h2>Blog</h2>
-        <button class="btn btn-primary" id="btn-novo-artigo">+ Novo artigo</button>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-outline" id="btn-nova-categoria-blog">+ Nova categoria</button>
+          <button class="btn btn-primary" id="btn-novo-artigo">+ Novo artigo</button>
+        </div>
       </div>
       <div id="tabela-blog"></div>
     </section>
@@ -577,7 +580,7 @@
       <img class="img-preview" id="ar-capa-preview" style="display:none;">
 
       <div class="grid-2">
-        <div><label>Categoria</label><input type="text" id="ar-categoria"></div>
+        <div><label>Categoria</label><select id="ar-categoria"><option value="">Selecione uma categoria...</option></select></div>
         <div><label>Autor</label><input type="text" id="ar-autor" value="Fazendinha Turca"></div>
       </div>
       <label>Tags (separadas por vírgula)</label><input type="text" id="ar-tags">
@@ -598,6 +601,23 @@
       </div>
       <div class="msg-box" id="ar-msg" style="display:none; margin-top:14px;"></div>
     </form>
+  </div>
+</div>
+
+<!-- ===================== MODAL CATEGORIAS (BLOG) ===================== -->
+<div class="modal-overlay" id="modal-categoria-blog">
+  <div class="modal-box">
+    <button class="modal-close" data-close-modal="modal-categoria-blog">&times;</button>
+    <h3>Categorias do Blog</h3>
+    <form id="form-categoria-blog" style="display:flex; gap:8px; align-items:flex-end; margin-bottom:16px;">
+      <div style="flex:1;">
+        <label>Nova categoria</label>
+        <input type="text" id="blogcat-nome" placeholder="Ex: Receitas" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm">Adicionar</button>
+    </form>
+    <div id="lista-categorias-blog"></div>
+    <div class="msg-box" id="blogcat-msg" style="display:none; margin-top:14px;"></div>
   </div>
 </div>
 
@@ -792,7 +812,8 @@ async function carregarTudo() {
     carregarBanco(),
     carregarSitemap(),
     carregarConfig(),
-    carregarCategoriasPainel()
+    carregarCategoriasPainel(),
+    carregarCategoriasBlogSelect('')
   ]);
   carregarStorage();
 }
@@ -1302,7 +1323,7 @@ async function abrirModalArtigo(artigoId) {
       document.getElementById('ar-slug').value = a.slug || '';
       document.getElementById('ar-resumo').value = a.resumo || '';
       document.getElementById('ar-conteudo-rte').innerHTML = a.conteudo || '';
-      document.getElementById('ar-categoria').value = a.categoria || '';
+      await carregarCategoriasBlogSelect(a.categoria || '');
       document.getElementById('ar-autor').value = a.autor || 'Fazendinha Turca';
       document.getElementById('ar-tags').value = (a.tags || []).join(', ');
       document.getElementById('ar-status').value = a.status || 'rascunho';
@@ -1317,6 +1338,7 @@ async function abrirModalArtigo(artigoId) {
       form.dataset.capaAtual = a.imagem_capa_url || '';
     }
   } else {
+    await carregarCategoriasBlogSelect('');
     document.getElementById('artigo-modal-titulo').textContent = 'Novo artigo';
   }
   document.getElementById('modal-artigo').classList.add('show');
@@ -1375,6 +1397,65 @@ document.getElementById('btn-excluir-artigo').addEventListener('click', async ()
   await sb.from('blog_artigos').delete().eq('id', artigoId);
   document.getElementById('modal-artigo').classList.remove('show');
   carregarBlogTabela(); carregarDashboard();
+});
+
+/* ===================== CATEGORIAS DO BLOG ===================== */
+async function carregarCategoriasBlogSelect(valorSelecionado) {
+  const select = document.getElementById('ar-categoria');
+  const atual = valorSelecionado !== undefined ? valorSelecionado : select.value;
+  const { data: categorias, error } = await sb.from('blog_categorias').select('*').order('nome', { ascending: true });
+  if (error) { console.error(error); return; }
+  select.innerHTML = '<option value="">Selecione uma categoria...</option>' +
+    (categorias || []).map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
+  if (atual) select.value = atual;
+}
+
+async function carregarCategoriasBlogLista() {
+  const container = document.getElementById('lista-categorias-blog');
+  const { data: categorias, error } = await sb.from('blog_categorias').select('*').order('nome', { ascending: true });
+  if (error) { container.innerHTML = '<p class="empty-hint">Erro ao carregar categorias.</p>'; return; }
+  if (!categorias || categorias.length === 0) { container.innerHTML = '<p class="empty-hint">Nenhuma categoria cadastrada ainda.</p>'; return; }
+  container.innerHTML = `<table><thead><tr><th>Nome</th><th></th></tr></thead><tbody>
+    ${categorias.map(c => `
+    <tr>
+      <td>${c.nome}</td>
+      <td class="row-actions"><button class="btn btn-outline btn-sm" data-excluir-categoria-blog="${c.id}">Excluir</button></td>
+    </tr>`).join('')}</tbody></table>`;
+
+  container.querySelectorAll('[data-excluir-categoria-blog]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Excluir esta categoria? Artigos já publicados com ela não são alterados.')) return;
+      await sb.from('blog_categorias').delete().eq('id', btn.dataset.excluirCategoriaBlog);
+      carregarCategoriasBlogLista();
+      carregarCategoriasBlogSelect();
+    });
+  });
+}
+
+document.getElementById('btn-nova-categoria-blog').addEventListener('click', () => {
+  document.getElementById('form-categoria-blog').reset();
+  document.getElementById('blogcat-msg').style.display = 'none';
+  carregarCategoriasBlogLista();
+  document.getElementById('modal-categoria-blog').classList.add('show');
+});
+
+document.getElementById('form-categoria-blog').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('blogcat-msg');
+  msg.style.display = 'block'; msg.className = 'msg-box'; msg.textContent = 'Salvando...';
+  try {
+    const nome = document.getElementById('blogcat-nome').value.trim();
+    if (!nome) throw new Error('Informe o nome da categoria.');
+    const { error } = await sb.from('blog_categorias').insert({ nome, slug: slugify(nome) });
+    if (error) throw error;
+    msg.className = 'msg-box ok'; msg.textContent = 'Categoria adicionada!';
+    document.getElementById('form-categoria-blog').reset();
+    await carregarCategoriasBlogLista();
+    await carregarCategoriasBlogSelect();
+  } catch (err) {
+    console.error(err);
+    msg.className = 'msg-box erro'; msg.textContent = 'Erro ao salvar: ' + (err.message || 'tente novamente.');
+  }
 });
 
 /* ===================== NOVO PROJETO ===================== */

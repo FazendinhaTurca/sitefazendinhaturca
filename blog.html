@@ -116,6 +116,24 @@
 
   .estado-msg { grid-column: 1 / -1; text-align: center; padding: 40px 16px; color: #4B4432; font-size: 14px; }
 
+  /* FILTROS E BUSCA */
+  .blog-filtros { max-width: 1100px; margin: 0 auto 6px; padding: 0 16px; display: flex; flex-direction: column; gap: 14px; }
+  .blog-busca { display: flex; justify-content: center; }
+  .blog-busca input {
+    width: 100%; max-width: 420px; padding: 10px 18px; border-radius: 999px;
+    border: 1px solid rgba(78,52,32,0.18); background: #fff; font-size: 13.5px;
+    color: var(--text); outline: none; font-family: inherit;
+  }
+  .blog-busca input:focus { border-color: var(--gold); }
+  .blog-categorias { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .cat-chip {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.3px; padding: 7px 16px;
+    border-radius: 999px; border: 1px solid rgba(78,52,32,0.2); background: #fff;
+    color: var(--brown-dark); cursor: pointer; transition: all 0.15s ease; font-family: inherit;
+  }
+  .cat-chip:hover { border-color: var(--green); color: var(--green); }
+  .cat-chip.active { background: var(--green); border-color: var(--green); color: #fff; }
+
   /* ARTIGO COMPLETO */
   .post-full { max-width: 760px; margin: 26px auto 60px; padding: 0 16px; }
   .post-voltar { display:inline-block; font-size: 12.5px; font-weight: 700; color: var(--green); margin-bottom: 18px; }
@@ -189,9 +207,26 @@
     <h1>Blog da Fazendinha Turca</h1>
     <p>Histórias do sítio, dicas de frutas da estação, sustentabilidade e novidades do Mercadinho e do Ateliê da Verushka.</p>
   </div>
+  <div class="blog-filtros reveal">
+    <div class="blog-busca">
+      <input type="search" id="blog-busca-input" placeholder="Buscar artigos..." aria-label="Buscar artigos">
+    </div>
+    <div class="blog-categorias" id="blog-categorias">
+      <!-- BLOG_CATEGORIAS_INICIO -->
+      <button type="button" class="cat-chip active" data-categoria="">Todas</button>
+      <button type="button" class="cat-chip" data-categoria="Agricultura Regenerativa">Agricultura Regenerativa</button>
+      <button type="button" class="cat-chip" data-categoria="Consumo">Consumo</button>
+      <button type="button" class="cat-chip" data-categoria="Alimentação">Alimentação</button>
+      <button type="button" class="cat-chip" data-categoria="Educação Infantil">Educação Infantil</button>
+      <button type="button" class="cat-chip" data-categoria="Plantas Medicinais">Plantas Medicinais</button>
+      <button type="button" class="cat-chip" data-categoria="Compostagem">Compostagem</button>
+      <!-- BLOG_CATEGORIAS_FIM -->
+    </div>
+  </div>
+
   <div class="blog-grid" id="blog-grid">
     <!-- BLOG_ARTIGOS_INICIO -->
-    <a class="post-card reveal" href="blog/agricultura-regenerativa.html" style="transition-delay:0ms;">
+    <a class="post-card reveal" href="blog/agricultura-regenerativa.html" data-categoria="Agricultura Regenerativa" style="transition-delay:0ms;">
       <div class="post-card-img ">
         <img src="https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/blog/capas/1790279088616-wrqhib.webp" alt="agricultura regenerativa" loading="lazy">
       </div>
@@ -203,7 +238,7 @@
         <span class="post-card-link">Ler artigo &rarr;</span>
       </div>
     </a>
-<a class="post-card reveal" href="blog/consumo-consciente.html" style="transition-delay:60ms;">
+<a class="post-card reveal" href="blog/consumo-consciente.html" data-categoria="Consumo" style="transition-delay:60ms;">
       <div class="post-card-img ">
         <img src="https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/blog/capas/1790279352394-q146c3.webp" alt="consumo-consciente " loading="lazy">
       </div>
@@ -215,7 +250,7 @@
         <span class="post-card-link">Ler artigo &rarr;</span>
       </div>
     </a>
-<a class="post-card reveal" href="blog/alimentacao-consciente.html" style="transition-delay:120ms;">
+<a class="post-card reveal" href="blog/alimentacao-consciente.html" data-categoria="Alimentação" style="transition-delay:120ms;">
       <div class="post-card-img ">
         <img src="https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/blog/capas/1790279608356-la2bis.webp" alt="alimentação" loading="lazy">
       </div>
@@ -227,7 +262,7 @@
         <span class="post-card-link">Ler artigo &rarr;</span>
       </div>
     </a>
-<a class="post-card reveal" href="blog/educacao-infantil-na-natureza.html" style="transition-delay:180ms;">
+<a class="post-card reveal" href="blog/educacao-infantil-na-natureza.html" data-categoria="Educação Infantil" style="transition-delay:180ms;">
       <div class="post-card-img ">
         <img src="https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/blog/capas/1790280019226-aroebs.webp" alt="Benefícios do Aprendizado ao Ar Livre" loading="lazy">
       </div>
@@ -239,7 +274,7 @@
         <span class="post-card-link">Ler artigo &rarr;</span>
       </div>
     </a>
-<a class="post-card reveal" href="blog/agricultura-organica.html" style="transition-delay:240ms;">
+<a class="post-card reveal" href="blog/agricultura-organica.html" data-categoria="Agricultura Regenerativa" style="transition-delay:240ms;">
       <div class="post-card-img ">
         <img src="https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/blog/capas/1790280386307-k1geqx.webp" alt="Agricultura Orgânica e Sustentável" loading="lazy">
       </div>
@@ -251,7 +286,7 @@
         <span class="post-card-link">Ler artigo &rarr;</span>
       </div>
     </a>
-<a class="post-card reveal" href="blog/plantas-medicinais.html" style="transition-delay:300ms;">
+<a class="post-card reveal" href="blog/plantas-medicinais.html" data-categoria="Plantas Medicinais" style="transition-delay:300ms;">
       <div class="post-card-img ">
         <img src="https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/blog/capas/1790280590208-b8lpcx.webp" alt="plantas medicinais" loading="lazy">
       </div>
@@ -263,19 +298,7 @@
         <span class="post-card-link">Ler artigo &rarr;</span>
       </div>
     </a>
-<a class="post-card reveal" href="blog/resgatando-brincadeiras.html" style="transition-delay:360ms;">
-      <div class="post-card-img ">
-        <img src="https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/blog/capas/1790280820599-urx14d.webp" alt="Resgatando Brincadeiras e Valores do Campo" loading="lazy">
-      </div>
-      <div class="post-card-body">
-        <div class="post-card-cat">Educação Infantil</div>
-        <div class="post-card-titulo">Reconexão com a Infância: Resgatando Brincadeiras e Valores do Campo</div>
-        <div class="post-card-resumo">Brincadeiras simples, tempo ao ar livre e histórias de família moldam memórias que duram a vida toda.</div>
-        <div class="post-card-meta">24 de setembro de 2026 &middot; Fazendinha Turca</div>
-        <span class="post-card-link">Ler artigo &rarr;</span>
-      </div>
-    </a>
-<a class="post-card reveal" href="blog/como-transformar-residuos-organicos-em-solo-fertil.html" style="transition-delay:360ms;">
+<a class="post-card reveal" href="blog/como-transformar-residuos-organicos-em-solo-fertil.html" data-categoria="Compostagem" style="transition-delay:360ms;">
       <div class="post-card-img ">
         <img src="https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/blog/capas/1790209760537-innyu4.webp" alt="compostagem domestica " loading="lazy">
       </div>
@@ -288,6 +311,7 @@
       </div>
     </a>
     <!-- BLOG_ARTIGOS_FIM -->
+    <div class="estado-msg" id="blog-sem-resultado" style="display:none;">Nenhum artigo encontrado para esta busca/categoria.</div>
   </div>
 </div>
 
@@ -351,6 +375,45 @@
     }, { threshold: 0.12 });
 
     items.forEach(function (el) { observer.observe(el); });
+  })();
+
+  // Filtro por categoria + busca por texto
+  (function () {
+    var buscaInput = document.getElementById('blog-busca-input');
+    var chips = document.querySelectorAll('#blog-categorias .cat-chip');
+    var grid = document.getElementById('blog-grid');
+    var semResultado = document.getElementById('blog-sem-resultado');
+    if (!grid) return;
+    var categoriaAtual = '';
+
+    function aplicarFiltro() {
+      var termo = (buscaInput && buscaInput.value ? buscaInput.value : '').trim().toLowerCase();
+      var cards = grid.querySelectorAll('.post-card');
+      var algumVisivel = false;
+
+      cards.forEach(function (card) {
+        var categoria = card.dataset.categoria || '';
+        var texto = card.textContent.toLowerCase();
+        var passaCategoria = !categoriaAtual || categoria === categoriaAtual;
+        var passaBusca = !termo || texto.indexOf(termo) !== -1;
+        var visivel = passaCategoria && passaBusca;
+        card.style.display = visivel ? '' : 'none';
+        if (visivel) algumVisivel = true;
+      });
+
+      if (semResultado) semResultado.style.display = algumVisivel ? 'none' : 'block';
+    }
+
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        chips.forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        categoriaAtual = chip.dataset.categoria || '';
+        aplicarFiltro();
+      });
+    });
+
+    if (buscaInput) buscaInput.addEventListener('input', aplicarFiltro);
   })();
 </script>
 
