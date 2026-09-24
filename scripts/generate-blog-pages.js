@@ -226,7 +226,7 @@ ${image ? `<meta property="og:image" content="${esc(image)}">` : ''}
 ${category ? `<meta property="article:section" content="${esc(category)}">` : ''}
 ${tags.map(t => `<meta property="article:tag" content="${esc(t)}">`).join('\n')}
 <style>
-$:root {
+:root {
     --cream: #FAF3E6;
     --cream-2: #F1E8D6;
     --green-dark: #1E2E1B;
