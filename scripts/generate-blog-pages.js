@@ -113,7 +113,7 @@ function blogCard(article, index) {
     ? `<img src="${esc(absoluteUrl(article.imagem_capa_url))}" alt="${esc(article.alt_text || article.titulo)}" loading="lazy">`
     : '🌿';
 
-  return `<a class="post-card reveal" href="${url}" style="transition-delay:${Math.min(index, 6) * 60}ms;">
+  return `<a class="post-card reveal" href="${url}" data-categoria="${esc(article.categoria || '')}" style="transition-delay:${Math.min(index, 6) * 60}ms;">
       <div class="post-card-img ${article.imagem_capa_url ? '' : 'sem-imagem'}">
         ${image}
       </div>
@@ -125,6 +125,44 @@ function blogCard(article, index) {
         <span class="post-card-link">Ler artigo &rarr;</span>
       </div>
     </a>`;
+}
+
+function categoriaChip(nome) {
+  return `<button type="button" class="cat-chip" data-categoria="${esc(nome)}">${esc(nome)}</button>`;
+}
+
+async function getCategorias(articles) {
+  try {
+    const rows = await api('blog_categorias?select=*&order=nome.asc');
+    if (Array.isArray(rows) && rows.length) {
+      return rows.map(r => String(r.nome || '').trim()).filter(Boolean);
+    }
+  } catch (err) {
+    console.warn(`Não foi possível carregar blog_categorias (${err.message}); usando categorias dos artigos.`);
+  }
+  const set = new Set();
+  articles.forEach(a => { if (a.categoria) set.add(String(a.categoria).trim()); });
+  return Array.from(set).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+}
+
+function renderCategoriasHtml(categorias) {
+  const source = fs.readFileSync(BLOG_HTML, 'utf8');
+  const startMarker = '<!-- BLOG_CATEGORIAS_INICIO -->';
+  const endMarker = '<!-- BLOG_CATEGORIAS_FIM -->';
+  const start = source.indexOf(startMarker);
+  const end = source.indexOf(endMarker);
+
+  if (start === -1 || end === -1 || end < start) {
+    throw new Error('Os marcadores BLOG_CATEGORIAS_INICIO/ BLOG_CATEGORIAS_FIM não foram encontrados em blog.html.');
+  }
+
+  const chips = ['<button type="button" class="cat-chip active" data-categoria="">Todas</button>']
+    .concat(categorias.map(categoriaChip))
+    .join('\n      ');
+
+  const before = source.slice(0, start + startMarker.length);
+  const after = source.slice(end);
+  fs.writeFileSync(BLOG_HTML, `${before}\n      ${chips}\n      ${after}`, 'utf8');
 }
 
 function renderBlogHtml(articles) {
@@ -486,6 +524,9 @@ async function main() {
     usedSlugs.add(slug);
     normalized.push({ ...article, slug });
   }
+
+  const categorias = await getCategorias(normalized);
+  renderCategoriasHtml(categorias);
 
   clearGeneratedBlogPages();
   renderBlogHtml(normalized);
