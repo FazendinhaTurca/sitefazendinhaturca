@@ -190,7 +190,9 @@
     <p>Histórias do sítio, dicas de frutas da estação, sustentabilidade e novidades do Mercadinho e do Ateliê da Verushka.</p>
   </div>
   <div class="blog-grid" id="blog-grid">
-    <div class="estado-msg">Carregando artigos...</div>
+    <!-- BLOG_ARTIGOS_INICIO -->
+    <div class="estado-msg">Os artigos publicados serão atualizados automaticamente.</div>
+    <!-- BLOG_ARTIGOS_FIM -->
   </div>
 </div>
 
@@ -227,147 +229,34 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-const SUPABASE_URL = "https://iskdknoedbvbiqlosgii.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_m_dI-5n_6F_VGKPFb-EFpg_G1mnOZjQ";
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-
-function formatarData(iso) {
-  if (!iso) return '';
-  return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-}
-
-/* ===================== ANIMAÇÕES DE ENTRADA AO ROLAR ===================== */
-const prefereReduzirMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-let observer;
-if (!prefereReduzirMovimento && 'IntersectionObserver' in window) {
-  observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('in-view');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.12 });
-}
-function observarReveal(container) {
-  if (!observer) { container.querySelectorAll('.reveal').forEach(el => el.classList.add('in-view')); return; }
-  container.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-}
-document.querySelectorAll('.reveal').forEach(el => { if (observer) observer.observe(el); });
-
-/* ===================== LISTAGEM DE ARTIGOS ===================== */
-async function carregarListaArtigos() {
-  const grid = document.getElementById('blog-grid');
-  const { data: artigos, error } = await sb
-    .from('blog_artigos')
-    .select('*')
-    .eq('status', 'publicado')
-    .order('data_publicacao', { ascending: false });
-
-  if (error) {
-    grid.innerHTML = '<div class="estado-msg">Não foi possível carregar os artigos no momento. Tente novamente em instantes.</div>';
-    return;
-  }
-  if (!artigos || artigos.length === 0) {
-    grid.innerHTML = '<div class="estado-msg">Ainda não publicamos nenhum artigo por aqui. Volte em breve!</div>';
-    return;
-  }
-
-  grid.innerHTML = artigos.map((a, i) => `
-    <a class="post-card reveal" href="?post=${encodeURIComponent(a.slug)}" data-slug="${a.slug}" style="transition-delay:${Math.min(i, 6) * 60}ms;">
-      <div class="post-card-img ${a.imagem_capa_url ? '' : 'sem-imagem'}">
-        ${a.imagem_capa_url ? `<img src="${a.imagem_capa_url}" alt="${a.alt_text || a.titulo}" loading="lazy">` : '🌿'}
-      </div>
-      <div class="post-card-body">
-        ${a.categoria ? `<div class="post-card-cat">${a.categoria}</div>` : ''}
-        <div class="post-card-titulo">${a.titulo}</div>
-        ${a.resumo ? `<div class="post-card-resumo">${a.resumo}</div>` : ''}
-        <div class="post-card-meta">${formatarData(a.data_publicacao)}${a.autor ? ' &middot; ' + a.autor : ''}</div>
-        <span class="post-card-link">Ler artigo &rarr;</span>
-      </div>
-    </a>
-  `).join('');
-
-  grid.querySelectorAll('.post-card').forEach(card => {
-    card.addEventListener('click', (e) => {
-      e.preventDefault();
-      const slug = card.dataset.slug;
-      history.pushState({ slug }, '', '?post=' + encodeURIComponent(slug));
-      abrirArtigo(slug);
-    });
+  // Menu mobile
+  document.getElementById('menu-toggle').addEventListener('click', function () {
+    var nav = document.getElementById('main-nav');
+    var isOpen = nav.classList.toggle('nav-open');
+    this.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
   });
 
-  observarReveal(grid);
-}
+  // Animações de entrada
+  (function () {
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var items = document.querySelectorAll('.reveal');
 
-/* ===================== ARTIGO COMPLETO ===================== */
-async function abrirArtigo(slug) {
-  const viewLista = document.getElementById('view-lista');
-  const viewPost = document.getElementById('view-post');
-  viewLista.style.display = 'none';
-  viewPost.style.display = 'block';
-  viewPost.innerHTML = '<div class="estado-msg">Carregando artigo...</div>';
-  window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+    if (reduce || !('IntersectionObserver' in window)) {
+      items.forEach(function (el) { el.classList.add('in-view'); });
+      return;
+    }
 
-  const { data: a, error } = await sb
-    .from('blog_artigos')
-    .select('*')
-    .eq('slug', slug)
-    .eq('status', 'publicado')
-    .single();
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
 
-  if (error || !a) {
-    viewPost.innerHTML = `<a class="post-voltar" href="blog.html">&larr; Voltar para o blog</a><div class="estado-msg">Não encontramos este artigo.</div>`;
-    return;
-  }
-
-  document.getElementById('page-title').textContent = (a.seo_title || a.titulo) + ' | Fazendinha Turca';
-  document.getElementById('meta-description').setAttribute('content', a.seo_description || a.resumo || '');
-  document.getElementById('canonical-link').setAttribute('href', 'https://www.fazendinhaturca.com.br/blog.html?post=' + a.slug);
-  document.getElementById('og-title').setAttribute('content', a.seo_title || a.titulo);
-  document.getElementById('og-description').setAttribute('content', a.seo_description || a.resumo || '');
-  if (a.imagem_capa_url) document.getElementById('og-image').setAttribute('content', a.imagem_capa_url);
-
-  const tagsHtml = (a.tags || []).length
-    ? `<div class="post-full-tags">${a.tags.map(t => `<span>${t}</span>`).join('')}</div>` : '';
-
-  viewPost.innerHTML = `
-    <a class="post-voltar" href="blog.html">&larr; Voltar para o blog</a>
-    ${a.imagem_capa_url ? `<div class="post-full-capa"><img src="${a.imagem_capa_url}" alt="${a.alt_text || a.titulo}"></div>` : ''}
-    ${a.categoria ? `<div class="post-full-cat">${a.categoria}</div>` : ''}
-    <h1>${a.titulo}</h1>
-    <div class="post-full-meta">${formatarData(a.data_publicacao)}${a.autor ? ' &middot; ' + a.autor : ''}</div>
-    <div class="post-full-conteudo">${a.conteudo || ''}</div>
-    ${tagsHtml}
-  `;
-
-  document.querySelector('.post-voltar').addEventListener('click', (e) => {
-    e.preventDefault();
-    history.pushState({}, '', 'blog.html');
-    mostrarLista();
-  });
-}
-
-function mostrarLista() {
-  document.getElementById('view-post').style.display = 'none';
-  document.getElementById('view-lista').style.display = 'block';
-  document.getElementById('page-title').textContent = 'Blog | Fazendinha Turca';
-  document.getElementById('canonical-link').setAttribute('href', 'https://www.fazendinhaturca.com.br/blog.html');
-}
-
-window.addEventListener('popstate', () => {
-  const params = new URLSearchParams(window.location.search);
-  const slug = params.get('post');
-  if (slug) abrirArtigo(slug); else mostrarLista();
-});
-
-/* ===================== INIT ===================== */
-(function () {
-  const params = new URLSearchParams(window.location.search);
-  const slugInicial = params.get('post');
-  carregarListaArtigos();
-  if (slugInicial) abrirArtigo(slugInicial);
-})();
+    items.forEach(function (el) { observer.observe(el); });
+  })();
 </script>
 
 </body>
