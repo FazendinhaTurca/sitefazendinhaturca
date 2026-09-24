@@ -3,16 +3,16 @@ name: Atualizar sitemap.xml
 on:
   push:
     branches: [main]
-    # Evita loop: ignora pushes que só alteraram o próprio sitemap
-    # ou as páginas geradas automaticamente.
+    # Evita loop: ignora o próprio sitemap e as páginas geradas automaticamente.
     paths-ignore:
       - 'sitemap.xml'
       - 'produtos/**'
       - 'atelie/**'
+      - 'blog.html'
+      - 'blog/**'
 
   schedule:
-    # Sincroniza produtos do Supabase e recria as páginas estáticas
-    # a cada 15 minutos.
+    # Sincroniza produtos, Ateliê e Blog do Supabase a cada 15 minutos.
     - cron: '*/15 * * * *'
 
   workflow_dispatch: {}
@@ -35,18 +35,24 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Gerar páginas estáticas dos produtos e sitemap.xml
+      - name: Gerar páginas estáticas dos produtos
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
         run: node scripts/generate-product-pages.js
 
+      - name: Gerar páginas estáticas do Blog
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: node scripts/generate-blog-pages.js
+
       - name: Verificar alterações
         id: verificar-alteracoes
         run: |
-          if git diff --quiet -- sitemap.xml produtos atelie; then
+          if git diff --quiet -- sitemap.xml blog.html produtos atelie blog; then
             echo "alterado=false" >> "$GITHUB_OUTPUT"
-            echo "Nenhuma alteração no sitemap.xml ou nas páginas de produtos."
+            echo "Nenhuma alteração encontrada."
           else
             echo "alterado=true" >> "$GITHUB_OUTPUT"
             echo "Foram encontradas alterações."
@@ -58,8 +64,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add sitemap.xml produtos atelie
+          git add sitemap.xml blog.html produtos atelie blog
 
-          git commit -m "chore: atualizar páginas de produtos e sitemap.xml"
+          git commit -m "chore: atualizar produtos, Ateliê, Blog e sitemap.xml"
 
           git push
