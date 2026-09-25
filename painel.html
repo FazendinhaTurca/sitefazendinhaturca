@@ -692,28 +692,70 @@ document.querySelectorAll('.rte-toolbar').forEach(bar => {
 });
 
 /* ===================== AUTH ===================== */
+const ADMIN_USER_ID = 'f478b18e-073d-4c95-ae58-2e046fd0d04a';
+const ADMIN_EMAIL = 'fazendinhaturca@gmail.com';
+
+async function encerrarSessaoNaoAutorizada() {
+  await sb.auth.signOut();
+  mostrarLogin();
+  const msg = document.getElementById('login-msg');
+  msg.textContent = 'Acesso não autorizado.';
+  msg.className = 'login-msg erro';
+}
+
+async function sessaoEhAdmin(session) {
+  return Boolean(
+    session &&
+    session.user &&
+    session.user.id === ADMIN_USER_ID &&
+    (session.user.email || '').toLowerCase() === ADMIN_EMAIL
+  );
+}
+
 async function checarSessao() {
   const { data } = await sb.auth.getSession();
-  if (data.session) { mostrarApp(); } else { mostrarLogin(); }
+  if (await sessaoEhAdmin(data.session)) {
+    mostrarApp();
+  } else if (data.session) {
+    await encerrarSessaoNaoAutorizada();
+  } else {
+    mostrarLogin();
+  }
 }
+
 function mostrarLogin() {
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app-shell').classList.remove('show');
 }
+
 function mostrarApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-shell').classList.add('show');
   carregarTudo();
 }
+
 document.getElementById('btn-login').addEventListener('click', async () => {
-  const email = document.getElementById('login-email').value.trim();
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
   const senha = document.getElementById('login-senha').value;
   const msg = document.getElementById('login-msg');
   msg.textContent = 'Entrando...'; msg.className = 'login-msg';
-  const { error } = await sb.auth.signInWithPassword({ email, password: senha });
-  if (error) { msg.textContent = 'E-mail ou senha inválidos.'; msg.className = 'login-msg erro'; return; }
+
+  if (email !== ADMIN_EMAIL) {
+    msg.textContent = 'E-mail ou senha inválidos.';
+    msg.className = 'login-msg erro';
+    return;
+  }
+
+  const { data, error } = await sb.auth.signInWithPassword({ email: ADMIN_EMAIL, password: senha });
+  if (error || !(await sessaoEhAdmin(data.session))) {
+    if (data.session) await sb.auth.signOut();
+    msg.textContent = 'E-mail ou senha inválidos.';
+    msg.className = 'login-msg erro';
+    return;
+  }
+
   msg.textContent = ''; mostrarApp();
-});
+}););
 document.getElementById('btn-esqueci').addEventListener('click', async () => {
   const email = document.getElementById('login-email').value.trim();
   const msg = document.getElementById('login-msg');
