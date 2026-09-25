@@ -755,12 +755,16 @@ document.getElementById('btn-login').addEventListener('click', async () => {
   }
 
   msg.textContent = ''; mostrarApp();
-}););
+});
 document.getElementById('btn-esqueci').addEventListener('click', async () => {
-  const email = document.getElementById('login-email').value.trim();
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
   const msg = document.getElementById('login-msg');
-  if (!email) { msg.textContent = 'Informe o e-mail para recuperar a senha.'; msg.className = 'login-msg erro'; return; }
-  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+  if (email !== ADMIN_EMAIL) {
+    msg.textContent = 'E-mail ou senha inválidos.';
+    msg.className = 'login-msg erro';
+    return;
+  }
+  const { error } = await sb.auth.resetPasswordForEmail(ADMIN_EMAIL, { redirectTo: window.location.href });
   msg.textContent = error ? 'Não foi possível enviar o e-mail de recuperação.' : 'E-mail de recuperação enviado (verifique sua caixa de entrada).';
   msg.className = error ? 'login-msg erro' : 'login-msg ok';
 });
