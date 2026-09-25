@@ -416,6 +416,14 @@ ${tags.map(t => `<meta property="article:tag" content="${esc(t)}">`).join('\n')}
   .footer-items span { white-space: nowrap; }
   .footer-nap { font-size: 11px; opacity: 0.75; text-align: center; max-width: 640px; line-height: 1.6; margin: 4px 0 0; }
 
+  .post-faq { margin-top: 42px; padding-top: 28px; border-top: 1px solid rgba(31,61,44,0.16); }
+  .post-faq h2 { margin: 0 0 18px; font-size: clamp(1.35rem, 2.5vw, 1.8rem); color: #1f3d2c; }
+  .post-faq details { border: 1px solid rgba(31,61,44,0.14); border-radius: 12px; margin: 10px 0; background: rgba(255,255,255,0.72); overflow: hidden; }
+  .post-faq summary { cursor: pointer; list-style: none; padding: 16px 18px; font-weight: 700; color: #1f3d2c; }
+  .post-faq summary::-webkit-details-marker { display: none; }
+  .post-faq summary::after { content: '+'; float: right; font-size: 1.2rem; }
+  .post-faq details[open] summary::after { content: '−'; }
+  .post-faq .faq-resposta { padding: 0 18px 17px; line-height: 1.75; color: #3f4a43; }
   .wa-float {
     position: fixed; bottom: 22px; right: 22px; background: #25D366; color: #fff;
     width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center;
