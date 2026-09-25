@@ -233,6 +233,7 @@ function articleTemplate(article, slug, faqs = []) {
     headline: article.titulo,
     description,
     url: canonical,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
     datePublished,
     dateModified,
     author: {
@@ -463,10 +464,10 @@ ${tags.map(t => `<meta property="article:tag" content="${esc(t)}">`).join('\n')}
 
 <main class="post-full">
   <a class="post-voltar" href="${SITE_URL}/blog.html">&larr; Voltar para o blog</a>
-  ${image ? `<div class="post-full-capa"><img src="${esc(image)}" alt="${esc(alt)}"></div>` : ''}
+  ${image ? `<div class="post-full-capa"><img src="${esc(image)}" alt="${esc(alt)}" width="1200" height="800" fetchpriority="high"></div>` : ''}
   ${category ? `<div class="post-full-cat">${esc(category)}</div>` : ''}
   <h1>${esc(article.titulo)}</h1>
-  <div class="post-full-meta">${esc(formatDate(datePublished))}${article.autor ? ` &middot; ${esc(article.autor)}` : ''}</div>
+  <div class="post-full-meta">${esc(formatDate(datePublished))}${article.autor ? ` &middot; ${esc(article.autor)}` : ''}${dateModified !== datePublished ? ` &middot; Atualizado em ${esc(formatDate(dateModified))}` : ''}</div>
   <div class="post-full-conteudo">${article.conteudo || ''}</div>
   ${tagsHtml}
 </main>
@@ -503,6 +504,11 @@ ${tags.map(t => `<meta property="article:tag" content="${esc(t)}">`).join('\n')}
 `;
 }
 
+function sitemapImage(imageUrl) {
+  if (!imageUrl) return '';
+  return '    <image:image>\n      <image:loc>' + esc(absoluteUrl(imageUrl)) + '</image:loc>\n    </image:image>';
+}
+
 function updateSitemap(articleUrls) {
   const today = new Date().toISOString().slice(0, 10);
   let xml = fs.existsSync(SITEMAP)
@@ -522,10 +528,10 @@ function updateSitemap(articleUrls) {
   }
 
   for (const item of articleUrls) {
-    urls.push(`  <url>\n    <loc>${esc(item.url)}</loc>\n    <lastmod>${esc(item.lastmod || today)}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>`);
+    urls.push(`  <url>\n    <loc>${esc(item.url)}</loc>\n    <lastmod>${esc(item.lastmod || today)}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n${sitemapImage(item.image)}\n  </url>`);
   }
 
-  const header = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+  const header = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">';
   fs.writeFileSync(SITEMAP, `${header}\n${urls.join('\n')}\n</urlset>\n`, 'utf8');
 }
 
@@ -587,7 +593,8 @@ async function main() {
 
     sitemapItems.push({
       url: articleUrl(article.slug),
-      lastmod: isoDate(article.atualizado_em || article.data_publicacao || article.criado_em, today)
+      lastmod: isoDate(article.atualizado_em || article.data_publicacao || article.criado_em, today),
+      image: article.imagem_capa_url || ''
     });
   }
 
