@@ -186,7 +186,31 @@ function renderBlogHtml(articles) {
   fs.writeFileSync(BLOG_HTML, `${before}\n    ${content}\n    ${after}`, 'utf8');
 }
 
-function articleTemplate(article, slug) {
+function faqSchema(faqs) {
+  if (!Array.isArray(faqs) || !faqs.length) return '';
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(item => ({
+      "@type": "Question",
+      "name": String(item.pergunta || '').trim(),
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": stripHtml(String(item.resposta || '')).trim()
+      }
+    })).filter(item => item.name && item.acceptedAnswer.text)
+  };
+}
+
+function sanitizeArticleContent(html) {
+  return String(html || '')
+    .replace(/<\/?(?:html|head|body|main)[^>]*>/gi, '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .trim();
+}
+
+function articleTemplate(article, slug, faqs = []) {
   const canonical = articleUrl(slug);
   const title = String(article.seo_title || `${article.titulo} | Blog | Fazendinha Turca`).trim();
   const description = String(
@@ -225,6 +249,7 @@ function articleTemplate(article, slug) {
     ...(tags.length ? { keywords: tags.join(', ') } : {})
   };
 
+  const faqData = faqSchema(faqs);
   const breadcrumb = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -538,6 +563,9 @@ async function main() {
   }
 
   const categorias = await getCategorias(normalized);
+  const faqRows = await api('blog_faqs?select=artigo_id,pergunta,resposta,ordem&ativo=eq.true&order=ordem.asc');
+  const faqsByArticle = new Map();
+  if (Array.isArray(faqRows)) faqRows.forEach(f => { if (!f || !f.artigo_id || !String(f.pergunta || '').trim() || !String(f.resposta || '').trim()) return; if (!faqsByArticle.has(f.artigo_id)) faqsByArticle.set(f.artigo_id, []); faqsByArticle.get(f.artigo_id).push(f); });
   const today = new Date().toISOString().slice(0, 10);
   const sitemapItems = [];
 
@@ -545,7 +573,7 @@ async function main() {
     const filename = `${article.slug}.html`;
     fs.writeFileSync(
       path.join(BLOG_DIR, filename),
-      articleTemplate(article, article.slug),
+      articleTemplate(article, article.slug, faqsByArticle.get(article.id) || []),
       'utf8'
     );
 
