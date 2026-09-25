@@ -41,6 +41,11 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Validar scripts de geração
+        run: |
+          node --check scripts/generate-product-pages.js
+          node --check scripts/generate-blog-pages.js
+
       - name: Gerar páginas estáticas dos produtos
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
