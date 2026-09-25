@@ -148,29 +148,39 @@ function cut(text, max) {
     .replace(/[\s,.;:-]+$/, '') + '…';
 }
 
+function seoTitle(value, fallback) {
+  const custom = String(value || '').replace(/\s+/g, ' ').trim();
+  const candidate = custom || String(fallback || '').replace(/\s+/g, ' ').trim();
+  return cut(candidate, 65);
+}
+
+function seoDescription(value, fallback) {
+  const custom = stripHtml(value || '');
+  const candidate = custom || stripHtml(fallback || '');
+  return cut(candidate, 158);
+}
+
 // SEO do Ateliê: usa o que foi digitado no painel só quando é bom o bastante
 // (título >= 30 e descrição >= 80 caracteres); senão gera automaticamente.
 function atelieTitle(p) {
   const custom = String(p.seo_title || '').trim();
-  if (custom.length >= 30) return custom;
+  if (custom.length >= 30) return seoTitle(custom, p.nome);
   const candidates = [
     `${p.nome} | Hama Beads – Ateliê da Verushka`,
     `${p.nome} | Ateliê da Verushka`,
     p.nome
   ];
-  return candidates.find(t => t.length <= 65) || p.nome;
+  return seoTitle('', candidates.find(t => t.length <= 65) || p.nome);
 }
 
 function atelieDescription(p) {
   const custom = stripHtml(p.seo_description || '');
-  if (custom.length >= 80) return cut(custom, 158);
+  if (custom.length >= 80) return seoDescription(custom, p.nome);
   const short = stripHtml(p.descricao_curta || '').replace(/[.\s]+$/, '');
   const jaCitaHama = /hama|hamma/i.test(short);
   const tail = `${jaCitaHama ? ' Feito' : ' Hama Beads feito'} à mão em Araruama-RJ, sob encomenda em 3 a 10 dias. Envio para todo o Brasil.`;
   const full = `${p.nome}${short ? ` – ${short}.` : '.'}${tail}`;
-  return full.length <= 158
-    ? full
-    : cut(`${p.nome}. Hama Beads feito à mão em Araruama-RJ, sob encomenda em 3 a 10 dias. Envio para todo o Brasil.`, 158);
+  return seoDescription('', full);
 }
 
 function atelieAlt(p) {
@@ -260,18 +270,18 @@ function moneyTxt(value) {
 
 function mercadoTitle(p) {
   const custom = String(p.seo_title || '').trim();
-  if (custom.length >= 30) return custom;
+  if (custom.length >= 30) return seoTitle(custom, p.nome);
   const candidates = [
     `Comprar ${p.nome} em Araruama-RJ | Mercadinho Fazendinha Turca`,
     `Comprar ${p.nome} em Araruama-RJ | Fazendinha Turca`,
     `${p.nome} em Araruama-RJ`
   ];
-  return candidates.find(t => t.length <= 65) || p.nome;
+  return seoTitle('', candidates.find(t => t.length <= 65) || p.nome);
 }
 
 function mercadoDescription(p) {
   const custom = stripHtml(p.seo_description || '');
-  if (custom.length >= 80) return cut(custom, 158);
+  if (custom.length >= 80) return seoDescription(custom, p.nome);
   const qtd = mercadoQtd(p);
   const preco = moneyTxt(p.preco);
   const build = withQtd => {
@@ -281,7 +291,7 @@ function mercadoDescription(p) {
       : `Comprar ${item} por ${preco} no ${MERCADO_NOME}: produtos naturais com entrega em Araruama-RJ. Peça pelo WhatsApp.`;
   };
   const full = build(true);
-  return full.length <= 158 ? full : cut(build(false), 158);
+  return seoDescription('', full);
 }
 
 function mercadoAlt(p) {
@@ -325,7 +335,10 @@ function template(p, project, category, siblings = []) {
     ? mercadoAlt(p)
     : p.alt_text || p.nome;
 
-  const mainImage = absoluteUrl(p.imagem_principal_url);
+  const realMainImage = p.imagem_principal_url
+    ? absoluteUrl(p.imagem_principal_url)
+    : '';
+  const mainImage = realMainImage || `${SITE_URL}/images/hero-frutas.webp`;
 
   const gallery = Array.isArray(p.galeria)
     ? p.galeria.filter(Boolean)
@@ -333,7 +346,7 @@ function template(p, project, category, siblings = []) {
 
   const images = [
     ...new Set([
-      mainImage,
+      ...(realMainImage ? [realMainImage] : []),
       ...gallery.map(absoluteUrl)
     ])
   ];
@@ -371,8 +384,8 @@ function template(p, project, category, siblings = []) {
     '@type': 'Product',
     '@id': `${canonical}#product`,
     name: p.nome,
-    description,
-    image: images,
+    description: stripHtml(description),
+    ...(images.length ? { image: images } : {}),
     ...(isShop ? { url: canonical, mainEntityOfPage: canonical } : {}),
     sku: p.id,
     brand: {
@@ -867,7 +880,10 @@ ${extraCss}    footer{
                       alt="${esc(alt)}${
                         i ? ` - foto ${i + 1}` : ''
                       }"
+                      width="78"
+                      height="78"
                       loading="lazy"
+                      decoding="async"
                     >`
                 )
                 .join('')}
@@ -1108,7 +1124,7 @@ async function main() {
       changefreq: 'weekly',
       images: [
         ...new Set([
-          absoluteUrl(p.imagem_principal_url),
+          ...(p.imagem_principal_url ? [absoluteUrl(p.imagem_principal_url)] : []),
           ...(Array.isArray(p.galeria)
             ? p.galeria.filter(Boolean).map(absoluteUrl)
             : [])
