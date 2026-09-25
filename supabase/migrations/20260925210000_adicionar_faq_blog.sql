@@ -14,9 +14,11 @@ create index if not exists idx_blog_faqs_artigo_ordem on public.blog_faqs (artig
 alter table public.blog_faqs enable row level security;
 grant select on public.blog_faqs to anon, authenticated;
 
+drop policy if exists "publico_le_faqs_ativos" on public.blog_faqs;
 create policy "publico_le_faqs_ativos" on public.blog_faqs
 for select to anon, authenticated using (ativo = true);
 
+drop policy if exists "admin_full_blog_faqs" on public.blog_faqs;
 create policy "admin_full_blog_faqs" on public.blog_faqs
 for all to authenticated
 using ((select auth.uid()) = 'f478b18e-073d-4c95-ae58-2e046fd0d04a'::uuid)
