@@ -186,7 +186,31 @@ function renderBlogHtml(articles) {
   fs.writeFileSync(BLOG_HTML, `${before}\n    ${content}\n    ${after}`, 'utf8');
 }
 
-function articleTemplate(article, slug) {
+function faqSchema(faqs) {
+  if (!Array.isArray(faqs) || !faqs.length) return '';
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(item => ({
+      "@type": "Question",
+      "name": String(item.pergunta || '').trim(),
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": stripHtml(String(item.resposta || '')).trim()
+      }
+    })).filter(item => item.name && item.acceptedAnswer.text)
+  };
+}
+
+function sanitizeArticleContent(html) {
+  return String(html || '')
+    .replace(/<\/?(?:html|head|body|main)[^>]*>/gi, '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .trim();
+}
+
+function articleTemplate(article, slug, faqs = []) {
   const canonical = articleUrl(slug);
   const title = String(article.seo_title || `${article.titulo} | Blog | Fazendinha Turca`).trim();
   const description = String(
@@ -225,6 +249,7 @@ function articleTemplate(article, slug) {
     ...(tags.length ? { keywords: tags.join(', ') } : {})
   };
 
+  const faqData = faqSchema(faqs);
   const breadcrumb = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -391,6 +416,14 @@ ${tags.map(t => `<meta property="article:tag" content="${esc(t)}">`).join('\n')}
   .footer-items span { white-space: nowrap; }
   .footer-nap { font-size: 11px; opacity: 0.75; text-align: center; max-width: 640px; line-height: 1.6; margin: 4px 0 0; }
 
+  .post-faq { margin-top: 42px; padding-top: 28px; border-top: 1px solid rgba(31,61,44,0.16); }
+  .post-faq h2 { margin: 0 0 18px; font-size: clamp(1.35rem, 2.5vw, 1.8rem); color: #1f3d2c; }
+  .post-faq details { border: 1px solid rgba(31,61,44,0.14); border-radius: 12px; margin: 10px 0; background: rgba(255,255,255,0.72); overflow: hidden; }
+  .post-faq summary { cursor: pointer; list-style: none; padding: 16px 18px; font-weight: 700; color: #1f3d2c; }
+  .post-faq summary::-webkit-details-marker { display: none; }
+  .post-faq summary::after { content: '+'; float: right; font-size: 1.2rem; }
+  .post-faq details[open] summary::after { content: '−'; }
+  .post-faq .faq-resposta { padding: 0 18px 17px; line-height: 1.75; color: #3f4a43; }
   .wa-float {
     position: fixed; bottom: 22px; right: 22px; background: #25D366; color: #fff;
     width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center;
@@ -538,6 +571,9 @@ async function main() {
   }
 
   const categorias = await getCategorias(normalized);
+  const faqRows = await api('blog_faqs?select=artigo_id,pergunta,resposta,ordem&ativo=eq.true&order=ordem.asc');
+  const faqsByArticle = new Map();
+  if (Array.isArray(faqRows)) faqRows.forEach(f => { if (!f || !f.artigo_id || !String(f.pergunta || '').trim() || !String(f.resposta || '').trim()) return; if (!faqsByArticle.has(f.artigo_id)) faqsByArticle.set(f.artigo_id, []); faqsByArticle.get(f.artigo_id).push(f); });
   const today = new Date().toISOString().slice(0, 10);
   const sitemapItems = [];
 
@@ -545,7 +581,7 @@ async function main() {
     const filename = `${article.slug}.html`;
     fs.writeFileSync(
       path.join(BLOG_DIR, filename),
-      articleTemplate(article, article.slug),
+      articleTemplate(article, article.slug, faqsByArticle.get(article.id) || []),
       'utf8'
     );
 

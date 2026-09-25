@@ -575,6 +575,14 @@
       </div>
       <div class="rte-content" id="ar-conteudo-rte" contenteditable="true"></div>
 
+      <div class="blog-faq-editor">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px;">
+          <div><label style="margin:0;">Perguntas frequentes (FAQ)</label><small style="display:block;opacity:.7;margin-top:4px;">Configure as perguntas e respostas que aparecerão no final do artigo.</small></div>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-adicionar-faq">+ Adicionar pergunta</button>
+        </div>
+        <div id="ar-faq-list" style="margin-top:12px;"></div>
+      </div>
+
       <label>Imagem de capa</label>
       <input type="file" id="ar-capa" accept="image/*">
       <img class="img-preview" id="ar-capa-preview" style="display:none;">
@@ -1351,6 +1359,21 @@ async function carregarBlogTabela() {
 
 document.getElementById('btn-novo-artigo').addEventListener('click', () => abrirModalArtigo(null));
 
+function escapeHtmlAttr(value) { return String(value || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function renumerarFaqs() { document.querySelectorAll('#ar-faq-list .blog-faq-row strong').forEach((el, i) => el.textContent = 'Pergunta ' + (i + 1)); }
+function renderFaqEditor(items = []) {
+  const list = document.getElementById('ar-faq-list'); list.innerHTML = '';
+  if (!items.length) { list.innerHTML = '<div class="msg-box" style="display:block;opacity:.75;">Nenhuma pergunta cadastrada.</div>'; return; }
+  items.forEach((item, index) => {
+    const row = document.createElement('div'); row.className = 'blog-faq-row'; row.style.cssText = 'border:1px solid #ddd;border-radius:10px;padding:12px;margin-bottom:10px;background:#fafafa;';
+    row.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><strong>Pergunta ${index + 1}</strong><button type="button" class="btn btn-danger btn-sm" data-remove-faq>Excluir</button></div><label>Pergunta</label><input type="text" data-faq-pergunta value="${escapeHtmlAttr(item.pergunta || '')}" placeholder="Ex.: Como funciona a agricultura regenerativa?"><label>Resposta</label><div class="rte-content" data-faq-resposta contenteditable="true" style="min-height:90px;">${sanitizarHtml(item.resposta || '')}</div>`;
+    row.querySelector('[data-remove-faq]').addEventListener('click', () => { row.remove(); renumerarFaqs(); });
+    list.appendChild(row);
+  });
+}
+function coletarFaqs() { return [...document.querySelectorAll('#ar-faq-list .blog-faq-row')].map((row,index)=>({pergunta:row.querySelector('[data-faq-pergunta]').value.trim(),resposta:sanitizarHtml(row.querySelector('[data-faq-resposta]').innerHTML),ordem:index,ativo:true})).filter(item=>item.pergunta&&item.resposta); }
+document.getElementById('btn-adicionar-faq').addEventListener('click', () => { const items=coletarFaqs(); items.push({pergunta:'',resposta:'',ordem:items.length,ativo:true}); renderFaqEditor(items); document.querySelectorAll('[data-faq-pergunta]')[items.length-1]?.focus(); });
+
 async function abrirModalArtigo(artigoId) {
   const form = document.getElementById('form-artigo');
   form.reset();
@@ -1360,6 +1383,7 @@ async function abrirModalArtigo(artigoId) {
   document.getElementById('ar-msg').style.display = 'none';
   document.getElementById('btn-excluir-artigo').style.display = artigoId ? 'inline-block' : 'none';
   form.dataset.capaAtual = '';
+  renderFaqEditor([]);
 
   if (artigoId) {
     document.getElementById('artigo-modal-titulo').textContent = 'Editar artigo';
@@ -1382,6 +1406,8 @@ async function abrirModalArtigo(artigoId) {
         document.getElementById('ar-capa-preview').style.display = 'block';
       }
       form.dataset.capaAtual = a.imagem_capa_url || '';
+      const { data: faqs } = await sb.from('blog_faqs').select('id,pergunta,resposta,ordem,ativo').eq('artigo_id', artigoId).order('ordem', { ascending: true });
+      renderFaqEditor(faqs || []);
     }
   } else {
     await carregarCategoriasBlogSelect('');
@@ -1419,12 +1445,21 @@ document.getElementById('form-artigo').addEventListener('submit', async (e) => {
       alt_text: document.getElementById('ar-alt-text').value
     };
 
+    let savedArticleId = artigoId;
     if (artigoId) {
       const { error } = await sb.from('blog_artigos').update(payload).eq('id', artigoId);
       if (error) throw error;
     } else {
-      const { error } = await sb.from('blog_artigos').insert(payload);
+      const { data: novoArtigo, error } = await sb.from('blog_artigos').insert(payload).select('id').single();
       if (error) throw error;
+      savedArticleId = novoArtigo.id;
+    }
+    const faqs = coletarFaqs();
+    const { error: faqDeleteError } = await sb.from('blog_faqs').delete().eq('artigo_id', savedArticleId);
+    if (faqDeleteError) throw faqDeleteError;
+    if (faqs.length) {
+      const { error: faqInsertError } = await sb.from('blog_faqs').insert(faqs.map(f => ({ ...f, artigo_id: savedArticleId })));
+      if (faqInsertError) throw faqInsertError;
     }
     msg.className = 'msg-box ok'; msg.textContent = 'Artigo salvo com sucesso!';
     await carregarBlogTabela();
