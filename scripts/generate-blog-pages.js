@@ -96,11 +96,12 @@ async function api(pathname) {
   return res.json();
 }
 
-function clearGeneratedBlogPages() {
+function cleanupGeneratedBlogPages(keepFiles) {
   fs.mkdirSync(BLOG_DIR, { recursive: true });
+  const keep = new Set(keepFiles);
 
   for (const file of fs.readdirSync(BLOG_DIR)) {
-    if (file.toLowerCase().endsWith('.html')) {
+    if (file.toLowerCase().endsWith('.html') && !keep.has(file)) {
       fs.unlinkSync(path.join(BLOG_DIR, file));
     }
   }
@@ -502,7 +503,14 @@ async function main() {
     'blog_artigos?select=*&status=eq.publicado'
   );
 
-  const sorted = (articles || [])
+  if (!Array.isArray(articles)) {
+    throw new Error('Resposta inesperada do Supabase: blog_artigos precisa ser uma lista.');
+  }
+  if (!articles.length) {
+    throw new Error('Nenhum artigo publicado foi retornado. Geração cancelada para preservar as páginas atuais.');
+  }
+
+  const sorted = articles
     .filter(a => a && (a.slug || a.titulo))
     .sort((a, b) => {
       const da = new Date(a.data_publicacao || a.criado_em || 0).getTime();
@@ -525,12 +533,11 @@ async function main() {
     normalized.push({ ...article, slug });
   }
 
+  if (!normalized.length) {
+    throw new Error('Nenhum artigo válido foi encontrado. Geração cancelada para preservar as páginas atuais.');
+  }
+
   const categorias = await getCategorias(normalized);
-  renderCategoriasHtml(categorias);
-
-  clearGeneratedBlogPages();
-  renderBlogHtml(normalized);
-
   const today = new Date().toISOString().slice(0, 10);
   const sitemapItems = [];
 
@@ -548,6 +555,9 @@ async function main() {
     });
   }
 
+  renderCategoriasHtml(categorias);
+  renderBlogHtml(normalized);
+  cleanupGeneratedBlogPages(normalized.map(article => `${article.slug}.html`));
   updateSitemap(sitemapItems);
 
   console.log(
