@@ -967,6 +967,11 @@ async function main() {
   if (!products.length) {
     throw new Error('Nenhum produto ativo foi retornado. Geração cancelada para evitar apagar páginas válidas por uma resposta vazia inesperada.');
   }
+  const supportedProjectIds = new Set(projects.filter(p => ['mercadinho', 'atelier-verushka'].includes(p.slug)).map(p => p.id));
+  const supportedProducts = products.filter(p => supportedProjectIds.has(p.projeto_id) && p.slug);
+  if (!supportedProducts.length) {
+    throw new Error('Nenhum produto ativo válido do Mercadinho ou Ateliê foi retornado. Geração cancelada para preservar as páginas atuais.');
+  }
 
   const siblingsOf = slugProjeto => {
     const id = projects.find(pr => pr.slug === slugProjeto)?.id;
