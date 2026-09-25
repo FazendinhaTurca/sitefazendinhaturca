@@ -110,11 +110,12 @@ async function api(pathname) {
   return res.json();
 }
 
-function clearGenerated(dir) {
+function cleanupGenerated(dir, keepFiles) {
   fs.mkdirSync(dir, { recursive: true });
+  const keep = new Set(keepFiles);
 
   for (const file of fs.readdirSync(dir)) {
-    if (file.toLowerCase().endsWith('.html')) {
+    if (file.toLowerCase().endsWith('.html') && !keep.has(file)) {
       fs.unlinkSync(path.join(dir, file));
     }
   }
@@ -957,8 +958,14 @@ async function main() {
     'produtos?select=*&status=eq.ativo&order=ordem.asc'
   );
 
-  for (const dir of Object.values(GENERATED)) {
-    clearGenerated(dir);
+  if (!Array.isArray(projects) || !Array.isArray(categories) || !Array.isArray(products)) {
+    throw new Error('Resposta inesperada do Supabase: projetos, categorias e produtos precisam ser listas.');
+  }
+  if (!projects.length) {
+    throw new Error('Nenhum projeto ativo foi retornado. Geração cancelada para preservar as páginas atuais.');
+  }
+  if (!products.length) {
+    throw new Error('Nenhum produto ativo foi retornado. Geração cancelada para evitar apagar páginas válidas por uma resposta vazia inesperada.');
   }
 
   const siblingsOf = slugProjeto => {
@@ -1023,6 +1030,10 @@ async function main() {
   let generated = 0;
 
   const usedPaths = new Set();
+  const keepByProject = {
+    mercadinho: new Set(),
+    'atelier-verushka': new Set()
+  };
 
   for (const p of products) {
     const project = projectById.get(p.projeto_id);
@@ -1053,6 +1064,7 @@ async function main() {
     }
 
     usedPaths.add(uniquePath);
+    keepByProject[project.slug].add(`${slug}.html`);
 
     const dir = GENERATED[project.slug];
 
@@ -1130,6 +1142,10 @@ async function main() {
     xml.join('\n'),
     'utf8'
   );
+
+  for (const [projectSlug, dir] of Object.entries(GENERATED)) {
+    cleanupGenerated(dir, keepByProject[projectSlug]);
+  }
 
   console.log(
     `Geradas ${generated} páginas estáticas de produtos e ${sitemap.size} URLs no sitemap.`
