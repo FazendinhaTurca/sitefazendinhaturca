@@ -1579,30 +1579,60 @@ async function atualizarSitemapAutomatico(mostrarMsg = true) {
   const msg = document.getElementById('sitemap-msg');
   if (mostrarMsg) { msg.style.display = 'block'; msg.className = 'msg-box'; msg.textContent = 'Sincronizando URLs...'; }
   try {
-    const base = 'https://fazendinhaturca.com.br/';
-    const { data: produtos } = await sb.from('produtos').select('slug, projeto_id, status, atualizado_em, projetos(menu_url, slug, status)').eq('status', 'ativo');
-    const { data: artigos } = await sb.from('blog_artigos').select('slug, status, atualizado_em').eq('status', 'publicado');
+    const base = 'https://www.fazendinhaturca.com.br/';
+    const { data: produtos, error: produtosError } = await sb.from('produtos').select('slug, projeto_id, status, atualizado_em, projetos(menu_url, slug, status)').eq('status', 'ativo');
+    const { data: artigos, error: artigosError } = await sb.from('blog_artigos').select('slug, status, atualizado_em').eq('status', 'publicado');
 
-    // URLs antigas de produto (inclusive as que usavam #produto-slug) deixam de ser válidas.
-    // O gerador do GitHub cria as páginas HTML estáticas correspondentes às novas URLs.
-    await sb.from('sitemap_urls').update({ ativo: false }).eq('origem', 'produto');
+    if (produtosError) throw produtosError;
+    if (artigosError) throw artigosError;
+
+    // O GitHub gera páginas estáticas para produtos e artigos.
+    // As URLs antigas do painel não devem continuar ativas no índice.
+    for (const origem of ['produto', 'artigo']) {
+      const { error } = await sb.from('sitemap_urls').update({ ativo: false }).eq('origem', origem);
+      if (error) throw error;
+    }
 
     const urlsAtivas = new Map();
     urlsAtivas.set(base, { origem: 'pagina', priority: 1.0 });
     urlsAtivas.set(`${base}produtos.html`, { origem: 'pagina', priority: 0.9 });
     urlsAtivas.set(`${base}atelie.html`, { origem: 'pagina', priority: 0.9 });
     urlsAtivas.set(`${base}blog.html`, { origem: 'pagina', priority: 0.8 });
+
     (produtos || []).forEach(p => {
       if (p.projetos && p.projetos.status === 'ativo' && p.projetos.slug && p.slug) {
         const pasta = p.projetos.slug === 'atelier-verushka' ? 'atelie' : (p.projetos.slug === 'mercadinho' ? 'produtos' : null);
-        if (pasta) urlsAtivas.set(`${base}${pasta}/${encodeURIComponent(p.slug)}.html`, { origem: 'produto', priority: 0.8 });
+        if (pasta) {
+          urlsAtivas.set(`${base}${pasta}/${encodeURIComponent(p.slug)}.html`, {
+            origem: 'produto',
+            priority: 0.8
+          });
+        }
       }
     });
-    (artigos || []).forEach(a => urlsAtivas.set(`${base}blog.html?post=${encodeURIComponent(a.slug)}`, { origem: 'artigo', priority: 0.7 }));
-    projetosCache.filter(p => p.status === 'ativo' && p.menu_url).forEach(p => urlsAtivas.set(`${base}${p.menu_url}`, { origem: 'pagina', priority: 0.9 }));
+
+    (artigos || []).forEach(a => {
+      if (a.slug) {
+        urlsAtivas.set(`${base}blog/${encodeURIComponent(a.slug)}.html`, {
+          origem: 'artigo',
+          priority: 0.7
+        });
+      }
+    });
+
+    projetosCache.filter(p => p.status === 'ativo' && p.menu_url).forEach(p => {
+      urlsAtivas.set(`${base}${String(p.menu_url).replace(/^\/+/, '')}`, {
+        origem: 'pagina',
+        priority: 0.9
+      });
+    });
 
     for (const [url, meta] of urlsAtivas) {
-      await sb.from('sitemap_urls').upsert({ url, origem: meta.origem, ativo: true, priority: meta.priority }, { onConflict: 'url' });
+      const { error } = await sb.from('sitemap_urls').upsert(
+        { url, origem: meta.origem, ativo: true, priority: meta.priority },
+        { onConflict: 'url' }
+      );
+      if (error) throw error;
     }
     if (mostrarMsg) { msg.className = 'msg-box ok'; msg.textContent = 'Sitemap sincronizado com sucesso!'; }
     await carregarSitemap();
