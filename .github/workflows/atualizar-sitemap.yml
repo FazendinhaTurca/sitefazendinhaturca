@@ -20,9 +20,15 @@ on:
 permissions:
   contents: write
 
+# Impede que execuções agendadas e manuais concorram e sobrescrevam os mesmos arquivos.
+concurrency:
+  group: gerar-site-estatico
+  cancel-in-progress: false
+
 jobs:
   atualizar-sitemap:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout do repositório
@@ -34,6 +40,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+
+      - name: Validar scripts de geração
+        run: |
+          node --check scripts/generate-product-pages.js
+          node --check scripts/generate-blog-pages.js
 
       - name: Gerar páginas estáticas dos produtos
         env:
