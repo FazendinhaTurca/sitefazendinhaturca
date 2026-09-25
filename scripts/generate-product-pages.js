@@ -972,6 +972,9 @@ async function main() {
   if (!supportedProducts.length) {
     throw new Error('Nenhum produto ativo válido do Mercadinho ou Ateliê foi retornado. Geração cancelada para preservar as páginas atuais.');
   }
+  const supportedProductsByProject = new Set(
+    supportedProducts.map(p => p.projeto_id)
+  );
 
   const siblingsOf = slugProjeto => {
     const id = projects.find(pr => pr.slug === slugProjeto)?.id;
@@ -1149,7 +1152,10 @@ async function main() {
   );
 
   for (const [projectSlug, dir] of Object.entries(GENERATED)) {
-    cleanupGenerated(dir, keepByProject[projectSlug]);
+    const projectId = projects.find(p => p.slug === projectSlug)?.id;
+    if (projectId && supportedProductsByProject.has(projectId)) {
+      cleanupGenerated(dir, keepByProject[projectSlug]);
+    }
   }
 
   console.log(
