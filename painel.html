@@ -78,7 +78,12 @@
   .modal-actions { margin-top:20px; display:flex; gap:10px; justify-content:flex-end; }
   .img-preview { width:70px; height:70px; object-fit:cover; border-radius:8px; background:var(--cream-2); margin-top:6px; }
   .galeria-preview { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
-  .galeria-preview img { width:54px; height:54px; object-fit:cover; border-radius:6px; }
+  .galeria-preview img { width:54px; height:54px; object-fit:cover; border-radius:6px; display:block; }
+  .imagem-preview-wrap { position:relative; width:70px; height:70px; margin-top:6px; }
+  .imagem-preview-wrap .img-preview { width:70px; height:70px; margin-top:0; display:block; }
+  .imagem-remove-btn { position:absolute; top:-7px; right:-7px; width:24px; height:24px; border:none; border-radius:50%; background:var(--danger); color:#fff; font-weight:800; line-height:24px; padding:0; box-shadow:0 1px 5px rgba(0,0,0,.25); z-index:2; }
+  .galeria-item { position:relative; width:54px; height:54px; }
+  .galeria-item .galeria-remove-btn { position:absolute; top:-7px; right:-7px; width:22px; height:22px; border:none; border-radius:50%; background:var(--danger); color:#fff; font-weight:800; line-height:22px; padding:0; box-shadow:0 1px 5px rgba(0,0,0,.25); z-index:2; }
 
   /* editor rich text */
   .rte-toolbar { display:flex; gap:4px; flex-wrap:wrap; background:var(--paper); border:1px solid rgba(122,82,48,0.35); border-bottom:none; border-radius:6px 6px 0 0; padding:6px; }
@@ -288,7 +293,6 @@
     <button class="tab-btn" data-tab="storage">Storage</button>
     <button class="tab-btn" data-tab="sitemap">Sitemap</button>
     <button class="tab-btn" data-tab="config">Configurações</button>
-  </aside>
     </nav>
     <button class="btn btn-outline sair-btn btn-sm" id="btn-logout" style="color:var(--cream); border-color:rgba(255,255,255,0.4);">Sair</button>
   </aside>
@@ -516,7 +520,10 @@
 
       <label>Imagem principal</label>
       <input type="file" id="pr-imagem" accept="image/*">
-      <img class="img-preview" id="pr-imagem-preview" style="display:none;">
+      <div class="imagem-preview-wrap" id="pr-imagem-preview-wrap" style="display:none;">
+        <img class="img-preview" id="pr-imagem-preview" alt="Pré-visualização da imagem principal">
+        <button type="button" class="imagem-remove-btn" id="pr-remover-imagem" aria-label="Excluir imagem principal">&times;</button>
+      </div>
 
       <label>Galeria de imagens (pode selecionar várias)</label>
       <input type="file" id="pr-galeria" accept="image/*" multiple>
@@ -1027,6 +1034,57 @@ document.querySelectorAll('[data-novo-produto]').forEach(btn => {
   btn.addEventListener('click', () => abrirModalProduto(btn.dataset.novoProduto, null));
 });
 
+function obterCaminhoStorage(url) {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    const marker = '/storage/v1/object/public/' + BUCKET + '/';
+    const idx = parsed.pathname.indexOf(marker);
+    if (idx === -1) return null;
+    return decodeURIComponent(parsed.pathname.slice(idx + marker.length));
+  } catch (_) {
+    return null;
+  }
+}
+
+async function removerArquivosStorage(urls) {
+  const caminhos = [...new Set((urls || []).map(obterCaminhoStorage).filter(Boolean))];
+  if (!caminhos.length) return { removidos: 0, erros: [] };
+  const { error } = await sb.storage.from(BUCKET).remove(caminhos);
+  return { removidos: error ? 0 : caminhos.length, erros: error ? [error] : [] };
+}
+
+function renderImagemPrincipalPreview(url) {
+  const wrap = document.getElementById('pr-imagem-preview-wrap');
+  const img = document.getElementById('pr-imagem-preview');
+  if (!url) {
+    wrap.style.display = 'none';
+    img.removeAttribute('src');
+    return;
+  }
+  img.src = url;
+  wrap.style.display = 'block';
+}
+
+function renderGaleriaPreview(galeria) {
+  const container = document.getElementById('pr-galeria-preview');
+  container.innerHTML = '';
+  (galeria || []).forEach((url, index) => {
+    const item = document.createElement('div');
+    item.className = 'galeria-item';
+    item.innerHTML = '<img src="' + escapeHtmlAttr(url) + '" alt="Imagem da galeria ' + (index + 1) + '">' +
+      '<button type="button" class="galeria-remove-btn" aria-label="Excluir imagem da galeria">&times;</button>';
+    item.querySelector('.galeria-remove-btn').addEventListener('click', () => {
+      const form = document.getElementById('form-produto');
+      const atual = JSON.parse(form.dataset.galeriaAtual || '[]');
+      const proximo = atual.filter((_, i) => i !== index);
+      form.dataset.galeriaAtual = JSON.stringify(proximo);
+      renderGaleriaPreview(proximo);
+    });
+    container.appendChild(item);
+  });
+}
+
 async function abrirModalProduto(projetoSlug, produtoId) {
   const projeto = projetosCache.find(p => p.slug === projetoSlug);
   if (!projeto) {
@@ -1038,7 +1096,7 @@ async function abrirModalProduto(projetoSlug, produtoId) {
   document.getElementById('pr-id').value = produtoId || '';
   document.getElementById('pr-projeto-slug').value = projetoSlug;
   document.getElementById('pr-descricao-rte').innerHTML = '';
-  document.getElementById('pr-imagem-preview').style.display = 'none';
+  renderImagemPrincipalPreview(null);
   document.getElementById('pr-galeria-preview').innerHTML = '';
   document.getElementById('pr-msg').style.display = 'none';
   document.getElementById('btn-excluir-produto').style.display = produtoId ? 'inline-block' : 'none';
@@ -1065,15 +1123,10 @@ async function abrirModalProduto(projetoSlug, produtoId) {
       document.getElementById('pr-seo-desc').value = p.seo_description || '';
       document.getElementById('pr-alt-text').value = p.alt_text || '';
       document.getElementById('pr-slug').value = p.slug || '';
-      if (p.imagem_principal_url) {
-        document.getElementById('pr-imagem-preview').src = p.imagem_principal_url;
-        document.getElementById('pr-imagem-preview').style.display = 'block';
-      }
-      (p.galeria || []).forEach(url => {
-        document.getElementById('pr-galeria-preview').insertAdjacentHTML('beforeend', `<img src="${url}">`);
-      });
+      renderImagemPrincipalPreview(p.imagem_principal_url || null);
       form.dataset.imagemAtual = p.imagem_principal_url || '';
       form.dataset.galeriaAtual = JSON.stringify(p.galeria || []);
+      renderGaleriaPreview(p.galeria || []);
     }
   } else {
     document.getElementById('produto-modal-titulo').textContent = 'Novo produto';
@@ -1082,6 +1135,23 @@ async function abrirModalProduto(projetoSlug, produtoId) {
   }
   document.getElementById('modal-produto').classList.add('show');
 }
+
+document.getElementById('pr-remover-imagem').addEventListener('click', () => {
+  const form = document.getElementById('form-produto');
+  if (!form.dataset.imagemAtual) return;
+  if (!confirm('Excluir a imagem principal?')) return;
+  form.dataset.imagemAtual = '';
+  document.getElementById('pr-imagem').value = '';
+  renderImagemPrincipalPreview(null);
+});
+
+document.getElementById('pr-imagem').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => renderImagemPrincipalPreview(reader.result);
+  reader.readAsDataURL(file);
+});
 
 /* ===================== CATEGORIAS (por projeto) ===================== */
 async function recarregarCategoriasCache() {
@@ -1192,6 +1262,7 @@ document.getElementById('form-categoria').addEventListener('submit', async (e) =
     setTimeout(() => document.getElementById('modal-categoria').classList.remove('show'), 700);
   } catch (err) {
     console.error(err);
+    if (novosUploads.length) await removerArquivosStorage(novosUploads);
     msg.className = 'msg-box erro'; msg.textContent = 'Erro ao salvar: ' + (err.message || 'tente novamente.');
   }
 });
@@ -1262,15 +1333,23 @@ document.getElementById('form-produto').addEventListener('submit', async (e) => 
     return;
   }
 
+  let novosUploads = [];
   try {
-    let imagemUrl = form.dataset.imagemAtual || null;
-    const arquivoImagem = document.getElementById('pr-imagem').files[0];
-    if (arquivoImagem) imagemUrl = await enviarImagemStorage(arquivoImagem, projetoSlug, 'produtos');
+    const imagemAnterior = form.dataset.imagemAtual || '';
+    const galeriaAnterior = JSON.parse(form.dataset.galeriaAtual || '[]');
 
-    let galeria = JSON.parse(form.dataset.galeriaAtual || '[]');
+    let imagemUrl = imagemAnterior || null;
+    const arquivoImagem = document.getElementById('pr-imagem').files[0];
+    if (arquivoImagem) {
+      imagemUrl = await enviarImagemStorage(arquivoImagem, projetoSlug, 'produtos');
+      novosUploads.push(imagemUrl);
+    }
+
+    let galeria = [...galeriaAnterior];
     const arquivosGaleria = document.getElementById('pr-galeria').files;
     for (const f of arquivosGaleria) {
       const url = await enviarImagemStorage(f, projetoSlug, 'produtos');
+      novosUploads.push(url);
       galeria.push(url);
     }
 
@@ -1303,6 +1382,13 @@ document.getElementById('form-produto').addEventListener('submit', async (e) => 
       if (error) throw error;
     }
 
+    const imagensAnteriores = [imagemAnterior, ...galeriaAnterior].filter(Boolean);
+    const imagensAtuais = [imagemUrl, ...galeria].filter(Boolean);
+    const imagensObsoletas = imagensAnteriores.filter(url => !imagensAtuais.includes(url));
+    if (imagensObsoletas.length) await removerArquivosStorage(imagensObsoletas);
+    form.dataset.imagemAtual = imagemUrl || '';
+    form.dataset.galeriaAtual = JSON.stringify(galeria);
+
     msg.className = 'msg-box ok'; msg.textContent = 'Produto salvo com sucesso!';
     await carregarProdutosTabela(projetoSlug, projetoSlug === 'mercadinho' ? 'tabela-mercadinho' : 'tabela-atelier');
     await carregarDashboard();
@@ -1318,7 +1404,18 @@ document.getElementById('btn-excluir-produto').addEventListener('click', async (
   const produtoId = document.getElementById('pr-id').value;
   const projetoSlug = document.getElementById('pr-projeto-slug').value;
   if (!produtoId || !confirm('Excluir este produto definitivamente?')) return;
-  await sb.from('produtos').delete().eq('id', produtoId);
+  const { data: produtoExcluido, error: erroConsulta } = await sb.from('produtos').select('imagem_principal_url,galeria').eq('id', produtoId).single();
+  if (erroConsulta) {
+    alert('Não foi possível carregar as imagens do produto: ' + (erroConsulta.message || 'erro desconhecido.'));
+    return;
+  }
+  const { error: erroExclusao } = await sb.from('produtos').delete().eq('id', produtoId);
+  if (erroExclusao) {
+    alert('Não foi possível excluir o produto: ' + (erroExclusao.message || 'erro desconhecido.'));
+    return;
+  }
+  const imagensExcluidas = [produtoExcluido?.imagem_principal_url, ...(produtoExcluido?.galeria || [])].filter(Boolean);
+  if (imagensExcluidas.length) await removerArquivosStorage(imagensExcluidas);
   document.getElementById('modal-produto').classList.remove('show');
   carregarProdutosTabela(projetoSlug, projetoSlug === 'mercadinho' ? 'tabela-mercadinho' : 'tabela-atelier');
   carregarDashboard();
