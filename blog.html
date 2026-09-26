@@ -213,14 +213,14 @@
     </div>
     <div class="blog-categorias" id="blog-categorias">
       <!-- BLOG_CATEGORIAS_INICIO -->
-      <button type="button" class="cat-chip active" data-categoria="">Todas</button>
-      <button type="button" class="cat-chip" data-categoria="Agricultura Regenerativa">Agricultura Regenerativa</button>
-      <button type="button" class="cat-chip" data-categoria="Alimentação">Alimentação</button>
-      <button type="button" class="cat-chip" data-categoria="Compostagem">Compostagem</button>
-      <button type="button" class="cat-chip" data-categoria="Consumo">Consumo</button>
-      <button type="button" class="cat-chip" data-categoria="Educação Infantil">Educação Infantil</button>
-      <button type="button" class="cat-chip" data-categoria="Plantas Medicinais">Plantas Medicinais</button>
-      <button type="button" class="cat-chip" data-categoria="Receitas">Receitas</button>
+      <button type="button" class="cat-chip active" data-categoria="" aria-pressed="true">Todas</button>
+      <button type="button" class="cat-chip" data-categoria="Agricultura Regenerativa" aria-pressed="false">Agricultura Regenerativa</button>
+      <button type="button" class="cat-chip" data-categoria="Alimentação" aria-pressed="false">Alimentação</button>
+      <button type="button" class="cat-chip" data-categoria="Compostagem" aria-pressed="false">Compostagem</button>
+      <button type="button" class="cat-chip" data-categoria="Consumo" aria-pressed="false">Consumo</button>
+      <button type="button" class="cat-chip" data-categoria="Educação Infantil" aria-pressed="false">Educação Infantil</button>
+      <button type="button" class="cat-chip" data-categoria="Plantas Medicinais" aria-pressed="false">Plantas Medicinais</button>
+      <button type="button" class="cat-chip" data-categoria="Receitas" aria-pressed="false">Receitas</button>
       <!-- BLOG_CATEGORIAS_FIM -->
     </div>
   </div>
@@ -419,8 +419,9 @@
 
     chips.forEach(function (chip) {
       chip.addEventListener('click', function () {
-        chips.forEach(function (c) { c.classList.remove('active'); });
+        chips.forEach(function (c) { c.classList.remove('active'); c.setAttribute('aria-pressed', 'false'); });
         chip.classList.add('active');
+        chip.setAttribute('aria-pressed', 'true');
         categoriaAtual = chip.dataset.categoria || '';
         aplicarFiltro();
       });
