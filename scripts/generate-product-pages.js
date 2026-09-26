@@ -86,6 +86,32 @@ function money(value) {
   });
 }
 
+function sanitizeProductDescription(html) {
+  const allowedTags = /^(?:p|br|strong|b|em|i|u|h2|h3|ul|ol|li|a)$/i;
+
+  return String(html || '')
+    .replace(/<script[\\s\\S]*?<\\/script>/gi, '')
+    .replace(/<style[\\s\\S]*?<\\/style>/gi, '')
+    .replace(/<\\/?(?:html|head|body|main|iframe|object|embed|form|input|button|textarea|select|option|svg|math|link|meta|base)[^>]*>/gi, '')
+    .replace(/<([a-z][a-z0-9-]*)(\\s[^>]*)?>/gi, (match, tag, attrs = '') => {
+      if (!allowedTags.test(tag)) return '';
+
+      if (tag.toLowerCase() !== 'a') {
+        return '<' + tag.toLowerCase() + '>';
+      }
+
+      const hrefMatch = attrs.match(/\\bhref\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))/i);
+      const href = (hrefMatch?.[1] || hrefMatch?.[2] || hrefMatch?.[3] || '').trim();
+
+      if (!/^(?:https?:\\/\\/|mailto:|tel:|\\/|#)/i.test(href)) {
+        return '<a>';
+      }
+
+      return '<a href="' + esc(href) + '" rel="noopener noreferrer">';
+    })
+    .trim();
+}
+
 function jsonLd(obj) {
   return JSON.stringify(obj, null, 2)
     .replace(/<\/script/gi, '<\\/script');
@@ -362,7 +388,7 @@ function template(p, project, category, siblings = []) {
   ];
 
   const descriptionHtml = p.descricao
-    ? p.descricao
+    ? sanitizeProductDescription(p.descricao)
     : `<p>${esc(
         p.descricao_curta ||
           `${p.nome} disponível na ${
