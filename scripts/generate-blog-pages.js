@@ -224,6 +224,7 @@ function articleTemplate(article, slug, faqs = []) {
   const datePublished = article.data_publicacao || article.criado_em || new Date().toISOString();
   const dateModified = article.atualizado_em || datePublished;
   const tags = Array.isArray(article.tags) ? article.tags.filter(Boolean) : [];
+  const articleContent = sanitizeArticleContent(article.conteudo);
   const category = String(article.categoria || '').trim();
 
   const schema = {
@@ -468,7 +469,7 @@ ${tags.map(t => `<meta property="article:tag" content="${esc(t)}">`).join('\n')}
   ${category ? `<div class="post-full-cat">${esc(category)}</div>` : ''}
   <h1>${esc(article.titulo)}</h1>
   <div class="post-full-meta">${esc(formatDate(datePublished))}${article.autor ? ` &middot; ${esc(article.autor)}` : ''}${dateModified !== datePublished ? ` &middot; Atualizado em ${esc(formatDate(dateModified))}` : ''}</div>
-  <div class="post-full-conteudo">${article.conteudo || ''}</div>
+  <div class="post-full-conteudo">${articleContent}</div>
   ${tagsHtml}
 </main>
 
