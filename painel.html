@@ -592,7 +592,7 @@
 
       <label>Imagem de capa</label>
       <input type="file" id="ar-capa" accept="image/*">
-      <img class="img-preview" id="ar-capa-preview" style="display:none;">
+      <img class="img-preview" id="ar-capa-preview" alt="Pré-visualização da capa do artigo" style="display:none;">
 
       <div class="grid-2">
         <div><label>Categoria</label><select id="ar-categoria"><option value="">Selecione uma categoria...</option></select></div>
@@ -990,7 +990,7 @@ function renderProdutosTabela(projetoSlug, containerId) {
     <th></th><th>Nome</th><th>Categoria</th><th>Preço</th><th>Status</th><th>Ordem</th><th></th>
   </tr></thead><tbody>${produtos.map(p => `
     <tr>
-      <td>${p.imagem_principal_url ? `<img class="thumb" src="${p.imagem_principal_url}">` : `<div class="thumb"></div>`}</td>
+      <td>${p.imagem_principal_url ? `<img class="thumb" src="${p.imagem_principal_url}" alt="Imagem principal de ${escapeHtmlAttr(p.nome || "produto")}">` : `<div class="thumb"></div>`}</td>
       <td>${p.nome}</td>
       <td>${p.categorias ? p.categorias.nome : '-'}</td>
       <td>R$ ${Number(p.preco).toFixed(2).replace('.', ',')}</td>
@@ -1431,7 +1431,7 @@ async function carregarBlogTabela() {
   container.innerHTML = `<table><thead><tr><th></th><th>Título</th><th>Categoria</th><th>Status</th><th>Publicação</th><th></th></tr></thead><tbody>
     ${artigos.map(a => `
     <tr>
-      <td>${a.imagem_capa_url ? `<img class="thumb" src="${a.imagem_capa_url}">` : `<div class="thumb"></div>`}</td>
+      <td>${a.imagem_capa_url ? `<img class="thumb" src="${a.imagem_capa_url}" alt="Imagem de capa de ${escapeHtmlAttr(a.titulo || "artigo")}">` : `<div class="thumb"></div>`}</td>
       <td>${a.titulo}</td>
       <td>${a.categoria || '-'}</td>
       <td><span class="badge ${a.status}">${a.status}</span></td>
