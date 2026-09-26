@@ -103,6 +103,25 @@ jobs:
               raise SystemExit('Sitemap contém URLs duplicadas.')
 
           root_dir = Path('.')
+          required_pages = ('index.html', 'produtos.html', 'atelie.html', 'blog.html')
+          required_urls = {
+              'https://www.fazendinhaturca.com.br/',
+              'https://www.fazendinhaturca.com.br/produtos.html',
+              'https://www.fazendinhaturca.com.br/atelie.html',
+              'https://www.fazendinhaturca.com.br/blog.html',
+          }
+
+          for page in required_pages:
+              if not (root_dir / page).is_file():
+                  raise SystemExit(f'Página principal ausente no repositório: {page}')
+
+          missing_required = required_urls - set(locs)
+          if missing_required:
+              raise SystemExit(
+                  'Página principal ausente no sitemap: ' +
+                  ', '.join(sorted(missing_required))
+              )
+
           for loc in locs:
               path = urlparse(loc).path.lstrip('/')
               if path.startswith(('produtos/', 'atelie/', 'blog/')):
@@ -110,7 +129,7 @@ jobs:
                   if not target.is_file():
                       raise SystemExit(f'URL do sitemap sem arquivo correspondente: {loc}')
 
-          print(f'Sitemap validado: {len(locs)} URLs, sem duplicidades, URLs HTTPS válidas e páginas geradas presentes.')
+          print(f'Sitemap validado: {len(locs)} URLs, páginas principais presentes, sem duplicidades, URLs HTTPS válidas e páginas geradas presentes.')
           PY
 
       - name: Verificar alterações
