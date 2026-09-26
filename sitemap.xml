@@ -43,15 +43,6 @@
     <priority>0.8</priority>
   </url>
 <url>
-    <loc>https://www.fazendinhaturca.com.br/produtos/abacate.html</loc>
-    <lastmod>2026-09-17</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://www.fazendinhaturca.com.br/images/produtos/abacate.webp</image:loc>
-    </image:image>
-  </url>
-<url>
     <loc>https://www.fazendinhaturca.com.br/atelie/chaveiro-girassol.html</loc>
     <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
@@ -64,17 +55,17 @@
     </image:image>
   </url>
 <url>
-    <loc>https://www.fazendinhaturca.com.br/produtos/mamao.html</loc>
+    <loc>https://www.fazendinhaturca.com.br/produtos/abacate.html</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://www.fazendinhaturca.com.br/images/produtos/mamao.webp</image:loc>
+      <image:loc>https://www.fazendinhaturca.com.br/images/produtos/abacate.webp</image:loc>
     </image:image>
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/atelie/quadro-capadocia.html</loc>
-    <lastmod>2026-09-22</lastmod>
+    <lastmod>2026-09-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -82,12 +73,12 @@
     </image:image>
   </url>
 <url>
-    <loc>https://www.fazendinhaturca.com.br/produtos/abacaxi.html</loc>
+    <loc>https://www.fazendinhaturca.com.br/produtos/mamao.html</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://www.fazendinhaturca.com.br/images/produtos/abacaxi.webp</image:loc>
+      <image:loc>https://www.fazendinhaturca.com.br/images/produtos/mamao.webp</image:loc>
     </image:image>
   </url>
 <url>
@@ -100,6 +91,15 @@
     </image:image>
     <image:image>
       <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790096249626-hxjeax.webp</image:loc>
+    </image:image>
+  </url>
+<url>
+    <loc>https://www.fazendinhaturca.com.br/produtos/abacaxi.html</loc>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://www.fazendinhaturca.com.br/images/produtos/abacaxi.webp</image:loc>
     </image:image>
   </url>
 <url>
@@ -166,21 +166,21 @@
     </image:image>
   </url>
 <url>
-    <loc>https://www.fazendinhaturca.com.br/atelie/porta-copo-floral.html</loc>
-    <lastmod>2026-09-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790104288262-n1033x.webp</image:loc>
-    </image:image>
-  </url>
-<url>
     <loc>https://www.fazendinhaturca.com.br/produtos/tangerina-azeda.html</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://www.fazendinhaturca.com.br/images/produtos/tangerina-azeda.webp</image:loc>
+    </image:image>
+  </url>
+<url>
+    <loc>https://www.fazendinhaturca.com.br/atelie/porta-copo-floral.html</loc>
+    <lastmod>2026-09-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790104288262-n1033x.webp</image:loc>
     </image:image>
   </url>
 <url>
@@ -785,6 +785,19 @@
     <image:image>
       <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/mercadinho/produtos/1790129190175-53sycp.webp</image:loc>
     </image:image>
+  </url>
+<url>
+    <loc>https://www.fazendinhaturca.com.br/produtos/teste-tecnico-nao-comprar.html</loc>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.fazendinhaturca.com.br/blog/teste-tecnico-faq-blog-nao-publicar.html</loc>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+
   </url>
   <url>
     <loc>https://www.fazendinhaturca.com.br/blog/agricultura-regenerativa.html</loc>
