@@ -58,6 +58,61 @@ jobs:
           SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
         run: node scripts/generate-blog-pages.js
 
+      - name: Validar sitemap e referências geradas
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from urllib.parse import urlparse
+          import datetime
+          import xml.etree.ElementTree as ET
+
+          sitemap_path = Path('sitemap.xml')
+          root = ET.parse(sitemap_path).getroot()
+          ns = {'sm': 'http://www.sitemaps.org/schemas/sitemap/0.9',
+                'img': 'http://www.google.com/schemas/sitemap-image/1.1'}
+          urls = root.findall('sm:url', ns)
+          if not urls:
+              raise SystemExit('Sitemap sem URLs.')
+
+          locs = []
+          today = datetime.date.today()
+          for node in urls:
+              loc = (node.findtext('sm:loc', namespaces=ns) or '').strip()
+              if not loc:
+                  raise SystemExit('Sitemap contém <url> sem <loc>.')
+              parsed = urlparse(loc)
+              if parsed.scheme != 'https' or parsed.netloc != 'www.fazendinhaturca.com.br' or parsed.query or parsed.fragment:
+                  raise SystemExit(f'URL inválida no sitemap: {loc}')
+              locs.append(loc)
+
+              lastmod = node.findtext('sm:lastmod', namespaces=ns)
+              if lastmod:
+                  try:
+                      value = datetime.date.fromisoformat(lastmod)
+                  except ValueError:
+                      raise SystemExit(f'lastmod inválido: {lastmod}')
+                  if value > today:
+                      raise SystemExit(f'lastmod futuro: {lastmod}')
+
+              for image in node.findall('img:image', ns):
+                  image_loc = (image.findtext('img:loc', namespaces=ns) or '').strip()
+                  if not image_loc or not image_loc.startswith('https://'):
+                      raise SystemExit(f'Imagem inválida no sitemap: {image_loc}')
+
+          if len(locs) != len(set(locs)):
+              raise SystemExit('Sitemap contém URLs duplicadas.')
+
+          root_dir = Path('.')
+          for loc in locs:
+              path = urlparse(loc).path.lstrip('/')
+              if path.startswith(('produtos/', 'atelie/', 'blog/')):
+                  target = root_dir / path
+                  if not target.is_file():
+                      raise SystemExit(f'URL do sitemap sem arquivo correspondente: {loc}')
+
+          print(f'Sitemap validado: {len(locs)} URLs, sem duplicidades, URLs HTTPS válidas e páginas geradas presentes.')
+          PY
+
       - name: Verificar alterações
         id: verificar-alteracoes
         run: |
