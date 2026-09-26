@@ -1032,7 +1032,7 @@ async function main() {
   const sitemap = new Map();
 
   const existingLastmods = new Map([
-    [${SITE_URL}/`, readExistingLastmod(`${SITE_URL}/`)],
+    [`${SITE_URL}/`, readExistingLastmod(`${SITE_URL}/`)],
     [`${SITE_URL}/produtos.html`, readExistingLastmod(`${SITE_URL}/produtos.html`)],
     [`${SITE_URL}/atelie.html`, readExistingLastmod(`${SITE_URL}/atelie.html`)],
     [`${SITE_URL}/blog.html`, readExistingLastmod(`${SITE_URL}/blog.html`)]
