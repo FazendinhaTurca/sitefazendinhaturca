@@ -10,6 +10,8 @@
 <meta name="author" content="Fazendinha Turca">
 <meta name="theme-color" content="#1E2E1B">
 <link rel="canonical" href="https://www.fazendinhaturca.com.br/produtos.html">
+<link rel="preconnect" href="https://iskdknoedbvbiqlosgii.supabase.co">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="icon" href="/images/favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
 
@@ -194,6 +196,17 @@
     gap: 10px;
     justify-content: center;
   }
+  @media (max-width: 640px) {
+    .filtros {
+      justify-content: flex-start;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+    }
+    .filtro-btn { flex: 0 0 auto; }
+  }
   .filtro-btn {
     background: var(--cream-2);
     border: 1px solid rgba(30,46,27,0.12);
@@ -283,6 +296,10 @@
   }
   @media (max-width: 520px) {
     .produtos-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .produto-body { padding: 9px 9px 10px; }
+    .produto-actions { gap: 5px; }
+    .qtd-stepper button { width: 24px; height: 26px; }
+    .btn-add { font-size: 10.5px; padding: 7px 6px; }
   }
 
   .cat-heading {
@@ -763,7 +780,8 @@
       "description": "Catálogo de frutas, legumes, verduras, ovos, leite e mel naturais de fazendas parceiras, com entrega somente em Araruama-RJ.",
       "url": "https://www.fazendinhaturca.com.br/produtos.html",
       "isPartOf": { "@id": "https://www.fazendinhaturca.com.br/#negocio" },
-      "breadcrumb": { "@id": "https://www.fazendinhaturca.com.br/produtos.html#breadcrumb" }
+      "breadcrumb": { "@id": "https://www.fazendinhaturca.com.br/produtos.html#breadcrumb" },
+      "mainEntity": { "@id": "https://www.fazendinhaturca.com.br/produtos.html#itens" }
     },
     {
       "@type": "BreadcrumbList",
@@ -840,7 +858,7 @@
 </section>
 
 <div class="busca-wrap">
-  <input type="text" id="busca-input" placeholder="Buscar produto...">
+  <input type="search" id="busca-input" placeholder="Buscar produto..." aria-label="Buscar produto no catálogo" autocomplete="off" enterkeyhint="search">
 </div>
 
 <div class="filtros" id="filtros">
@@ -1086,32 +1104,25 @@ function atualizarSchemaProdutos() {
   if (!el || !PRODUTOS.length) return;
 
   const baseUrl = 'https://www.fazendinhaturca.com.br/';
-  const itemListElement = PRODUTOS.map((p, i) => ({
-    "@type": "ListItem",
-    "position": i + 1,
-    "item": {
-      "@type": "Product",
-      "name": p.nome,
-      "description": p.qtd || `${p.nome} fresco, disponível no catálogo da Fazendinha Turca com entrega em Araruama-RJ.`,
-      "image": p.img ? (p.img.startsWith('http') ? p.img : baseUrl + p.img.replace(/^\//, '')) : baseUrl + 'images/hero-frutas.webp',
-      "category": p.cat || undefined,
-      "brand": { "@type": "Brand", "name": "Fazendinha Turca" },
-      "offers": {
-        "@type": "Offer",
-        "priceCurrency": "BRL",
-        "price": Number(p.preco || 0).toFixed(2),
-        "availability": "https://schema.org/InStock",
-        "areaServed": "Araruama, RJ",
-        "url": baseUrl + 'produtos.html'
-      }
-    }
-  }));
+  const itemListElement = PRODUTOS
+    .map((p, i) => {
+      const productSlug = p.slug || slug(p.nome);
+      if (!productSlug) return null;
+      return {
+        "@type": "ListItem",
+        "position": i + 1,
+        "url": baseUrl + "produtos/" + encodeURIComponent(productSlug) + ".html"
+      };
+    })
+    .filter(Boolean);
 
   const schema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
     "@id": baseUrl + "produtos.html#itens",
-    "name": "Frutas, Legumes e Verduras da Fazendinha Turca",
+    "name": "Catálogo de Produtos da Fazendinha Turca",
+    "url": baseUrl + "produtos.html",
+    "itemListOrder": "https://schema.org/ItemListOrderAscending",
     "numberOfItems": itemListElement.length,
     "itemListElement": itemListElement
   };
@@ -1123,11 +1134,12 @@ function atualizarSchemaProdutos() {
    mantendo o botão "Todos" fixo. */
 function montarFiltrosCategorias() {
   const wrap = document.getElementById('filtros');
-  wrap.innerHTML = '<button class="filtro-btn active" data-cat="Todos">Todos</button>';
+  wrap.innerHTML = '<button class="filtro-btn active" data-cat="Todos" aria-pressed="true">Todos</button>';
   CATEGORIAS_MERCADINHO.forEach(cat => {
     const btn = document.createElement('button');
     btn.className = 'filtro-btn';
     btn.dataset.cat = cat;
+    btn.setAttribute('aria-pressed', 'false');
     btn.textContent = cat;
     wrap.appendChild(btn);
   });
@@ -1215,12 +1227,12 @@ function renderCatalogo() {
     grid.className = 'produtos-grid';
 
     itensCat.forEach(p => {
-      const card = document.createElement('div');
+      const card = document.createElement('article');
       card.className = 'produto-card';
       card.id = slug(p.nome);
 
       const imgHtml = p.img
-        ? `<img src="${p.img}" alt="${p.nome} - Fazendinha Turca" width="700" height="700" loading="lazy">`
+        ? `<img src="${p.img}" alt="${p.nome} - Fazendinha Turca" width="700" height="700" loading="lazy" decoding="async">`
         : `<div class="produto-img-placeholder">${EMOJI_CAT[p.cat] || "🌿"}</div>`;
 
       const qtdAtual = (carrinho[p.id] && carrinho[p.id].qtd) || 0;
@@ -1287,8 +1299,12 @@ function renderCatalogo() {
 document.getElementById('filtros').addEventListener('click', (e) => {
   const btn = e.target.closest('.filtro-btn');
   if (!btn) return;
-  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.filtro-btn').forEach(b => {
+    b.classList.remove('active');
+    b.setAttribute('aria-pressed', 'false');
+  });
   btn.classList.add('active');
+  btn.setAttribute('aria-pressed', 'true');
   categoriaAtiva = btn.dataset.cat;
   renderCatalogo();
 });
