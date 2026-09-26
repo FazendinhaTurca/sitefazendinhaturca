@@ -110,6 +110,16 @@ async function api(pathname) {
   return res.json();
 }
 
+function readExistingLastmod(url) {
+  const sitemapPath = path.join(ROOT, 'sitemap.xml');
+  if (!fs.existsSync(sitemapPath)) return '';
+  const xml = fs.readFileSync(sitemapPath, 'utf8');
+  const blocks = xml.split('<url>').slice(1);
+  const block = blocks.find(item => item.includes('<loc>' + url + '</loc>'));
+  const match = block && block.match(/<lastmod>([^<]+)<\/lastmod>/);
+  return match ? match[1] : '';
+}
+
 function cleanupGenerated(dir, keepFiles) {
   fs.mkdirSync(dir, { recursive: true });
   const keep = new Set(keepFiles);
@@ -1021,32 +1031,39 @@ async function main() {
 
   const sitemap = new Map();
 
+  const existingLastmods = new Map([
+    [${SITE_URL}/`, readExistingLastmod(`${SITE_URL}/`)],
+    [`${SITE_URL}/produtos.html`, readExistingLastmod(`${SITE_URL}/produtos.html`)],
+    [`${SITE_URL}/atelie.html`, readExistingLastmod(`${SITE_URL}/atelie.html`)],
+    [`${SITE_URL}/blog.html`, readExistingLastmod(`${SITE_URL}/blog.html`)]
+  ]);
+
   const today = new Date()
     .toISOString()
     .slice(0, 10);
 
   sitemap.set(`${SITE_URL}/`, {
-    lastmod: today,
+    lastmod: existingLastmods.get(`${SITE_URL}/`) || today,
     priority: '1.0',
     changefreq: 'weekly'
   });
 
   sitemap.set(`${SITE_URL}/produtos.html`, {
-    lastmod: today,
+    lastmod: existingLastmods.get(`${SITE_URL}/produtos.html`) || today,
     priority: '0.9',
     changefreq: 'weekly',
     images: [`${SITE_URL}/images/hero-frutas.webp`]
   });
 
   sitemap.set(`${SITE_URL}/atelie.html`, {
-    lastmod: today,
+    lastmod: existingLastmods.get(`${SITE_URL}/atelie.html`) || today,
     priority: '0.9',
     changefreq: 'weekly',
     images: ATELIE_BANNERS
   });
 
   sitemap.set(`${SITE_URL}/blog.html`, {
-    lastmod: today,
+    lastmod: existingLastmods.get(`${SITE_URL}/blog.html`) || today,
     priority: '0.8',
     changefreq: 'weekly'
   });
@@ -1119,6 +1136,8 @@ async function main() {
     sitemap.set(url, {
       lastmod: p.atualizado_em
         ? String(p.atualizado_em).slice(0, 10)
+        : p.criado_em
+        ? String(p.criado_em).slice(0, 10)
         : today,
       priority: '0.8',
       changefreq: 'weekly',
