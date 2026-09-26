@@ -111,7 +111,7 @@ function blogCard(article, index) {
   const slug = safeSlug(article.slug || article.titulo);
   const url = `blog/${encodeURIComponent(slug)}.html`;
   const image = article.imagem_capa_url
-    ? `<img src="${esc(absoluteUrl(article.imagem_capa_url))}" alt="${esc(article.alt_text || article.titulo)}" loading="lazy">`
+    ? `<img src="${esc(absoluteUrl(article.imagem_capa_url))}" alt="${esc(article.alt_text || article.titulo)}" width="1200" height="800" loading="lazy" decoding="async">`
     : '🌿';
 
   return `<a class="post-card reveal" href="${url}" data-categoria="${esc(article.categoria || '')}" style="transition-delay:${Math.min(index, 6) * 60}ms;">
