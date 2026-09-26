@@ -990,11 +990,11 @@ function renderProdutosTabela(projetoSlug, containerId) {
     <th></th><th>Nome</th><th>Categoria</th><th>Preço</th><th>Status</th><th>Ordem</th><th></th>
   </tr></thead><tbody>${produtos.map(p => `
     <tr>
-      <td>${p.imagem_principal_url ? `<img class="thumb" src="${p.imagem_principal_url}" alt="Imagem principal de ${escapeHtmlAttr(p.nome || "produto")}">` : `<div class="thumb"></div>`}</td>
-      <td>${p.nome}</td>
-      <td>${p.categorias ? p.categorias.nome : '-'}</td>
+      <td>${p.imagem_principal_url ? `<img class="thumb" src="${escapeHtmlAttr(p.imagem_principal_url)}" alt="Imagem principal de ${escapeHtmlAttr(p.nome || "produto")}">` : `<div class="thumb"></div>`}</td>
+      <td>${escapeHtmlAttr(p.nome || '')}</td>
+      <td>${escapeHtmlAttr(p.categorias ? p.categorias.nome : '-')}</td>
       <td>R$ ${Number(p.preco).toFixed(2).replace('.', ',')}</td>
-      <td><span class="badge ${p.status}">${p.status}</span></td>
+      <td><span class="badge ${p.status}">${escapeHtmlAttr(p.status || '')}</span></td>
       <td>${p.ordem}</td>
       <td class="row-actions">
         <button class="btn btn-outline btn-sm" data-editar-produto="${p.id}" data-projeto="${projetoSlug}">Editar</button>
@@ -1174,7 +1174,7 @@ function renderCategoriasProjeto(projetoSlug, containerId) {
     <span class="categoria-chip ${c.status !== 'ativo' ? 'inativo' : ''}">
       ${c.nome}
       <button type="button" class="cat-editar" data-editar-categoria="${c.id}" data-projeto="${projetoSlug}" aria-label="Editar categoria">&#9998;</button>
-      <button type="button" class="cat-excluir" data-excluir-categoria="${c.id}" data-projeto="${projetoSlug}" aria-label="Excluir categoria">&times;</button>
+      <button type="button" class="cat-excluir" data-excluir-categoria="${escapeHtmlAttr(c.id)}" data-projeto="${escapeHtmlAttr(projetoSlug)}" aria-label="Excluir categoria">&times;</button>
     </span>`).join('');
 
   container.querySelectorAll('[data-editar-categoria]').forEach(btn => {
@@ -1431,10 +1431,10 @@ async function carregarBlogTabela() {
   container.innerHTML = `<table><thead><tr><th></th><th>Título</th><th>Categoria</th><th>Status</th><th>Publicação</th><th></th></tr></thead><tbody>
     ${artigos.map(a => `
     <tr>
-      <td>${a.imagem_capa_url ? `<img class="thumb" src="${a.imagem_capa_url}" alt="Imagem de capa de ${escapeHtmlAttr(a.titulo || "artigo")}">` : `<div class="thumb"></div>`}</td>
-      <td>${a.titulo}</td>
-      <td>${a.categoria || '-'}</td>
-      <td><span class="badge ${a.status}">${a.status}</span></td>
+      <td>${a.imagem_capa_url ? `<img class="thumb" src="${escapeHtmlAttr(a.imagem_capa_url)}" alt="Imagem de capa de ${escapeHtmlAttr(a.titulo || "artigo")}">` : `<div class="thumb"></div>`}</td>
+      <td>${escapeHtmlAttr(a.titulo || '')}</td>
+      <td>${escapeHtmlAttr(a.categoria || '-')}</td>
+      <td><span class="badge ${a.status}">${escapeHtmlAttr(a.status || '')}</span></td>
       <td>${a.data_publicacao ? new Date(a.data_publicacao).toLocaleDateString('pt-BR') : '-'}</td>
       <td class="row-actions">
         <button class="btn btn-outline btn-sm" data-editar-artigo="${a.id}">Editar</button>
@@ -1584,7 +1584,7 @@ async function carregarCategoriasBlogSelect(valorSelecionado) {
   const { data: categorias, error } = await sb.from('blog_categorias').select('*').order('nome', { ascending: true });
   if (error) { console.error(error); return; }
   select.innerHTML = '<option value="">Selecione uma categoria...</option>' +
-    (categorias || []).map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
+    (categorias || []).map(c => `<option value="${escapeHtmlAttr(c.nome || '')}">${escapeHtmlAttr(c.nome || '')}</option>`).join('');
   if (atual) select.value = atual;
 }
 
@@ -1596,7 +1596,7 @@ async function carregarCategoriasBlogLista() {
   container.innerHTML = `<table><thead><tr><th>Nome</th><th></th></tr></thead><tbody>
     ${categorias.map(c => `
     <tr>
-      <td>${c.nome}</td>
+      <td>${escapeHtmlAttr(c.nome || '')}</td>
       <td class="row-actions"><button class="btn btn-outline btn-sm" data-excluir-categoria-blog="${c.id}">Excluir</button></td>
     </tr>`).join('')}</tbody></table>`;
 
@@ -1749,7 +1749,7 @@ async function carregarSitemap() {
   const container = document.getElementById('tabela-sitemap');
   if (!urls || urls.length === 0) { container.innerHTML = '<p class="empty-hint">Nenhuma URL cadastrada.</p>'; return; }
   container.innerHTML = `<table><thead><tr><th>URL</th><th>Origem</th><th>Prioridade</th><th>Status</th></tr></thead><tbody>
-    ${urls.map(u => `<tr><td>${u.url}</td><td>${u.origem}</td><td>${u.priority}</td><td><span class="badge ${u.ativo ? 'ativo' : 'inativo'}">${u.ativo ? 'ativa' : 'inativa'}</span></td></tr>`).join('')}
+    ${urls.map(u => `<tr><td>${escapeHtmlAttr(u.url)}</td><td>${escapeHtmlAttr(u.origem || '')}</td><td>${escapeHtmlAttr(u.priority)}</td><td><span class="badge ${u.ativo ? 'ativo' : 'inativo'}">${u.ativo ? 'ativa' : 'inativa'}</span></td></tr>`).join('')}
   </tbody></table>`;
 }
 
@@ -1841,18 +1841,18 @@ async function carregarConfig() {
   const container = document.getElementById('config-container');
   container.innerHTML = projetosCache.map(p => `
     <div style="background:#fff; border-radius:10px; padding:16px 18px; margin-bottom:14px; box-shadow:0 2px 8px rgba(78,52,32,0.08);">
-      <h3 style="font-size:1rem; margin-bottom:10px;">${p.nome_publico} <span class="badge ${p.status}">${p.status}</span></h3>
+      <h3 style="font-size:1rem; margin-bottom:10px;">${p.nome_publico} <span class="badge ${p.status}">${escapeHtmlAttr(p.status || '')}</span></h3>
       <div class="grid-2">
-        <div><label>WhatsApp</label><input type="text" id="cfg-whats-${p.id}" value="${p.whatsapp_numero || ''}"></div>
+        <div><label>WhatsApp</label><input type="text" id="cfg-whats-${escapeHtmlAttr(p.id)}" value="${escapeHtmlAttr(p.whatsapp_numero || '')}"></div>
         <div>
           <label>Status</label>
-          <select id="cfg-status-${p.id}">
+          <select id="cfg-status-${escapeHtmlAttr(p.id)}">
             <option value="ativo" ${p.status === 'ativo' ? 'selected' : ''}>Ativo</option>
             <option value="inativo" ${p.status === 'inativo' ? 'selected' : ''}>Inativo</option>
           </select>
         </div>
       </div>
-      <button class="btn btn-outline btn-sm" style="margin-top:10px;" data-salvar-config="${p.id}">Salvar</button>
+      <button class="btn btn-outline btn-sm" style="margin-top:10px;" data-salvar-config="${escapeHtmlAttr(p.id)}">Salvar</button>
     </div>
   `).join('');
 
