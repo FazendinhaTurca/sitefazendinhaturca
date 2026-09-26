@@ -40,9 +40,9 @@
 <meta property="og:site_name" content="Fazendinha Turca">
 <meta property="og:title" content="Ateliê da Verushka | Artesanato em Hama Beads – Araruama RJ">
 <meta property="og:description" content="Arte que transforma pequenas contas em grandes histórias. Porta-copos, quadros, chaveiros e decoração feitos à mão com Hama Beads. Enviamos para todo o Brasil.">
-<meta property="og:image" content="https://www.fazendinhaturca.com.br/images/atelie/topo-lojinha.png">
-<meta property="og:image:secure_url" content="https://www.fazendinhaturca.com.br/images/atelie/topo-lojinha.png">
-<meta property="og:image:type" content="image/png">
+<meta property="og:image" content="https://www.fazendinhaturca.com.br/images/atelie/topo-lojinha.webp">
+<meta property="og:image:secure_url" content="https://www.fazendinhaturca.com.br/images/atelie/topo-lojinha.webp">
+<meta property="og:image:type" content="image/webp">
 <meta property="og:image:width" content="1024">
 <meta property="og:image:height" content="348">
 <meta property="og:image:alt" content="Ateliê da Verushka - peças artesanais feitas à mão com Hama Beads">
@@ -51,7 +51,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Ateliê da Verushka | Artesanato em Hama Beads">
 <meta name="twitter:description" content="Peças artesanais feitas à mão com Hama Beads. Sob encomenda, entrega em 3 a 10 dias, envio para todo o Brasil.">
-<meta name="twitter:image" content="https://www.fazendinhaturca.com.br/images/atelie/topo-lojinha.png">
+<meta name="twitter:image" content="https://www.fazendinhaturca.com.br/images/atelie/topo-lojinha.webp">
 <meta name="twitter:image:alt" content="Ateliê da Verushka - peças artesanais feitas à mão com Hama Beads">
 
 <!-- Schema.org: página, ateliê (LocalBusiness/Store), serviço de encomendas, breadcrumb e FAQ -->
@@ -630,6 +630,17 @@
     position: fixed; top: 0; right: 0; bottom: 0; width: 100%; max-width: 380px; background: var(--cream);
     transform: translateX(100%); transition: transform .25s ease; z-index: 61; display: flex; flex-direction: column;
   }
+  @media (max-width: 640px) {
+    .colecoes-filtros {
+      justify-content: flex-start;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+    }
+    .colecoes-filtros .pill { flex: 0 0 auto; }
+  }
   .cart-drawer.open { transform: translateX(0); }
   .cart-header { padding: 18px 20px; border-bottom: 1px solid rgba(122,82,48,0.2); display: flex; justify-content: space-between; align-items: center; }
   .cart-header h3 { font-size: 1.1rem; color: var(--brown-dark); }
@@ -1042,45 +1053,26 @@ function atualizarSchemaProdutos() {
 
   const baseUrl = 'https://www.fazendinhaturca.com.br/';
   const AREA = ["Brasil","Araruama, RJ","Rio de Janeiro","Santa Catarina","Florianópolis, SC","Minas Gerais","Amazonas","Pará"];
-  const itemListElement = produtos.map((p, i) => {
-    const fotos = fotosDoProduto(p);
-    const urlPeca = baseUrl + 'atelie/' + encodeURIComponent(p.slug) + '.html';
-    const imgs = fotos.slice(0, 5).map(f => f.startsWith('http') ? f : baseUrl + f.replace(/^\//, ''));
-    return {
-      "@type": "ListItem",
-      "position": i + 1,
-      "url": urlPeca,
-      "item": {
-        "@type": "Product",
-        "@id": urlPeca + "#produto",
-        "url": urlPeca,
-        "sku": String(p.slug || p.id),
-        "name": p.nome,
-        "description": p.descricao_curta || p.descricao || `${p.nome}, peça artesanal em Hama Beads feita à mão pelo Ateliê da Verushka em Araruama-RJ.`,
-        "image": imgs.length ? imgs : [baseUrl + 'images/atelie/topo-lojinha.webp'],
-        "category": p.categorias?.nome || undefined,
-        "material": "Hama Beads",
-        "brand": { "@type": "Brand", "name": "Ateliê da Verushka" },
-        "manufacturer": { "@id": baseUrl + "atelie.html#atelie" },
-        "offers": {
-          "@type": "Offer",
-          "url": urlPeca,
-          "priceCurrency": "BRL",
-          "price": Number(p.preco || 0).toFixed(2),
-          "itemCondition": "https://schema.org/NewCondition",
-          "availability": "https://schema.org/InStock",
-          "areaServed": AREA,
-          "seller": { "@id": baseUrl + "atelie.html#atelie" }
-        }
-      }
-    };
-  });
+  const itemListElement = produtos
+    .map((p, i) => {
+      const productSlug = String(p.slug || '').trim();
+      if (!productSlug) return null;
+      const urlPeca = baseUrl + 'atelie/' + encodeURIComponent(productSlug) + '.html';
+      return {
+        "@type": "ListItem",
+        "position": i + 1,
+        "url": urlPeca
+      };
+    })
+    .filter(Boolean);
 
   const schema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
     "@id": baseUrl + "atelie.html#itens",
     "name": "Peças do Ateliê da Verushka",
+    "url": baseUrl + "atelie.html",
+    "itemListOrder": "https://schema.org/ItemListOrderAscending",
     "numberOfItems": itemListElement.length,
     "itemListElement": itemListElement
   };
@@ -1094,19 +1086,24 @@ function renderFiltros() {
   const slugsComProduto = new Set(produtos.map(p => p.categorias && p.categorias.slug).filter(Boolean));
   const catsComProduto = categorias.filter(c => slugsComProduto.has(c.slug));
 
-  wrap.innerHTML = '<span class="filtro-label">Filtrar por coleção:</span><button class="pill active" data-slug="todos">Todos</button>';
+  wrap.innerHTML = '<span class="filtro-label">Filtrar por coleção:</span><button class="pill active" data-slug="todos" aria-pressed="true">Todos</button>';
   catsComProduto.forEach(c => {
     const btn = document.createElement('button');
     btn.className = 'pill';
     btn.dataset.slug = c.slug;
+    btn.setAttribute('aria-pressed', 'false');
     btn.textContent = c.nome;
     wrap.appendChild(btn);
   });
 
   wrap.querySelectorAll('.pill').forEach(pill => {
     pill.addEventListener('click', () => {
-      wrap.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+      wrap.querySelectorAll('.pill').forEach(p => {
+        p.classList.remove('active');
+        p.setAttribute('aria-pressed', 'false');
+      });
       pill.classList.add('active');
+      pill.setAttribute('aria-pressed', 'true');
       categoriaAtivaSlug = pill.dataset.slug;
       renderProdutos();
     });
@@ -1128,14 +1125,14 @@ function renderProdutos() {
 
   container.innerHTML = "";
   lista.forEach(p => {
-    const card = document.createElement('div');
+    const card = document.createElement('article');
     card.className = 'produto-card';
     card.id = 'produto-' + p.slug;
 
     const fotos = fotosDoProduto(p);
     const capa = fotos[0] || null;
     const imgHtml = capa
-      ? `<img src="${esc(capa)}" alt="${esc((p.alt_text && p.alt_text.trim().length >= 15) ? p.alt_text.trim() : p.nome + ' em Hama Beads - artesanato do Ateliê da Verushka')}" loading="lazy">`
+      ? `<img src="${esc(capa)}" alt="${esc((p.alt_text && p.alt_text.trim().length >= 15) ? p.alt_text.trim() : p.nome + ' em Hama Beads - artesanato do Ateliê da Verushka')}" width="700" height="700" loading="lazy" decoding="async">`
       : `<div class="produto-img-placeholder">${iconeCategoria(p.categorias ? p.categorias.slug : '')}</div>`;
     const badgeFotos = fotos.length > 1
       ? `<span class="produto-fotos-badge" aria-hidden="true">&#128247; ${fotos.length}</span>`
