@@ -994,11 +994,11 @@ function renderProdutosTabela(projetoSlug, containerId) {
       <td>${escapeHtmlAttr(p.nome || '')}</td>
       <td>${escapeHtmlAttr(p.categorias ? p.categorias.nome : '-')}</td>
       <td>R$ ${Number(p.preco).toFixed(2).replace('.', ',')}</td>
-      <td><span class="badge ${p.status}">${escapeHtmlAttr(p.status || '')}</span></td>
+      <td><span class="badge ${escapeHtmlAttr(p.status || '')}">${escapeHtmlAttr(p.status || '')}</span></td>
       <td>${p.ordem}</td>
       <td class="row-actions">
-        <button class="btn btn-outline btn-sm" data-editar-produto="${p.id}" data-projeto="${projetoSlug}">Editar</button>
-        <button class="btn btn-outline btn-sm toggle-status" data-toggle-produto="${p.id}" data-status="${p.status}">${p.status === 'ativo' ? 'Desativar' : 'Ativar'}</button>
+        <button class="btn btn-outline btn-sm" data-editar-produto="${escapeHtmlAttr(p.id)}" data-projeto="${escapeHtmlAttr(projetoSlug)}">Editar</button>
+        <button class="btn btn-outline btn-sm toggle-status" data-toggle-produto="${escapeHtmlAttr(p.id)}" data-status="${escapeHtmlAttr(p.status || '')}">${p.status === 'ativo' ? 'Desativar' : 'Ativar'}</button>
       </td>
     </tr>`).join('')}</tbody></table>`;
 
@@ -1172,8 +1172,8 @@ function renderCategoriasProjeto(projetoSlug, containerId) {
   }
   container.innerHTML = cats.map(c => `
     <span class="categoria-chip ${c.status !== 'ativo' ? 'inativo' : ''}">
-      ${c.nome}
-      <button type="button" class="cat-editar" data-editar-categoria="${c.id}" data-projeto="${projetoSlug}" aria-label="Editar categoria">&#9998;</button>
+      ${escapeHtmlAttr(c.nome || '')}
+      <button type="button" class="cat-editar" data-editar-categoria="${escapeHtmlAttr(c.id)}" data-projeto="${escapeHtmlAttr(projetoSlug)}" aria-label="Editar categoria">&#9998;</button>
       <button type="button" class="cat-excluir" data-excluir-categoria="${escapeHtmlAttr(c.id)}" data-projeto="${escapeHtmlAttr(projetoSlug)}" aria-label="Excluir categoria">&times;</button>
     </span>`).join('');
 
@@ -1434,11 +1434,11 @@ async function carregarBlogTabela() {
       <td>${a.imagem_capa_url ? `<img class="thumb" src="${escapeHtmlAttr(a.imagem_capa_url)}" alt="Imagem de capa de ${escapeHtmlAttr(a.titulo || "artigo")}">` : `<div class="thumb"></div>`}</td>
       <td>${escapeHtmlAttr(a.titulo || '')}</td>
       <td>${escapeHtmlAttr(a.categoria || '-')}</td>
-      <td><span class="badge ${a.status}">${escapeHtmlAttr(a.status || '')}</span></td>
+      <td><span class="badge ${escapeHtmlAttr(a.status || '')}">${escapeHtmlAttr(a.status || '')}</span></td>
       <td>${a.data_publicacao ? new Date(a.data_publicacao).toLocaleDateString('pt-BR') : '-'}</td>
       <td class="row-actions">
-        <button class="btn btn-outline btn-sm" data-editar-artigo="${a.id}">Editar</button>
-        <button class="btn btn-outline btn-sm" data-toggle-artigo="${a.id}" data-status="${a.status}">${a.status === 'publicado' ? 'Despublicar' : 'Publicar'}</button>
+        <button class="btn btn-outline btn-sm" data-editar-artigo="${escapeHtmlAttr(a.id)}">Editar</button>
+        <button class="btn btn-outline btn-sm" data-toggle-artigo="${escapeHtmlAttr(a.id)}" data-status="${escapeHtmlAttr(a.status || '')}">${a.status === 'publicado' ? 'Despublicar' : 'Publicar'}</button>
       </td>
     </tr>`).join('')}</tbody></table>`;
 
@@ -1707,7 +1707,7 @@ async function carregarStorage() {
       if (!pasta.id && pasta.name) {
         // é uma "pasta" (sem metadata de arquivo)
         const resumo = await resumoPasta(pasta.name);
-        html += `<h3 style="margin:18px 0 8px; font-size:0.95rem;">${pasta.name}</h3>
+        html += `<h3 style="margin:18px 0 8px; font-size:0.95rem;">${escapeHtmlAttr(pasta.name)}</h3>
           <p class="empty-hint" style="padding:4px 0;">${resumo.arquivos} arquivo(s) &middot; ${formatarBytes(resumo.tamanho)}</p>`;
       }
     }
@@ -1841,7 +1841,7 @@ async function carregarConfig() {
   const container = document.getElementById('config-container');
   container.innerHTML = projetosCache.map(p => `
     <div style="background:#fff; border-radius:10px; padding:16px 18px; margin-bottom:14px; box-shadow:0 2px 8px rgba(78,52,32,0.08);">
-      <h3 style="font-size:1rem; margin-bottom:10px;">${p.nome_publico} <span class="badge ${p.status}">${escapeHtmlAttr(p.status || '')}</span></h3>
+      <h3 style="font-size:1rem; margin-bottom:10px;">${p.nome_publico} <span class="badge ${escapeHtmlAttr(p.status || '')}">${escapeHtmlAttr(p.status || '')}</span></h3>
       <div class="grid-2">
         <div><label>WhatsApp</label><input type="text" id="cfg-whats-${escapeHtmlAttr(p.id)}" value="${escapeHtmlAttr(p.whatsapp_numero || '')}"></div>
         <div>
