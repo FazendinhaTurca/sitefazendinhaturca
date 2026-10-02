@@ -272,6 +272,20 @@ function articleTemplate(article, slug, faqs = []) {
   };
 
   const faqData = faqSchema(faqs);
+  const validFaqs = Array.isArray(faqs)
+    ? faqs.filter(item => String(item?.pergunta || '').trim() && String(item?.resposta || '').trim())
+    : [];
+  const faqHtml = validFaqs.length
+    ? `
+  <section class="post-faq" aria-labelledby="faq-titulo">
+    <h2 id="faq-titulo">Perguntas frequentes</h2>
+    ${validFaqs.map(item => `
+    <details>
+      <summary>${esc(item.pergunta)}</summary>
+      <div class="faq-resposta">${sanitizeArticleContent(item.resposta)}</div>
+    </details>`).join('')}
+  </section>`
+    : '';
   const breadcrumb = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -461,6 +475,7 @@ ${tags.map(t => `<meta property="article:tag" content="${esc(t)}">`).join('\n')}
 </style>
 <script type="application/ld+json">${jsonLd(schema)}</script>
 <script type="application/ld+json">${jsonLd(breadcrumb)}</script>
+${faqData && faqData.mainEntity?.length ? `<script type="application/ld+json">${jsonLd(faqData)}</script>` : ''}
 </head>
 <body>
 
@@ -490,6 +505,7 @@ ${tags.map(t => `<meta property="article:tag" content="${esc(t)}">`).join('\n')}
   <h1>${esc(article.titulo)}</h1>
   <div class="post-full-meta">${esc(formatDate(datePublished))}${article.autor ? ` &middot; ${esc(article.autor)}` : ''}${dateModified !== datePublished ? ` &middot; Atualizado em ${esc(formatDate(dateModified))}` : ''}</div>
   <div class="post-full-conteudo">${articleContent}</div>
+  ${faqHtml}
   ${tagsHtml}
 </main>
 
