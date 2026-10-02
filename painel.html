@@ -1689,9 +1689,29 @@ async function verificarSlugProduto() {
 
 document.getElementById('form-produto').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const msg = document.getElementById('pr-msg');
-  msg.style.display = 'block'; msg.className = 'msg-box'; msg.textContent = 'Salvando...';
   const form = e.target;
+  if (form.dataset.saving === '1') return;
+  const msg = document.getElementById('pr-msg');
+  const validacao = validarProdutoAntesDeSalvar();
+  if (!validacao.ok) {
+    msg.style.display = 'block'; msg.className = 'msg-box erro'; msg.textContent = validacao.erros.join(' ');
+    atualizarQualidadeSeoProduto();
+    return;
+  }
+  msg.style.display = 'block'; msg.className = 'msg-box'; msg.textContent = 'Verificando produto...';
+  try {
+    const slugErro = await verificarSlugProduto();
+    if (slugErro) {
+      msg.className = 'msg-box erro'; msg.textContent = slugErro; return;
+    }
+  } catch (err) {
+    console.error(err); msg.className = 'msg-box erro'; msg.textContent = 'Não foi possível verificar o slug. Tente novamente.'; return;
+  }
+  if (validacao.avisos.length) msg.textContent = validacao.avisos.join(' ');
+  else msg.textContent = 'Salvando...';
+  form.dataset.saving = '1';
+  const btnSalvar = form.querySelector('button[type="submit"]');
+  if (btnSalvar) { btnSalvar.disabled = true; btnSalvar.textContent = 'Salvando...'; }
   const projetoSlug = document.getElementById('pr-projeto-slug').value;
   const projeto = projetosCache.find(p => p.slug === projetoSlug);
   const produtoId = document.getElementById('pr-id').value;
