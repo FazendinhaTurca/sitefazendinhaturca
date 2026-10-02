@@ -26,6 +26,26 @@
   .btn-danger { background:#fff; border:1px solid var(--danger); color:var(--danger); }
   .btn-sm { padding:5px 10px; font-size:0.75rem; border-radius:5px; }
 
+  /* ===== ALERTA GLOBAL DO PAINEL ===== */
+  .panel-system-alert {
+    display:none;
+    position:fixed;
+    top:14px;
+    left:14px;
+    right:14px;
+    z-index:9999;
+    max-width:520px;
+    padding:12px 16px;
+    border-radius:9px;
+    background:#f2e0e0;
+    color:var(--danger);
+    box-shadow:0 4px 16px rgba(78,52,32,.18);
+    font-size:.82rem;
+    line-height:1.4;
+  }
+  .panel-system-alert.show { display:flex; flex-direction:column; gap:2px; }
+  .panel-system-alert strong { font-size:.84rem; }
+
   /* ===== LOGIN ===== */
   #login-screen { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
   .login-box { background:#fff; border-radius:14px; padding:36px 32px; width:100%; max-width:360px; box-shadow:0 10px 30px rgba(78,52,32,0.15); }
