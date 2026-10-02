@@ -195,6 +195,22 @@
   }
   .dashboard-quality-card.ok .q-status { color:var(--ok); }
   .dashboard-quality-card:not(.ok) .q-status { color:var(--red); }
+  .dashboard-quality-card.clickable { cursor:pointer; transition:transform .16s ease, box-shadow .16s ease; }
+  .dashboard-quality-card.clickable:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(78,52,32,.12); }
+  .dashboard-quality-card.clickable:focus-visible { outline:3px solid rgba(217,164,65,.55); outline-offset:2px; }
+  .quality-product-modal .modal-box { max-width:900px; }
+  .quality-product-list { max-height:60vh; overflow:auto; border:1px solid rgba(122,82,48,.12); border-radius:8px; }
+  .quality-product-row { display:flex; align-items:center; gap:12px; padding:10px 12px; border-bottom:1px solid rgba(122,82,48,.10); background:#fff; }
+  .quality-product-row:last-child { border-bottom:none; }
+  .quality-product-row .q-prod-name { flex:1; min-width:0; font-weight:700; color:var(--brown-dark); font-size:.82rem; }
+  .quality-product-row .q-prod-project { flex:0 0 150px; color:var(--brown); font-size:.72rem; }
+  .quality-product-row .q-prod-missing { flex:0 0 220px; color:var(--danger); font-size:.7rem; line-height:1.35; }
+  .quality-product-row .q-prod-action { flex:0 0 auto; }
+  @media (max-width:700px) {
+    .quality-product-row { align-items:flex-start; flex-wrap:wrap; }
+    .quality-product-row .q-prod-name { flex:1 1 100%; }
+    .quality-product-row .q-prod-project, .quality-product-row .q-prod-missing { flex:1 1 auto; }
+  }
 
   .dashboard-alerts { background:#fff; border-radius:10px; padding:16px 18px; margin-bottom:20px; box-shadow:0 2px 8px rgba(78,52,32,.08); border-left:5px solid var(--gold); }
   .dashboard-alerts.alerts-ok { border-left-color:var(--ok); }
@@ -1348,12 +1364,76 @@ async function carregarQualidadeDashboard() {
     const produtosPendentesSeo = produtosAtivos.filter(p => !p.seo_title?.trim() || !p.seo_description?.trim() || !p.alt_text?.trim()).length;
     const produtosSemImagem = produtosAtivos.filter(p => !p.imagem_principal_url).length;
     const itens = [['Artigos sem SEO completo', artigosPendentesSeo],['Artigos publicados sem capa', artigosSemCapa],['Produtos sem SEO completo', produtosPendentesSeo],['Produtos ativos sem imagem', produtosSemImagem]];
-    container.innerHTML = '<div class="dashboard-quality-head"><div class="dashboard-quality-title">Qualidade do conteúdo</div><span class="empty-hint" style="padding:0;">Itens que merecem atenção</span></div>' + '<div class="dashboard-quality-grid">' + itens.map(([label, num]) => '<div class="dashboard-quality-card ' + (num === 0 ? 'ok' : '') + '"><div class="q-num">' + num + '</div><div class="q-label">' + escapeHtmlAttr(label) + '</div><div class="q-status">' + (num === 0 ? '✓ Tudo certo' : '⚠ Verificar') + '</div></div>').join('') + '</div>';
+    container.innerHTML = '<div class="dashboard-quality-head"><div class="dashboard-quality-title">Qualidade do conteúdo</div><span class="empty-hint" style="padding:0;">Itens que merecem atenção</span></div>' + '<div class="dashboard-quality-grid">' + itens.map(([label, num]) => '<div class="dashboard-quality-card ' + (num === 0 ? 'ok' : 'clickable') + '" ' + (num > 0 ? 'role="button" tabindex="0" data-quality-item="' + escapeHtmlAttr(label) + '"' : '') + '><div class="q-num">' + num + '</div><div class="q-label">' + escapeHtmlAttr(label) + '</div><div class="q-status">' + (num === 0 ? '✓ Tudo certo' : '⚠ Verificar — clique para ver') + '</div></div>').join('') + '</div>';
+
+  container.querySelectorAll('[data-quality-item]').forEach(card => {
+    const abrir = () => {
+      if (card.dataset.qualityItem === 'Produtos sem SEO completo') abrirListaQualidadeProdutos();
+    };
+    card.addEventListener('click', abrir);
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrir(); }
+    });
+  });
   } catch (err) {
     console.error('Erro na verificação de qualidade:', err);
     container.innerHTML = '<div class="dashboard-quality-head"><div class="dashboard-quality-title">Qualidade do conteúdo</div></div><p class="msg-box erro" style="display:block;margin:0;">Não foi possível verificar a qualidade agora. Tente atualizar o painel.</p>';
   }
 }
+
+async function abrirListaQualidadeProdutos() {
+  const modalId = 'modal-qualidade-produtos';
+  let modal = document.getElementById(modalId);
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = modalId;
+    modal.className = 'modal-overlay quality-product-modal';
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = '<div class="modal-box">' +
+    '<button type="button" class="modal-close" aria-label="Fechar">×</button>' +
+    '<h3>Produtos sem SEO completo</h3>' +
+    '<p class="empty-hint" style="padding:0 0 12px;">Carregando produtos que precisam de correção...</p>' +
+    '<div id="quality-product-list" class="quality-product-list"></div>' +
+    '</div>';
+  modal.classList.add('show');
+  modal.querySelector('.modal-close').addEventListener('click', () => modal.classList.remove('show'));
+  modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('show'); }, { once:true });
+  const { data: produtos, error } = await sb.from('produtos')
+    .select('id,nome,status,projeto_id,seo_title,seo_description,alt_text,projetos(nome_publico,slug)')
+    .eq('status', 'ativo')
+    .order('nome', { ascending:true });
+  if (error) {
+    document.getElementById('quality-product-list').innerHTML = '<p class="msg-box erro" style="display:block;margin:12px;">Não foi possível carregar a lista.</p>';
+    return;
+  }
+  const pendentes = (produtos || []).filter(p => !p.seo_title?.trim() || !p.seo_description?.trim() || !p.alt_text?.trim());
+  const lista = document.getElementById('quality-product-list');
+  if (!pendentes.length) {
+    lista.innerHTML = '<p class="empty-hint" style="padding:18px;">Nenhum produto pendente de SEO.</p>';
+    return;
+  }
+  lista.innerHTML = pendentes.map(p => {
+    const faltantes = [];
+    if (!p.seo_title?.trim()) faltantes.push('SEO Title');
+    if (!p.seo_description?.trim()) faltantes.push('SEO Description');
+    if (!p.alt_text?.trim()) faltantes.push('Alt Text');
+    return '<div class="quality-product-row">' +
+      '<div class="q-prod-name">' + escapeHtmlAttr(p.nome || 'Produto sem nome') + '</div>' +
+      '<div class="q-prod-project">' + escapeHtmlAttr(p.projetos?.nome_publico || p.projetos?.slug || 'Projeto') + '</div>' +
+      '<div class="q-prod-missing">Faltando: ' + escapeHtmlAttr(faltantes.join(', ')) + '</div>' +
+      '<div class="q-prod-action"><button type="button" class="btn btn-outline btn-sm" data-quality-edit="' + escapeHtmlAttr(p.id) + '" data-quality-project="' + escapeHtmlAttr(p.projetos?.slug || '') + '">Editar</button></div>' +
+    '</div>';
+  }).join('');
+  lista.querySelectorAll('[data-quality-edit]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      modal.classList.remove('show');
+      const projetoSlug = btn.dataset.qualityProject === 'atelier-verushka' ? 'atelier-verushka' : 'mercadinho';
+      abrirModalProduto(projetoSlug, btn.dataset.qualityEdit);
+    });
+  });
+}
+
 
 async function carregarDashboard() {
   try {
