@@ -130,6 +130,56 @@ jobs:
                   if not target.is_file():
                       raise SystemExit(f'URL do sitemap sem arquivo correspondente: {loc}')
 
+          # Auditoria SEO básica das páginas estáticas geradas.
+          # Falha o deploy se uma página indexável perder canonical, title,
+          # description ou H1, ou se duas páginas declararem o mesmo canonical.
+          import re
+          from pathlib import Path
+
+          seo_pages = []
+          for folder in ('blog', 'produtos', 'atelie'):
+              base = Path(folder)
+              if not base.is_dir():
+                  continue
+              seo_pages.extend(base.glob('*.html'))
+
+          canonicals = {}
+          for page in seo_pages:
+              html = page.read_text(encoding='utf-8', errors='replace')
+
+              title = re.search(r'<title(?:\\s[^>]*)?>([\\s\\S]*?)</title>', html, re.I)
+              description = re.search(r'<meta\\s+[^>]*name=[\"\\']description[\"\\'][^>]*>', html, re.I)
+              robots = re.search(r'<meta\\s+[^>]*name=[\"\\']robots[\"\\'][^>]*content=[\"\\']([^\\"\\']+)', html, re.I)
+              canonical = re.search(r'<link\\s+[^>]*rel=[\"\\']canonical[\"\\'][^>]*href=[\"\\']([^\\"\\']+)', html, re.I)
+              h1_count = len(re.findall(r'<h1(?:\\s[^>]*)?>', html, re.I))
+
+              if not title or not title.group(1).strip():
+                  raise SystemExit(f'Página sem <title>: {page}')
+              if not description:
+                  raise SystemExit(f'Página sem meta description: {page}')
+              if not robots or 'index' not in robots.group(1).lower():
+                  raise SystemExit(f'Página sem robots index: {page}')
+              if not canonical or not canonical.group(1).strip():
+                  raise SystemExit(f'Página sem canonical: {page}')
+              if h1_count != 1:
+                  raise SystemExit(f'Página deve ter exatamente 1 H1: {page} (encontrados {h1_count})')
+
+              canonical_url = canonical.group(1).strip()
+              if canonical_url in canonicals:
+                  raise SystemExit(
+                      f'Canonical duplicado: {canonical_url} em {canonicals[canonical_url]} e {page}'
+                  )
+              canonicals[canonical_url] = str(page)
+
+              expected_path = '/' + str(page).replace('\\\\', '/')
+              expected_url = 'https://www.fazendinhaturca.com.br/' + expected_path.lstrip('/')
+              if canonical_url != expected_url:
+                  raise SystemExit(
+                      f'Canonical incompatível com o arquivo: {page} -> {canonical_url}; esperado {expected_url}'
+                  )
+
+          print(f'SEO técnico validado em {len(seo_pages)} páginas estáticas: title, description, robots, canonical e H1 únicos.')
+
           print(f'Sitemap validado: {len(locs)} URLs, páginas principais presentes, sem duplicidades, URLs HTTPS válidas e páginas geradas presentes.')
           PY
 
