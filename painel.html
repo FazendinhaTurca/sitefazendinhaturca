@@ -1786,6 +1786,9 @@ document.getElementById('form-produto').addEventListener('submit', async (e) => 
   } catch (err) {
     console.error(err);
     msg.className = 'msg-box erro'; msg.textContent = 'Erro ao salvar: ' + (err.message || 'tente novamente.');
+  } finally {
+    form.dataset.saving = '0';
+    if (btnSalvar) { btnSalvar.disabled = false; btnSalvar.textContent = 'Salvar produto'; }
   }
 });
 
