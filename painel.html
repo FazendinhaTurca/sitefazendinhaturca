@@ -1828,10 +1828,12 @@ async function abrirModalArtigo(artigoId) {
       form.dataset.capaAtual = a.imagem_capa_url || '';
       const { data: faqs } = await sb.from('blog_faqs').select('id,pergunta,resposta,ordem,ativo').eq('artigo_id', artigoId).order('ordem', { ascending: true });
       renderFaqEditor(faqs || []);
+      atualizarQualidadeSeoArtigo();
     }
     } else {
       document.getElementById('artigo-modal-titulo').textContent = 'Novo artigo';
       await carregarCategoriasBlogSelect('');
+      atualizarQualidadeSeoArtigo();
     }
   } catch (err) {
     console.error('Erro ao preparar o editor de artigo:', err);
@@ -1865,9 +1867,8 @@ function validarArtigoAntesDeSalvar() {
   if (conteudo.length < 120) erros.push('O conteúdo precisa ter pelo menos 120 caracteres.');
   if (!seoTitle) erros.push('Preencha o SEO title.');
   if (!seoDesc) erros.push('Preencha a SEO description.');
-  if (alt || document.getElementById('ar-capa').files.length) {
-    if (!alt) erros.push('Preencha o Alt text da capa.');
-  }
+  const temCapa = !!document.getElementById('form-artigo').dataset.capaAtual || document.getElementById('ar-capa').files.length > 0;
+  if (temCapa && !alt) erros.push('Preencha o Alt text da capa.');
   if (faqs.length < 3) erros.push('Um artigo publicado precisa ter pelo menos 3 FAQs completas.');
 
   if (!document.getElementById('form-artigo').dataset.capaAtual && !document.getElementById('ar-capa').files.length) {
@@ -1881,6 +1882,17 @@ function validarArtigoAntesDeSalvar() {
   }
 
   return { ok: erros.length === 0, erros, avisos };
+}
+
+async function verificarSlugArtigo() {
+  const slug = document.getElementById('ar-slug').value.trim() || slugify(document.getElementById('ar-titulo').value.trim());
+  const artigoId = document.getElementById('ar-id').value;
+  if (!slug) return 'Informe o slug.';
+  let query = sb.from('blog_artigos').select('id').eq('slug', slug).limit(1);
+  if (artigoId) query = query.neq('id', artigoId);
+  const { data, error } = await query;
+  if (error) throw error;
+  return data && data.length ? 'Este slug já está sendo usado por outro artigo.' : '';
 }
 
 function atualizarQualidadeSeoArtigo() {
@@ -1928,7 +1940,29 @@ document.getElementById('form-artigo').addEventListener('submit', async (e) => {
 
   msg.style.display = 'block';
   msg.className = 'msg-box';
-  msg.textContent = validacao.avisos.length ? validacao.avisos.join(' ') : 'Salvando...';
+  msg.textContent = 'Verificando artigo...';
+
+  try {
+    const slugErro = await verificarSlugArtigo();
+    if (slugErro) {
+      msg.className = 'msg-box erro';
+      msg.textContent = slugErro;
+      return;
+    }
+  } catch (err) {
+    console.error(err);
+    msg.className = 'msg-box erro';
+    msg.textContent = 'Não foi possível verificar o slug. Tente novamente.';
+    return;
+  }
+
+  if (validacao.avisos.length) {
+    msg.className = 'msg-box';
+    msg.textContent = validacao.avisos.join(' ');
+  } else {
+    msg.className = 'msg-box';
+    msg.textContent = 'Salvando...';
+  }
 
   form.dataset.saving = '1';
   const btnSalvar = form.querySelector('button[type="submit"]');
