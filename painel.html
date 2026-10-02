@@ -1774,7 +1774,15 @@ function renderFaqEditor(items = []) {
   });
 }
 function coletarFaqs() { return [...document.querySelectorAll('#ar-faq-list .blog-faq-row')].map((row,index)=>({pergunta:row.querySelector('[data-faq-pergunta]').value.trim(),resposta:sanitizarHtml(row.querySelector('[data-faq-resposta]').innerHTML),ordem:index,ativo:true})).filter(item=>item.pergunta&&item.resposta); }
-document.getElementById('btn-adicionar-faq').addEventListener('click', () => { const items=coletarFaqs(); items.push({pergunta:'',resposta:'',ordem:items.length,ativo:true}); renderFaqEditor(items); document.querySelectorAll('[data-faq-pergunta]')[items.length-1]?.focus(); });
+document.getElementById('btn-adicionar-faq').addEventListener('click', () => { const items=coletarFaqs(); items.push({pergunta:'',resposta:'',ordem:items.length,ativo:true}); renderFaqEditor(items); atualizarQualidadeSeoArtigo(); document.querySelectorAll('[data-faq-pergunta]')[items.length-1]?.focus(); });
+
+['ar-titulo','ar-resumo','ar-slug','ar-seo-title','ar-seo-desc','ar-alt-text','ar-categoria','ar-status','ar-data-pub'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', atualizarQualidadeSeoArtigo);
+  document.getElementById(id)?.addEventListener('change', atualizarQualidadeSeoArtigo);
+});
+document.getElementById('ar-conteudo-rte')?.addEventListener('input', atualizarQualidadeSeoArtigo);
+document.getElementById('ar-faq-list')?.addEventListener('input', atualizarQualidadeSeoArtigo);
+document.getElementById('ar-capa')?.addEventListener('change', atualizarQualidadeSeoArtigo);
 
 async function abrirModalArtigo(artigoId) {
   const form = document.getElementById('form-artigo');
