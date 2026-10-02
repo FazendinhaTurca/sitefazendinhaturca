@@ -603,10 +603,13 @@
         <div><label>Prazo máx. (dias)</label><input type="number" id="pr-prazo-max" value="10"></div>
       </div>
 
-      <label>SEO title</label><input type="text" id="pr-seo-title">
-      <label>SEO description</label><textarea id="pr-seo-desc" rows="2"></textarea>
+      <label>SEO title <small id="pr-seo-title-count" style="font-weight:400;opacity:.7;">0 caracteres</small></label>
+      <input type="text" id="pr-seo-title" maxlength="70">
+      <label>SEO description <small id="pr-seo-desc-count" style="font-weight:400;opacity:.7;">0 caracteres</small></label>
+      <textarea id="pr-seo-desc" rows="2" maxlength="170"></textarea>
       <label>Alt text da imagem</label><input type="text" id="pr-alt-text">
       <label>Slug (URL amigável)</label><input type="text" id="pr-slug">
+      <div id="pr-seo-check" class="product-seo-check" aria-live="polite">Preencha os dados para verificar a qualidade do produto.</div>
 
       <div class="modal-actions">
         <button type="button" class="btn btn-danger" id="btn-excluir-produto" style="display:none;">Excluir</button>
