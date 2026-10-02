@@ -12,8 +12,9 @@ on:
       - 'blog/**'
 
   schedule:
-    # Sincroniza produtos, Ateliê e Blog do Supabase a cada 15 minutos.
-    - cron: '*/15 * * * *'
+    # Sincroniza produtos, Ateliê e Blog do Supabase a cada 5 minutos.
+    # Isso também verifica artigos programados para publicação.
+    - cron: '*/5 * * * *'
 
   workflow_dispatch: {}
 
