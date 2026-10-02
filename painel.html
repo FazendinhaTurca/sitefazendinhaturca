@@ -66,6 +66,7 @@
   .badge.ativo { background:#e4f0dc; color:var(--ok); }
   .badge.inativo { background:#f2e0e0; color:var(--danger); }
   .badge.rascunho { background:#f1e8d6; color:var(--brown); }
+  .badge.programado { background:#e7e0f8; color:#5b4a8a; }
   .row-actions { display:flex; gap:6px; flex-wrap:wrap; }
 
   /* ===== MODAL ===== */
@@ -604,7 +605,11 @@
           <label>Status</label>
           <select id="ar-status"><option value="rascunho">Rascunho</option><option value="publicado">Publicado</option></select>
         </div>
-        <div><label>Data de publicação</label><input type="date" id="ar-data-pub"></div>
+        <div>
+          <label>Data e hora de publicação</label>
+          <input type="datetime-local" id="ar-data-pub">
+          <small style="display:block;margin-top:5px;color:var(--brown);font-size:.72rem;">Se escolher uma data/hora futura com status “Publicado”, o artigo ficará programado e será publicado automaticamente.</small>
+        </div>
       </div>
       <label>SEO title</label><input type="text" id="ar-seo-title">
       <label>SEO description</label><textarea id="ar-seo-desc" rows="2"></textarea>
@@ -884,9 +889,17 @@ async function carregarDashboard() {
   const mercadinho = projetosCache.find(p => p.slug === 'mercadinho');
   const atelier = projetosCache.find(p => p.slug === 'atelier-verushka');
 
-  const [{ count: cArtigos }] = await Promise.all([
-    sb.from('blog_artigos').select('*', { count: 'exact', head: true }).eq('status', 'publicado')
-  ]);
+  const { data: artigosDashboard } = await sb.from('blog_artigos').select('status,data_publicacao');
+  const agoraDashboard = Date.now();
+  const artigosPublicados = (artigosDashboard || []).filter(a =>
+    a.status === 'publicado' &&
+    (!a.data_publicacao || Number.isNaN(new Date(a.data_publicacao).getTime()) || new Date(a.data_publicacao).getTime() <= agoraDashboard)
+  ).length;
+  const artigosProgramados = (artigosDashboard || []).filter(a =>
+    a.status === 'publicado' &&
+    a.data_publicacao &&
+    new Date(a.data_publicacao).getTime() > agoraDashboard
+  ).length;
 
   const produtosMercadinho = mercadinho ? await sb.from('produtos').select('*', { count: 'exact', head: true }).eq('projeto_id', mercadinho.id) : { count: 0 };
   const categoriasMercadinho = mercadinho ? categoriasCache.filter(c => c.projeto_id === mercadinho.id).length : 0;
@@ -899,7 +912,8 @@ async function carregarDashboard() {
     ['Mercadinho — categorias', categoriasMercadinho],
     ['Ateliê — produtos', produtosAtelier.count || 0],
     ['Ateliê — categorias', categoriasAtelier],
-    ['Blog — artigos publicados', cArtigos || 0]
+    ['Blog — artigos publicados', artigosPublicados],
+    ['Blog — programados', artigosProgramados]
   ];
   document.getElementById('dash-cards').innerHTML = cards.map(([lbl, num]) =>
     `<div class="kpi-card"><div class="num">${num}</div><div class="lbl">${lbl}</div></div>`).join('');
@@ -1428,19 +1442,30 @@ async function carregarBlogTabela() {
   if (error) { container.innerHTML = '<p class="empty-hint">Erro ao carregar artigos.</p>'; return; }
   if (!artigos || artigos.length === 0) { container.innerHTML = '<p class="empty-hint">Nenhum artigo cadastrado ainda.</p>'; return; }
 
+  const agora = Date.now();
+  const estaProgramado = a => a.status === 'publicado' && a.data_publicacao && new Date(a.data_publicacao).getTime() > agora;
+  const dataFormatada = a => a.data_publicacao
+    ? new Date(a.data_publicacao).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+    : '-';
+
   container.innerHTML = `<table><thead><tr><th></th><th>Título</th><th>Categoria</th><th>Status</th><th>Publicação</th><th></th></tr></thead><tbody>
-    ${artigos.map(a => `
+    ${artigos.map(a => {
+      const programado = estaProgramado(a);
+      const statusTexto = programado ? 'programado' : (a.status || '');
+      const acaoTexto = programado ? 'Cancelar programação' : (a.status === 'publicado' ? 'Despublicar' : 'Publicar');
+      return `
     <tr>
       <td>${a.imagem_capa_url ? `<img class="thumb" src="${escapeHtmlAttr(a.imagem_capa_url)}" alt="Imagem de capa de ${escapeHtmlAttr(a.titulo || "artigo")}">` : `<div class="thumb"></div>`}</td>
       <td>${escapeHtmlAttr(a.titulo || '')}</td>
       <td>${escapeHtmlAttr(a.categoria || '-')}</td>
-      <td><span class="badge ${escapeHtmlAttr(a.status || '')}">${escapeHtmlAttr(a.status || '')}</span></td>
-      <td>${a.data_publicacao ? new Date(a.data_publicacao).toLocaleDateString('pt-BR') : '-'}</td>
+      <td><span class="badge ${escapeHtmlAttr(statusTexto)}">${escapeHtmlAttr(statusTexto)}</span></td>
+      <td>${dataFormatada(a)}</td>
       <td class="row-actions">
         <button class="btn btn-outline btn-sm" data-editar-artigo="${escapeHtmlAttr(a.id)}">Editar</button>
-        <button class="btn btn-outline btn-sm" data-toggle-artigo="${escapeHtmlAttr(a.id)}" data-status="${escapeHtmlAttr(a.status || '')}">${a.status === 'publicado' ? 'Despublicar' : 'Publicar'}</button>
+        <button class="btn btn-outline btn-sm" data-toggle-artigo="${escapeHtmlAttr(a.id)}" data-status="${escapeHtmlAttr(a.status || '')}">${acaoTexto}</button>
       </td>
-    </tr>`).join('')}</tbody></table>`;
+    </tr>`;
+    }).join('')}</tbody></table>`;
 
   container.querySelectorAll('[data-editar-artigo]').forEach(btn => btn.addEventListener('click', () => abrirModalArtigo(btn.dataset.editarArtigo)));
   container.querySelectorAll('[data-toggle-artigo]').forEach(btn => {
@@ -1448,6 +1473,7 @@ async function carregarBlogTabela() {
       const novoStatus = btn.dataset.status === 'publicado' ? 'rascunho' : 'publicado';
       const payload = { status: novoStatus };
       if (novoStatus === 'publicado') payload.data_publicacao = new Date().toISOString();
+      else payload.data_publicacao = null;
       await sb.from('blog_artigos').update(payload).eq('id', btn.dataset.toggleArtigo);
       carregarBlogTabela(); carregarDashboard(); atualizarSitemapAutomatico(false);
     });
@@ -1494,7 +1520,11 @@ async function abrirModalArtigo(artigoId) {
       document.getElementById('ar-autor').value = a.autor || 'Fazendinha Turca';
       document.getElementById('ar-tags').value = (a.tags || []).join(', ');
       document.getElementById('ar-status').value = a.status || 'rascunho';
-      document.getElementById('ar-data-pub').value = a.data_publicacao ? a.data_publicacao.slice(0, 10) : '';
+      document.getElementById('ar-data-pub').value = a.data_publicacao ? (() => {
+        const d = new Date(a.data_publicacao);
+        const pad = n => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      })() : '';
       document.getElementById('ar-seo-title').value = a.seo_title || '';
       document.getElementById('ar-seo-desc').value = a.seo_description || '';
       document.getElementById('ar-alt-text').value = a.alt_text || '';
@@ -1536,7 +1566,9 @@ document.getElementById('form-artigo').addEventListener('submit', async (e) => {
       autor: document.getElementById('ar-autor').value || 'Fazendinha Turca',
       tags: document.getElementById('ar-tags').value.split(',').map(t => t.trim()).filter(Boolean),
       status: document.getElementById('ar-status').value,
-      data_publicacao: document.getElementById('ar-data-pub').value ? new Date(document.getElementById('ar-data-pub').value).toISOString() : null,
+      data_publicacao: document.getElementById('ar-status').value === 'publicado'
+        ? (document.getElementById('ar-data-pub').value ? new Date(document.getElementById('ar-data-pub').value).toISOString() : new Date().toISOString())
+        : null,
       seo_title: document.getElementById('ar-seo-title').value,
       seo_description: document.getElementById('ar-seo-desc').value,
       alt_text: document.getElementById('ar-alt-text').value
@@ -1759,7 +1791,7 @@ async function atualizarSitemapAutomatico(mostrarMsg = true) {
   try {
     const base = 'https://www.fazendinhaturca.com.br/';
     const { data: produtos, error: produtosError } = await sb.from('produtos').select('slug, projeto_id, status, atualizado_em, projetos(menu_url, slug, status)').eq('status', 'ativo');
-    const { data: artigos, error: artigosError } = await sb.from('blog_artigos').select('slug, status, atualizado_em').eq('status', 'publicado');
+    const { data: artigos, error: artigosError } = await sb.from('blog_artigos').select('slug, status, data_publicacao, atualizado_em').eq('status', 'publicado');
 
     if (produtosError) throw produtosError;
     if (artigosError) throw artigosError;
@@ -1789,8 +1821,10 @@ async function atualizarSitemapAutomatico(mostrarMsg = true) {
       }
     });
 
+    const agoraSitemap = Date.now();
     (artigos || []).forEach(a => {
-      if (a.slug) {
+      const dataPublicacao = a.data_publicacao ? new Date(a.data_publicacao).getTime() : 0;
+      if (a.slug && (!a.data_publicacao || Number.isNaN(dataPublicacao) || dataPublicacao <= agoraSitemap)) {
         urlsAtivas.set(`${base}blog/${encodeURIComponent(a.slug)}.html`, {
           origem: 'artigo',
           priority: 0.7
