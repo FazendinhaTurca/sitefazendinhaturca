@@ -856,13 +856,14 @@ function iniciarProtecoesSessao() {
   registrarAtividadePainel();
 }
 
-sb.auth.onAuthStateChange(async (_event, session) => {
+sb.auth.onAuthStateChange((_event, session) => {
   if (!session) {
     mostrarLogin();
     return;
   }
-  if (!(await sessaoEhAdmin(session))) {
-    await encerrarSessaoNaoAutorizada();
+  if (session.user?.id !== ADMIN_USER_ID || (session.user?.email || '').toLowerCase() !== ADMIN_EMAIL) {
+    // Evita chamar signOut dentro do callback do Supabase Auth e bloquear o lock interno da sessão.
+    setTimeout(() => encerrarSessaoNaoAutorizada(), 0);
   }
 });
 
