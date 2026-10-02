@@ -56,6 +56,14 @@ for source in files:
         if not href or href.startswith("#") or re.match(r"^(mailto:|tel:|javascript:|data:)", href, re.I):
             continue
 
+        # Alguns catálogos usam links montados dinamicamente em JavaScript,
+        # por exemplo: produtos/${encodeURIComponent(p.slug)}.html.
+        # Esses placeholders não são URLs finais e não devem ser tratados
+        # como páginas inexistentes pelo auditor estático. As páginas HTML
+        # efetivamente geradas continuam sendo auditadas normalmente.
+        if "${" in href or "encodeURIComponent(" in href:
+            continue
+
         target = normalize_target(source, href)
         if target in (None, "EXTERNAL"):
             continue
