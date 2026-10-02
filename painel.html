@@ -1834,6 +1834,75 @@ async function abrirModalArtigo(artigoId) {
   }
 }
 
+function validarArtigoAntesDeSalvar() {
+  const publicado = document.getElementById('ar-status').value === 'publicado';
+  if (!publicado) return { ok: true, avisos: [] };
+
+  const titulo = document.getElementById('ar-titulo').value.trim();
+  const resumo = document.getElementById('ar-resumo').value.trim();
+  const slug = document.getElementById('ar-slug').value.trim();
+  const categoria = document.getElementById('ar-categoria').value.trim();
+  const conteudo = (document.getElementById('ar-conteudo-rte').innerText || '').replace(/\s+/g, ' ').trim();
+  const seoTitle = document.getElementById('ar-seo-title').value.trim();
+  const seoDesc = document.getElementById('ar-seo-desc').value.trim();
+  const alt = document.getElementById('ar-alt-text').value.trim();
+  const faqs = coletarFaqs();
+  const erros = [];
+  const avisos = [];
+
+  if (titulo.length < 10) erros.push('O título precisa ter pelo menos 10 caracteres.');
+  if (!slug) erros.push('Informe o slug.');
+  if (!resumo) erros.push('Informe o resumo.');
+  if (!categoria) erros.push('Selecione uma categoria.');
+  if (conteudo.length < 120) erros.push('O conteúdo precisa ter pelo menos 120 caracteres.');
+  if (!seoTitle) erros.push('Preencha o SEO title.');
+  if (!seoDesc) erros.push('Preencha a SEO description.');
+  if (alt || document.getElementById('ar-capa').files.length) {
+    if (!alt) erros.push('Preencha o Alt text da capa.');
+  }
+  if (faqs.length < 3) erros.push('Um artigo publicado precisa ter pelo menos 3 FAQs completas.');
+
+  if (!document.getElementById('form-artigo').dataset.capaAtual && !document.getElementById('ar-capa').files.length) {
+    avisos.push('Atenção: o artigo será salvo sem imagem de capa.');
+  }
+  if (seoTitle && (seoTitle.length < 30 || seoTitle.length > 60)) {
+    avisos.push('SEO title fora da faixa recomendada de 30–60 caracteres.');
+  }
+  if (seoDesc && (seoDesc.length < 120 || seoDesc.length > 160)) {
+    avisos.push('SEO description fora da faixa recomendada de 120–160 caracteres.');
+  }
+
+  return { ok: erros.length === 0, erros, avisos };
+}
+
+function atualizarQualidadeSeoArtigo() {
+  const title = document.getElementById('ar-seo-title').value.trim();
+  const desc = document.getElementById('ar-seo-desc').value.trim();
+  const titleCount = document.getElementById('ar-seo-title-count');
+  const descCount = document.getElementById('ar-seo-desc-count');
+  if (titleCount) titleCount.textContent = title.length + ' caracteres';
+  if (descCount) descCount.textContent = desc.length + ' caracteres';
+
+  const checks = [
+    [document.getElementById('ar-titulo').value.trim().length >= 10, 'Título'],
+    [document.getElementById('ar-resumo').value.trim().length > 0, 'Resumo'],
+    [document.getElementById('ar-categoria').value.trim().length > 0, 'Categoria'],
+    [(document.getElementById('ar-conteudo-rte').innerText || '').trim().length >= 120, 'Conteúdo'],
+    [title.length > 0, 'SEO title'],
+    [desc.length > 0, 'SEO description'],
+    [document.getElementById('ar-alt-text').value.trim().length > 0, 'Alt text'],
+    [coletarFaqs().length >= 3, '3+ FAQs']
+  ];
+  const ok = checks.filter(item => item[0]).length;
+  const box = document.getElementById('ar-seo-check');
+  if (!box) return;
+  box.className = 'article-seo-check ' + (ok === checks.length ? 'ok' : 'warn');
+  box.innerHTML = '<span class="article-seo-meter">Qualidade: ' + ok + '/' + checks.length + '</span>' +
+    '<div class="article-seo-list">' +
+    checks.map(item => '<span class="article-seo-item ' + (item[0] ? 'ok' : 'warn') + '">' + (item[0] ? '✓ ' : '○ ') + item[1] + '</span>').join('') +
+    '</div>';
+}
+
 document.getElementById('form-artigo').addEventListener('submit', async (e) => {
   e.preventDefault();
   const msg = document.getElementById('ar-msg');
