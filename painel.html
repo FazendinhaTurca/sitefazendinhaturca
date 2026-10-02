@@ -1426,12 +1426,14 @@ async function abrirModalProduto(projetoSlug, produtoId) {
       form.dataset.imagemAtual = p.imagem_principal_url || '';
       form.dataset.galeriaAtual = JSON.stringify(p.galeria || []);
       renderGaleriaPreview(p.galeria || []);
+      atualizarQualidadeSeoProduto();
     }
   } else {
     document.getElementById('produto-modal-titulo').textContent = 'Novo produto';
     form.dataset.imagemAtual = '';
     form.dataset.galeriaAtual = '[]';
   }
+  atualizarQualidadeSeoProduto();
   document.getElementById('modal-produto').classList.add('show');
 }
 
