@@ -123,6 +123,79 @@
   .blog-reminder-title { display:flex; align-items:center; gap:8px; font-weight:800; color:var(--brown-dark); margin-bottom:5px; }
   .blog-reminder-text { font-size:.84rem; line-height:1.55; color:var(--text); }
   .blog-reminder-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  /* ===== QUALIDADE DO CONTEÚDO ===== */
+  .dashboard-quality {
+    background:transparent;
+    margin-bottom:20px;
+  }
+  .dashboard-quality-head {
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:12px;
+  }
+  .dashboard-quality-title {
+    font-family:Georgia,serif;
+    font-size:1.08rem;
+    font-weight:700;
+    color:var(--brown-dark);
+  }
+  .dashboard-quality-head .empty-hint {
+    font-size:.76rem;
+    color:var(--brown);
+    font-style:normal;
+  }
+  .dashboard-quality-grid {
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:12px;
+  }
+  .dashboard-quality-card {
+    background:#fff;
+    border:1px solid rgba(122,82,48,.13);
+    border-radius:12px;
+    padding:16px;
+    min-height:126px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    box-shadow:0 2px 8px rgba(78,52,32,.07);
+    position:relative;
+    overflow:hidden;
+  }
+  .dashboard-quality-card::before {
+    content:'';
+    position:absolute;
+    inset:0 auto 0 0;
+    width:4px;
+    background:var(--gold);
+  }
+  .dashboard-quality-card.ok::before { background:var(--ok); }
+  .dashboard-quality-card .q-num {
+    font-size:2rem;
+    line-height:1;
+    font-weight:800;
+    color:var(--brown-dark);
+  }
+  .dashboard-quality-card:not(.ok) .q-num { color:var(--red); }
+  .dashboard-quality-card .q-label {
+    font-size:.76rem;
+    line-height:1.35;
+    color:var(--brown-dark);
+    font-weight:700;
+    max-width:180px;
+  }
+  .dashboard-quality-card .q-status {
+    margin-top:10px;
+    font-size:.68rem;
+    font-weight:800;
+    color:var(--brown);
+  }
+  .dashboard-quality-card.ok .q-status { color:var(--ok); }
+  .dashboard-quality-card:not(.ok) .q-status { color:var(--red); }
+
   .dashboard-alerts { background:#fff; border-radius:10px; padding:16px 18px; margin-bottom:20px; box-shadow:0 2px 8px rgba(78,52,32,.08); border-left:5px solid var(--gold); }
   .dashboard-alerts.alerts-ok { border-left-color:var(--ok); }
   .dashboard-alerts-head { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
@@ -247,6 +320,9 @@
     .view-header { align-items:flex-start; }
     .view-header h2 { font-size:1.35rem; }
     .cards-row { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .dashboard-quality-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .dashboard-quality-card { min-height:118px; padding:14px; }
+    .dashboard-quality-card .q-num { font-size:1.7rem; }
     .kpi-card { padding:13px 12px; }
     .kpi-card .num { font-size:1.4rem; }
 
@@ -298,6 +374,10 @@
     main { padding:15px 10px 24px; }
     .cards-row { grid-template-columns:1fr 1fr; gap:8px; }
     .kpi-card .lbl { font-size:.68rem; }
+    .dashboard-quality-grid { grid-template-columns:1fr 1fr; gap:8px; }
+    .dashboard-quality-card { min-height:112px; padding:12px; }
+    .dashboard-quality-card .q-num { font-size:1.55rem; }
+    .dashboard-quality-card .q-label { font-size:.69rem; }
     .view-header { gap:8px; }
     .view-header .btn { width:100%; }
     .sitemap-actions { flex-direction:column; }
@@ -1268,7 +1348,7 @@ async function carregarQualidadeDashboard() {
     const produtosPendentesSeo = produtosAtivos.filter(p => !p.seo_title?.trim() || !p.seo_description?.trim() || !p.alt_text?.trim()).length;
     const produtosSemImagem = produtosAtivos.filter(p => !p.imagem_principal_url).length;
     const itens = [['Artigos sem SEO completo', artigosPendentesSeo],['Artigos publicados sem capa', artigosSemCapa],['Produtos sem SEO completo', produtosPendentesSeo],['Produtos ativos sem imagem', produtosSemImagem]];
-    container.innerHTML = '<div class="dashboard-quality-head"><div class="dashboard-quality-title">Qualidade do conteúdo</div><span class="empty-hint" style="padding:0;">Itens que merecem atenção</span></div>' + '<div class="dashboard-quality-grid">' + itens.map(([label, num]) => '<div class="dashboard-quality-card ' + (num === 0 ? 'ok' : '') + '"><div class="q-num">' + num + '</div><div class="q-label">' + escapeHtmlAttr(label) + '</div></div>').join('') + '</div>';
+    container.innerHTML = '<div class="dashboard-quality-head"><div class="dashboard-quality-title">Qualidade do conteúdo</div><span class="empty-hint" style="padding:0;">Itens que merecem atenção</span></div>' + '<div class="dashboard-quality-grid">' + itens.map(([label, num]) => '<div class="dashboard-quality-card ' + (num === 0 ? 'ok' : '') + '"><div class="q-num">' + num + '</div><div class="q-label">' + escapeHtmlAttr(label) + '</div><div class="q-status">' + (num === 0 ? '✓ Tudo certo' : '⚠ Verificar') + '</div></div>').join('') + '</div>';
   } catch (err) {
     console.error('Erro na verificação de qualidade:', err);
     container.innerHTML = '<div class="dashboard-quality-head"><div class="dashboard-quality-title">Qualidade do conteúdo</div></div><p class="msg-box erro" style="display:block;margin:0;">Não foi possível verificar a qualidade agora. Tente atualizar o painel.</p>';
