@@ -76,10 +76,13 @@
   .view-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
 
   /* ===== CARDS / GRID ===== */
-  .cards-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:26px; }
-  .kpi-card { background:#fff; border-radius:10px; padding:16px 18px; box-shadow:0 2px 8px rgba(78,52,32,0.08); }
-  .kpi-card .num { font-size:1.7rem; font-weight:800; color:var(--red); }
-  .kpi-card .lbl { font-size:0.75rem; color:var(--brown); margin-top:2px; }
+  .dashboard-overview { margin-bottom:26px; }
+  .dashboard-overview-title { font-family:Georgia,serif; font-size:1.08rem; font-weight:700; color:var(--brown-dark); margin-bottom:12px; }
+  .cards-row { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:0; }
+  .kpi-card { background:#fff; border:1px solid rgba(122,82,48,.13); border-radius:12px; padding:16px; min-height:104px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:0 2px 8px rgba(78,52,32,.07); position:relative; overflow:hidden; }
+  .kpi-card::before { content:""; position:absolute; inset:0 auto 0 0; width:4px; background:var(--gold); }
+  .kpi-card .num { font-size:2rem; line-height:1; font-weight:800; color:var(--brown-dark); }
+  .kpi-card .lbl { font-size:.76rem; line-height:1.35; color:var(--brown-dark); margin-top:10px; font-weight:700; max-width:180px; }
 
   table { width:100%; border-collapse:collapse; background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(78,52,32,0.08); }
   th, td { text-align:left; padding:10px 12px; font-size:0.82rem; border-bottom:1px solid rgba(122,82,48,0.12); }
@@ -195,6 +198,9 @@
   }
   .dashboard-quality-card.ok .q-status { color:var(--ok); }
   .dashboard-quality-card:not(.ok) .q-status { color:var(--red); }
+  @media (max-width:700px) {
+    .cards-row { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  }
   .dashboard-quality-card.clickable { cursor:pointer; transition:transform .16s ease, box-shadow .16s ease; }
   .dashboard-quality-card.clickable:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(78,52,32,.12); }
   .dashboard-quality-card.clickable:focus-visible { outline:3px solid rgba(217,164,65,.55); outline-offset:2px; }
@@ -491,8 +497,10 @@
       <div id="blog-reminder" class="blog-reminder hidden" role="status" aria-live="polite"></div>
       <div id="dashboard-alerts" class="dashboard-alerts" role="region" aria-label="Alertas e lembretes do painel"></div>
       <div id="dashboard-quality" class="dashboard-quality" aria-label="Qualidade do conteúdo"></div>
-      <div class="cards-row" id="dash-cards"></div>
-      <p class="empty-hint">Visão geral do sistema. Use o menu lateral para administrar cada área.</p>
+      <div class="dashboard-overview">
+        <div class="dashboard-overview-title">Visão geral</div>
+        <div class="cards-row" id="dash-cards"></div>
+      </div>
     </section>
 
     <!-- MERCADINHO -->
