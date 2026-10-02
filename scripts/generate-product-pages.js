@@ -1068,6 +1068,11 @@ async function main() {
     .toISOString()
     .slice(0, 10);
 
+  function safeLastmod(value) {
+    const raw = value ? String(value).slice(0, 10) : '';
+    return raw && raw <= today ? raw : today;
+  }
+
   sitemap.set(`${SITE_URL}/`, {
     lastmod: existingLastmods.get(`${SITE_URL}/`) || today,
     priority: '1.0',
@@ -1160,11 +1165,9 @@ async function main() {
     );
 
     sitemap.set(url, {
-      lastmod: p.atualizado_em
-        ? String(p.atualizado_em).slice(0, 10)
-        : p.criado_em
-        ? String(p.criado_em).slice(0, 10)
-        : today,
+      lastmod: safeLastmod(
+        p.atualizado_em || p.criado_em || today
+      ),
       priority: '0.8',
       changefreq: 'weekly',
       images: [
