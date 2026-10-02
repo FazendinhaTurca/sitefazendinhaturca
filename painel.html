@@ -1254,9 +1254,16 @@ async function carregarQualidadeDashboard() {
     if (artigosError) throw artigosError;
     if (produtosError) throw produtosError;
     const agora = Date.now();
-    const artigosVisiveis = (artigos || []).filter(a => a.status === 'publicado' && (!a.data_publicacao || Number.isNaN(new Date(a.data_publicacao).getTime()) || new Date(a.data_publicacao).getTime() <= agora));
+    // Só entram na qualidade os artigos efetivamente publicados neste momento.
+    // Artigos programados para o futuro não contam como publicados.
+    const artigosVisiveis = (artigos || []).filter(a => {
+      if (a.status !== 'publicado') return false;
+      if (!a.data_publicacao) return true;
+      const dataPub = new Date(a.data_publicacao).getTime();
+      return Number.isFinite(dataPub) && dataPub <= agora;
+    });
     const artigosPendentesSeo = artigosVisiveis.filter(a => !a.seo_title?.trim() || !a.seo_description?.trim() || !a.alt_text?.trim()).length;
-    const artigosSemCapa = artigosVisiveis.filter(a => !a.imagem_capa_url).length;
+    const artigosSemCapa = artigosVisiveis.filter(a => !String(a.imagem_capa_url || '').trim()).length;
     const produtosAtivos = (produtos || []).filter(p => p.status === 'ativo');
     const produtosPendentesSeo = produtosAtivos.filter(p => !p.seo_title?.trim() || !p.seo_description?.trim() || !p.alt_text?.trim()).length;
     const produtosSemImagem = produtosAtivos.filter(p => !p.imagem_principal_url).length;
