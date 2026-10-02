@@ -1617,6 +1617,76 @@ function slugify(nome) {
     .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
+function validarProdutoAntesDeSalvar() {
+  const status = document.getElementById('pr-status').value;
+  if (status !== 'ativo') return { ok: true, avisos: [] };
+
+  const nome = document.getElementById('pr-nome').value.trim();
+  const slug = document.getElementById('pr-slug').value.trim();
+  const preco = parseFloat(document.getElementById('pr-preco').value);
+  const descricao = (document.getElementById('pr-descricao-rte').innerText || '').replace(/\s+/g, ' ').trim();
+  const seoTitle = document.getElementById('pr-seo-title').value.trim();
+  const seoDesc = document.getElementById('pr-seo-desc').value.trim();
+  const alt = document.getElementById('pr-alt-text').value.trim();
+  const imagem = document.getElementById('form-produto').dataset.imagemAtual || '';
+  const novaImagem = document.getElementById('pr-imagem').files.length > 0;
+  const erros = [];
+  const avisos = [];
+
+  if (nome.length < 3) erros.push('Informe o nome do produto.');
+  if (!slug) erros.push('Informe o slug do produto.');
+  if (!Number.isFinite(preco) || preco < 0) erros.push('Informe um preço válido.');
+  if (!descricao) erros.push('Preencha a descrição completa.');
+  if (!seoTitle) erros.push('Preencha o SEO title.');
+  if (!seoDesc) erros.push('Preencha a SEO description.');
+  if (imagem || novaImagem) {
+    if (!alt) erros.push('Preencha o Alt text da imagem.');
+  } else {
+    avisos.push('Atenção: o produto ativo está sem imagem principal.');
+  }
+  if (seoTitle && (seoTitle.length < 30 || seoTitle.length > 60)) avisos.push('SEO title fora da faixa recomendada de 30–60 caracteres.');
+  if (seoDesc && (seoDesc.length < 120 || seoDesc.length > 160)) avisos.push('SEO description fora da faixa recomendada de 120–160 caracteres.');
+
+  return {ok: erros.length === 0, erros, avisos};
+}
+
+function atualizarQualidadeSeoProduto() {
+  const title = document.getElementById('pr-seo-title').value.trim();
+  const desc = document.getElementById('pr-seo-desc').value.trim();
+  const checks = [
+    [document.getElementById('pr-nome').value.trim().length >= 3, 'Nome'],
+    [document.getElementById('pr-categoria').value.trim().length > 0, 'Categoria'],
+    [(document.getElementById('pr-descricao-rte').innerText || '').trim().length > 0, 'Descrição'],
+    [title.length > 0, 'SEO title'],
+    [desc.length > 0, 'SEO description'],
+    [document.getElementById('pr-alt-text').value.trim().length > 0, 'Alt text'],
+    [!!document.getElementById('form-produto').dataset.imagemAtual || document.getElementById('pr-imagem').files.length > 0, 'Imagem']
+  ];
+  const ok = checks.filter(item => item[0]).length;
+  const box = document.getElementById('pr-seo-check');
+  const tc = document.getElementById('pr-seo-title-count');
+  const dc = document.getElementById('pr-seo-desc-count');
+  if (tc) tc.textContent = title.length + ' caracteres';
+  if (dc) dc.textContent = desc.length + ' caracteres';
+  if (!box) return;
+  box.className = 'product-seo-check ' + (ok === checks.length ? 'ok' : 'warn');
+  box.innerHTML = '<span class="product-seo-meter">Qualidade: ' + ok + '/' + checks.length + '</span><div class="product-seo-list">' +
+    checks.map(item => '<span class="product-seo-item ' + (item[0] ? 'ok' : 'warn') + '">' + (item[0] ? '✓ ' : '○ ') + item[1] + '</span>').join('') + '</div>';
+}
+
+async function verificarSlugProduto() {
+  const slug = document.getElementById('pr-slug').value.trim() || slugify(document.getElementById('pr-nome').value.trim());
+  const produtoId = document.getElementById('pr-id').value;
+  const projetoSlug = document.getElementById('pr-projeto-slug').value;
+  const projeto = projetosCache.find(p => p.slug === projetoSlug);
+  if (!slug || !projeto) return '';
+  let query = sb.from('produtos').select('id').eq('projeto_id', projeto.id).eq('slug', slug).limit(1);
+  if (produtoId) query = query.neq('id', produtoId);
+  const {data, error} = await query;
+  if (error) throw error;
+  return data && data.length ? 'Este slug já está sendo usado por outro produto deste projeto.' : '';
+}
+
 document.getElementById('form-produto').addEventListener('submit', async (e) => {
   e.preventDefault();
   const msg = document.getElementById('pr-msg');
