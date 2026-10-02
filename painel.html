@@ -408,7 +408,7 @@
         <h2>Blog</h2>
         <div style="display:flex; gap:8px;">
           <button class="btn btn-outline" id="btn-nova-categoria-blog">+ Nova categoria</button>
-          <button class="btn btn-primary" id="btn-novo-artigo">+ Novo artigo</button>
+          <button type="button" class="btn btn-primary" id="btn-novo-artigo">+ Novo artigo</button>
         </div>
       </div>
       <div id="tabela-blog"></div>
@@ -1721,7 +1721,11 @@ async function carregarBlogTabela() {
   });
 }
 
-document.getElementById('btn-novo-artigo').addEventListener('click', () => abrirModalArtigo(null));
+document.getElementById('btn-novo-artigo').addEventListener('click', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  abrirModalArtigo(null);
+});
 
 function escapeHtmlAttr(value) { return String(value || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function renumerarFaqs() { document.querySelectorAll('#ar-faq-list .blog-faq-row strong').forEach((el, i) => el.textContent = 'Pergunta ' + (i + 1)); }
@@ -1740,6 +1744,7 @@ document.getElementById('btn-adicionar-faq').addEventListener('click', () => { c
 
 async function abrirModalArtigo(artigoId) {
   const form = document.getElementById('form-artigo');
+  if (!form) return;
   form.reset();
   document.getElementById('ar-id').value = artigoId || '';
   document.getElementById('ar-conteudo-rte').innerHTML = '';
@@ -1749,7 +1754,12 @@ async function abrirModalArtigo(artigoId) {
   form.dataset.capaAtual = '';
   renderFaqEditor([]);
 
-  if (artigoId) {
+  // Abre imediatamente. O carregamento das categorias/FAQ acontece depois,
+  // evitando que uma consulta lenta ou falha de rede faça o modal parecer que fechou.
+  document.getElementById('modal-artigo').classList.add('show');
+
+  try {
+    if (artigoId) {
     document.getElementById('artigo-modal-titulo').textContent = 'Editar artigo';
     const { data: a } = await sb.from('blog_artigos').select('*').eq('id', artigoId).single();
     if (a) {
@@ -1777,11 +1787,17 @@ async function abrirModalArtigo(artigoId) {
       const { data: faqs } = await sb.from('blog_faqs').select('id,pergunta,resposta,ordem,ativo').eq('artigo_id', artigoId).order('ordem', { ascending: true });
       renderFaqEditor(faqs || []);
     }
-  } else {
-    await carregarCategoriasBlogSelect('');
-    document.getElementById('artigo-modal-titulo').textContent = 'Novo artigo';
+    } else {
+      document.getElementById('artigo-modal-titulo').textContent = 'Novo artigo';
+      await carregarCategoriasBlogSelect('');
+    }
+  } catch (err) {
+    console.error('Erro ao preparar o editor de artigo:', err);
+    const msg = document.getElementById('ar-msg');
+    msg.style.display = 'block';
+    msg.className = 'msg-box erro';
+    msg.textContent = 'Não foi possível carregar todas as opções do artigo. Você pode continuar preenchendo e tentar novamente.';
   }
-  document.getElementById('modal-artigo').classList.add('show');
 }
 
 document.getElementById('form-artigo').addEventListener('submit', async (e) => {
