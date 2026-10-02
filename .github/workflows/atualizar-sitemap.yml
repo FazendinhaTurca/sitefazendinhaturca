@@ -183,6 +183,9 @@ jobs:
           print(f'Sitemap validado: {len(locs)} URLs, páginas principais presentes, sem duplicidades, URLs HTTPS válidas e páginas geradas presentes.')
           PY
 
+      - name: Auditar links internos e páginas órfãs
+        run: python scripts/audit-internal-links.py
+
       - name: Verificar alterações
         id: verificar-alteracoes
         run: |
