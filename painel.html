@@ -1905,9 +1905,30 @@ function atualizarQualidadeSeoArtigo() {
 
 document.getElementById('form-artigo').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const msg = document.getElementById('ar-msg');
-  msg.style.display = 'block'; msg.className = 'msg-box'; msg.textContent = 'Salvando...';
   const form = e.target;
+  if (form.dataset.saving === '1') return;
+
+  const validacao = validarArtigoAntesDeSalvar();
+  const msg = document.getElementById('ar-msg');
+  if (!validacao.ok) {
+    msg.style.display = 'block';
+    msg.className = 'msg-box erro';
+    msg.textContent = validacao.erros.join(' ');
+    atualizarQualidadeSeoArtigo();
+    return;
+  }
+
+  msg.style.display = 'block';
+  msg.className = 'msg-box';
+  msg.textContent = validacao.avisos.length ? validacao.avisos.join(' ') : 'Salvando...';
+
+  form.dataset.saving = '1';
+  const btnSalvar = form.querySelector('button[type="submit"]');
+  if (btnSalvar) {
+    btnSalvar.disabled = true;
+    btnSalvar.textContent = 'Salvando...';
+  }
+
   const artigoId = document.getElementById('ar-id').value;
 
   try {
