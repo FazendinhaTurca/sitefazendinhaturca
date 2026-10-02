@@ -56,7 +56,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/abacate.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -65,7 +65,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/mamao.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -74,7 +74,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/abacaxi.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -95,7 +95,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/mini-manga.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -119,11 +119,20 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/manga.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://www.fazendinhaturca.com.br/images/produtos/manga.webp</image:loc>
+    </image:image>
+  </url>
+<url>
+    <loc>https://www.fazendinhaturca.com.br/produtos/tangerina-doce.html</loc>
+    <lastmod>2026-10-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://www.fazendinhaturca.com.br/images/produtos/tangerina-doce.webp</image:loc>
     </image:image>
   </url>
 <url>
@@ -139,12 +148,12 @@
     </image:image>
   </url>
 <url>
-    <loc>https://www.fazendinhaturca.com.br/produtos/tangerina-doce.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <loc>https://www.fazendinhaturca.com.br/produtos/tangerina-azeda.html</loc>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://www.fazendinhaturca.com.br/images/produtos/tangerina-doce.webp</image:loc>
+      <image:loc>https://www.fazendinhaturca.com.br/images/produtos/tangerina-azeda.webp</image:loc>
     </image:image>
   </url>
 <url>
@@ -157,12 +166,12 @@
     </image:image>
   </url>
 <url>
-    <loc>https://www.fazendinhaturca.com.br/produtos/tangerina-azeda.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <loc>https://www.fazendinhaturca.com.br/produtos/tomate.html</loc>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://www.fazendinhaturca.com.br/images/produtos/tangerina-azeda.webp</image:loc>
+      <image:loc>https://www.fazendinhaturca.com.br/images/produtos/tomate.webp</image:loc>
     </image:image>
   </url>
 <url>
@@ -175,17 +184,8 @@
     </image:image>
   </url>
 <url>
-    <loc>https://www.fazendinhaturca.com.br/produtos/tomate.html</loc>
-    <lastmod>2026-09-17</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://www.fazendinhaturca.com.br/images/produtos/tomate.webp</image:loc>
-    </image:image>
-  </url>
-<url>
     <loc>https://www.fazendinhaturca.com.br/produtos/mini-tomate.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -203,7 +203,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/quiabo.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -221,7 +221,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/mini-pepino.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -230,7 +230,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/vagem.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -239,7 +239,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/ervilha.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -248,7 +248,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/pimenta.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -257,7 +257,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/goiaba.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -266,7 +266,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/abobrinha.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -275,7 +275,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/jambo.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -284,7 +284,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/pitaya.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -293,7 +293,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/milho.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -302,7 +302,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/couve-flor.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -311,7 +311,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/brocolis.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -320,7 +320,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/alface.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -329,7 +329,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/couve.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -338,7 +338,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/repolho.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -347,7 +347,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/beterraba.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -356,7 +356,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/cenoura.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -365,7 +365,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/rabanete.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -374,7 +374,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/chuchu.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -383,7 +383,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/mandioca.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -392,7 +392,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/batata-doce.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -401,7 +401,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/inhame.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -410,7 +410,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/gengibre.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -419,7 +419,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/caja.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -428,7 +428,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/laranja.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -437,7 +437,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/maca.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -446,7 +446,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/coco-verde.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -455,7 +455,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/coco-seco.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -464,7 +464,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/limao.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -473,7 +473,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/banana-prata.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -482,7 +482,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/banana-d-agua.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -500,7 +500,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/maracuja.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -509,7 +509,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/caqui.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -518,7 +518,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/pera.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -527,7 +527,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/agua-de-coco.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -536,7 +536,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/morango.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -545,7 +545,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/roma.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -554,7 +554,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/kiwi.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -563,7 +563,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/caju.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -572,7 +572,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/carambola.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -581,7 +581,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/mini-melancia-amarela.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -599,7 +599,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/melao-amarelo.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -608,7 +608,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/melao-verde.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -617,7 +617,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/acerola.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -626,7 +626,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/jaca.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -635,7 +635,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/ovos.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -644,7 +644,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/abobora.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -653,7 +653,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/amendoim.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -662,7 +662,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/feijao-branco.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -671,7 +671,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/feijao-vermelho.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -680,7 +680,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/feijao-marronzinho.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -689,7 +689,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/graviola.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -698,7 +698,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/uva-verde.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -707,7 +707,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/uva-roxa.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -716,7 +716,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/caldo-de-cana.html</loc>
-    <lastmod>2026-09-23</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -725,7 +725,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/queijo.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -743,7 +743,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/mel.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -752,7 +752,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/graos-de-cafe.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
