@@ -128,6 +128,12 @@
   .product-seo-list { display:flex; flex-wrap:wrap; gap:6px 12px; margin-top:5px; }
   .product-seo-item.ok { color:var(--ok); }
   .product-seo-item.warn { color:var(--brown); }
+  .storage-file { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:9px 0; border-top:1px solid rgba(122,82,48,.10); font-size:.78rem; }
+  .storage-file:first-child { border-top:none; }
+  .storage-path { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--brown-dark); }
+  .storage-size { flex:0 0 auto; color:var(--brown); }
+  .storage-orphan { background:#fff8df; border-left:4px solid var(--gold); padding:10px 12px; border-radius:7px; margin-top:10px; }
+  .storage-ok { background:#eef6e9; color:var(--ok); border-left:4px solid var(--ok); padding:10px 12px; border-radius:7px; margin-top:10px; font-size:.8rem; }
   .config-setting { background:#fff; border-radius:10px; padding:16px 18px; margin-bottom:18px; box-shadow:0 2px 8px rgba(78,52,32,.08); }
   .config-setting-head { display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; }
   .config-setting-title { font-weight:800; color:var(--brown-dark); }
@@ -476,9 +482,14 @@
     <section class="panel-view" id="view-storage">
       <div class="view-header">
         <h2>Storage</h2>
-        <button type="button" class="btn btn-outline" id="btn-recarregar-storage">Atualizar</button>
+        <div class="sitemap-actions" style="margin:0;">
+          <button type="button" class="btn btn-outline" id="btn-recarregar-storage">Atualizar</button>
+          <button type="button" class="btn btn-outline" id="btn-verificar-storage">Verificar integridade</button>
+        </div>
       </div>
-      <p class="empty-hint" style="margin-top:-8px;">Bucket público <strong>projetos</strong>, organizado por pasta de cada projeto.</p>
+      <p class="empty-hint" style="margin-top:-8px;">Bucket público <strong>projetos</strong>, organizado por projeto. Novas imagens são convertidas para WebP antes do envio.</p>
+      <div class="cards-row" id="storage-cards"></div>
+      <div class="msg-box" id="storage-msg" style="display:none;"></div>
       <div id="storage-container"></div>
     </section>
 
@@ -2267,42 +2278,121 @@ async function carregarBanco() {
 
 /* ===================== STORAGE ===================== */
 document.getElementById('btn-recarregar-storage').addEventListener('click', carregarStorage);
+document.getElementById('btn-verificar-storage').addEventListener('click', verificarIntegridadeStorage);
+
+async function listarArquivosStorage(caminho = '', profundidade = 0, resultado = []) {
+  if (profundidade > 6) return resultado;
+  const { data: itens, error } = await sb.storage.from(BUCKET).list(caminho, { limit: 1000, sortBy: { column: 'name', order: 'asc' } });
+  if (error) throw error;
+  for (const item of (itens || [])) {
+    const caminhoCompleto = caminho ? caminho + '/' + item.name : item.name;
+    if (item.metadata && item.metadata.size != null) {
+      resultado.push({
+        caminho: caminhoCompleto,
+        tamanho: Number(item.metadata.size) || 0,
+        url: sb.storage.from(BUCKET).getPublicUrl(caminhoCompleto).data.publicUrl
+      });
+    } else if (item.name) {
+      await listarArquivosStorage(caminhoCompleto, profundidade + 1, resultado);
+    }
+  }
+  return resultado;
+}
+
 async function carregarStorage() {
   const container = document.getElementById('storage-container');
-  container.innerHTML = '<p class="empty-hint">Carregando...</p>';
+  const cards = document.getElementById('storage-cards');
+  const msg = document.getElementById('storage-msg');
+  container.innerHTML = '<p class="empty-hint">Carregando arquivos e calculando o espaço utilizado...</p>';
+  cards.innerHTML = '';
+  msg.style.display = 'none';
   try {
-    const { data: pastas, error } = await sb.storage.from(BUCKET).list('', { limit: 100 });
-    if (error) throw error;
-    if (!pastas || pastas.length === 0) { container.innerHTML = '<p class="empty-hint">Nenhum arquivo enviado ainda.</p>'; return; }
+    const arquivos = await listarArquivosStorage();
+    const totalBytes = arquivos.reduce((s, a) => s + a.tamanho, 0);
+    const pastas = new Set(arquivos.map(a => a.caminho.split('/').slice(0, -1).join('/')).filter(Boolean));
+    const webp = arquivos.filter(a => a.caminho.toLowerCase().endsWith('.webp')).length;
 
-    let html = '';
-    for (const pasta of pastas) {
-      if (!pasta.id && pasta.name) {
-        // é uma "pasta" (sem metadata de arquivo)
-        const resumo = await resumoPasta(pasta.name);
-        html += `<h3 style="margin:18px 0 8px; font-size:0.95rem;">${escapeHtmlAttr(pasta.name)}</h3>
-          <p class="empty-hint" style="padding:4px 0;">${resumo.arquivos} arquivo(s) &middot; ${formatarBytes(resumo.tamanho)}</p>`;
-      }
+    cards.innerHTML = [
+      ['Arquivos', arquivos.length],
+      ['Pastas', pastas.size],
+      ['Espaço usado', formatarBytes(totalBytes)],
+      ['WebP', webp + ' / ' + arquivos.length]
+    ].map(([lbl, num]) => '<div class="kpi-card"><div class="num">' + escapeHtmlAttr(String(num)) + '</div><div class="lbl">' + escapeHtmlAttr(lbl) + '</div></div>').join('');
+
+    if (!arquivos.length) {
+      container.innerHTML = '<p class="empty-hint">Nenhum arquivo enviado ainda.</p>';
+      return;
     }
-    container.innerHTML = html || '<p class="empty-hint">Nenhuma pasta encontrada.</p>';
+
+    const porPasta = {};
+    arquivos.forEach(a => {
+      const partes = a.caminho.split('/');
+      const pasta = partes.length > 1 ? partes.slice(0, -1).join('/') : '(raiz)';
+      (porPasta[pasta] ||= []).push(a);
+    });
+
+    container.innerHTML = Object.keys(porPasta).sort().map(pasta => {
+      const lista = porPasta[pasta];
+      const tamanho = lista.reduce((s, a) => s + a.tamanho, 0);
+      return '<div class="config-setting">' +
+        '<h3 style="font-size:.95rem;">' + escapeHtmlAttr(pasta) + '</h3>' +
+        '<p class="empty-hint" style="padding:4px 0;">' + lista.length + ' arquivo(s) · ' + formatarBytes(tamanho) + '</p>' +
+        lista.map(a => '<div class="storage-file"><span class="storage-path" title="' + escapeHtmlAttr(a.caminho) + '">' + escapeHtmlAttr(a.caminho.split('/').pop()) + '</span><span class="storage-size">' + formatarBytes(a.tamanho) + '</span></div>').join('') +
+      '</div>';
+    }).join('');
   } catch (err) {
     console.error(err);
     container.innerHTML = '<p class="empty-hint">Erro ao carregar o Storage.</p>';
+    msg.style.display = 'block';
+    msg.className = 'msg-box erro';
+    msg.textContent = 'Não foi possível consultar o Storage: ' + (err.message || 'erro desconhecido.');
   }
 }
-async function resumoPasta(caminho, prof = 0) {
-  let arquivos = 0, tamanho = 0;
-  const { data: itens } = await sb.storage.from(BUCKET).list(caminho, { limit: 200 });
-  for (const item of (itens || [])) {
-    if (item.metadata && item.metadata.size != null) {
-      arquivos++; tamanho += item.metadata.size;
-    } else if (prof < 4) {
-      const sub = await resumoPasta(`${caminho}/${item.name}`, prof + 1);
-      arquivos += sub.arquivos; tamanho += sub.tamanho;
+
+async function verificarIntegridadeStorage() {
+  const container = document.getElementById('storage-container');
+  const msg = document.getElementById('storage-msg');
+  msg.style.display = 'block';
+  msg.className = 'msg-box';
+  msg.textContent = 'Verificando arquivos do Storage contra produtos e artigos...';
+  try {
+    const [arquivos, produtosResp, artigosResp] = await Promise.all([
+      listarArquivosStorage(),
+      sb.from('produtos').select('imagem_principal_url,galeria'),
+      sb.from('blog_artigos').select('imagem_capa_url')
+    ]);
+    if (produtosResp.error) throw produtosResp.error;
+    if (artigosResp.error) throw artigosResp.error;
+
+    const referenciados = new Set();
+    [...(produtosResp.data || []), ...(artigosResp.data || [])].forEach(item => {
+      const urls = [item.imagem_principal_url, item.imagem_capa_url, ...(Array.isArray(item.galeria) ? item.galeria : [])];
+      urls.filter(Boolean).forEach(url => {
+        const caminho = obterCaminhoStorage(url);
+        if (caminho) referenciados.add(caminho);
+      });
+    });
+
+    const orfaos = arquivos.filter(a => !referenciados.has(a.caminho));
+    if (!orfaos.length) {
+      msg.className = 'msg-box ok';
+      msg.textContent = '✓ Integridade OK: todos os arquivos encontrados no Storage estão referenciados pelo banco.';
+      return;
     }
+
+    msg.className = 'msg-box';
+    msg.innerHTML = '<strong>Foram encontrados ' + orfaos.length + ' arquivo(s) sem referência no banco.</strong><br>Isso não exclui nada automaticamente. Revise antes de apagar.';
+    const bloco = '<div class="storage-orphan"><strong>Arquivos sem referência</strong>' +
+      orfaos.map(a => '<div class="storage-file"><span class="storage-path" title="' + escapeHtmlAttr(a.caminho) + '">' + escapeHtmlAttr(a.caminho) + '</span><span class="storage-size">' + formatarBytes(a.tamanho) + '</span></div>').join('') +
+      '</div>';
+    container.insertAdjacentHTML('afterbegin', bloco);
+  } catch (err) {
+    console.error(err);
+    msg.className = 'msg-box erro';
+    msg.textContent = 'Erro na verificação: ' + (err.message || 'tente novamente.');
   }
-  return { arquivos, tamanho };
 }
+
 function formatarBytes(b) {
   if (!b) return '0 KB';
   const kb = b / 1024;
