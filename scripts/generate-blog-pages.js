@@ -561,6 +561,16 @@ async function main() {
     'blog_artigos?select=*&status=eq.publicado'
   );
 
+  // Artigos publicados com data futura ficam programados: entram no site
+  // somente quando a data/hora chegar. A execução periódica do workflow
+  // verifica isso automaticamente.
+  const agora = Date.now();
+  const artigosDisponiveis = articles.filter(article => {
+    if (!article?.data_publicacao) return true;
+    const dataPublicacao = new Date(article.data_publicacao).getTime();
+    return Number.isNaN(dataPublicacao) || dataPublicacao <= agora;
+  });
+
   if (!Array.isArray(articles)) {
     throw new Error('Resposta inesperada do Supabase: blog_artigos precisa ser uma lista.');
   }
@@ -568,7 +578,7 @@ async function main() {
     throw new Error('Nenhum artigo publicado foi retornado. Geração cancelada para preservar as páginas atuais.');
   }
 
-  const sorted = articles
+  const sorted = artigosDisponiveis
     .filter(a => a && (a.slug || a.titulo))
     .sort((a, b) => {
       const da = new Date(a.data_publicacao || a.criado_em || 0).getTime();
