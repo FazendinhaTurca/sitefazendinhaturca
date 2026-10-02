@@ -198,7 +198,7 @@
   .dashboard-quality-card.clickable { cursor:pointer; transition:transform .16s ease, box-shadow .16s ease; }
   .dashboard-quality-card.clickable:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(78,52,32,.12); }
   .dashboard-quality-card.clickable:focus-visible { outline:3px solid rgba(217,164,65,.55); outline-offset:2px; }
-  .quality-product-modal .modal-box { max-width:900px; }
+  .quality-product-modal { z-index:80; }\n  .quality-product-modal .modal-box { max-width:900px; }\n  #modal-produto { z-index:90; }
   .quality-product-list { max-height:60vh; overflow:auto; border:1px solid rgba(122,82,48,.12); border-radius:8px; }
   .quality-product-row { display:flex; align-items:center; gap:12px; padding:10px 12px; border-bottom:1px solid rgba(122,82,48,.10); background:#fff; }
   .quality-product-row:last-child { border-bottom:none; }
@@ -1471,10 +1471,11 @@ async function abrirListaQualidade(tipo) {
   lista.querySelectorAll('[data-quality-edit]').forEach(btn => {
     btn.addEventListener('click', () => {
       const item = data.find(x => String(x.id) === String(btn.dataset.qualityEdit));
-      modal.classList.remove('show');
       if (cfg.tabela === 'blog_artigos') {
+        modal.classList.remove('show');
         abrirModalArtigo(btn.dataset.qualityEdit);
       } else {
+        window.__qualidadeRetornoTipo = tipo;
         const slug = item?.projetos?.slug === 'atelier-verushka' ? 'atelier-verushka' : 'mercadinho';
         abrirModalProduto(slug, btn.dataset.qualityEdit);
       }
@@ -2099,7 +2100,14 @@ document.getElementById('form-produto').addEventListener('submit', async (e) => 
     await carregarProdutosTabela(projetoSlug, projetoSlug === 'mercadinho' ? 'tabela-mercadinho' : 'tabela-atelier');
     await carregarDashboard();
     await atualizarSitemapAutomatico(false);
-    setTimeout(() => document.getElementById('modal-produto').classList.remove('show'), 700);
+    setTimeout(async () => {
+      document.getElementById('modal-produto').classList.remove('show');
+      if (window.__qualidadeRetornoTipo) {
+        const tipoQualidade = window.__qualidadeRetornoTipo;
+        window.__qualidadeRetornoTipo = null;
+        await abrirListaQualidade(tipoQualidade);
+      }
+    }, 700);
   } catch (err) {
     console.error(err);
     msg.className = 'msg-box erro'; msg.textContent = 'Erro ao salvar: ' + (err.message || 'tente novamente.');
