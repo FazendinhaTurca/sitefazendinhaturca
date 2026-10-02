@@ -662,9 +662,12 @@
           <small style="display:block;margin-top:5px;color:var(--brown);font-size:.72rem;">Se escolher uma data/hora futura com status “Publicado”, o artigo ficará programado e será publicado automaticamente.</small>
         </div>
       </div>
-      <label>SEO title</label><input type="text" id="ar-seo-title">
-      <label>SEO description</label><textarea id="ar-seo-desc" rows="2"></textarea>
+      <label>SEO title <small id="ar-seo-title-count" style="font-weight:400;opacity:.7;">0 caracteres</small></label>
+      <input type="text" id="ar-seo-title" maxlength="70">
+      <label>SEO description <small id="ar-seo-desc-count" style="font-weight:400;opacity:.7;">0 caracteres</small></label>
+      <textarea id="ar-seo-desc" rows="2" maxlength="170"></textarea>
       <label>Alt text da capa</label><input type="text" id="ar-alt-text">
+      <div id="ar-seo-check" class="article-seo-check" aria-live="polite">Preencha os campos para verificar a qualidade do artigo.</div>
 
       <div class="modal-actions">
         <button type="button" class="btn btn-danger" id="btn-excluir-artigo" style="display:none;">Excluir</button>
