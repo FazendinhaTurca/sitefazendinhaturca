@@ -99,6 +99,19 @@
   .blog-reminder-title { display:flex; align-items:center; gap:8px; font-weight:800; color:var(--brown-dark); margin-bottom:5px; }
   .blog-reminder-text { font-size:.84rem; line-height:1.55; color:var(--text); }
   .blog-reminder-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .dashboard-alerts { background:#fff; border-radius:10px; padding:16px 18px; margin-bottom:20px; box-shadow:0 2px 8px rgba(78,52,32,.08); border-left:5px solid var(--gold); }
+  .dashboard-alerts.alerts-ok { border-left-color:var(--ok); }
+  .dashboard-alerts-head { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
+  .dashboard-alerts-title { font-family:Georgia,serif; font-size:1.05rem; font-weight:700; color:var(--brown-dark); }
+  .dashboard-alerts-count { background:var(--red); color:#fff; border-radius:999px; min-width:24px; height:24px; padding:3px 8px; display:inline-flex; align-items:center; justify-content:center; font-size:.72rem; font-weight:800; }
+  .dashboard-alert-item { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid rgba(122,82,48,.12); }
+  .dashboard-alert-item:first-child { border-top:none; }
+  .dashboard-alert-icon { font-size:1.05rem; flex:0 0 auto; }
+  .dashboard-alert-body { flex:1; min-width:0; }
+  .dashboard-alert-body strong { display:block; color:var(--brown-dark); font-size:.84rem; }
+  .dashboard-alert-body span { display:block; color:var(--brown); font-size:.78rem; line-height:1.45; margin-top:2px; }
+  .dashboard-alert-action { flex:0 0 auto; }
+  .dashboard-alert-empty { color:var(--ok); font-size:.82rem; padding:4px 0; }
   .config-setting { background:#fff; border-radius:10px; padding:16px 18px; margin-bottom:18px; box-shadow:0 2px 8px rgba(78,52,32,.08); }
   .config-setting-head { display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; }
   .config-setting-title { font-weight:800; color:var(--brown-dark); }
@@ -314,6 +327,7 @@
     <section class="panel-view show" id="view-dashboard">
       <div class="view-header"><h2>Dashboard</h2></div>
       <div id="blog-reminder" class="blog-reminder hidden" role="status" aria-live="polite"></div>
+      <div id="dashboard-alerts" class="dashboard-alerts" role="region" aria-label="Alertas e lembretes do painel"></div>
       <div class="cards-row" id="dash-cards"></div>
       <p class="empty-hint">Visão geral do sistema. Use o menu lateral para administrar cada área.</p>
     </section>
@@ -1013,6 +1027,102 @@ function atualizarLembreteBlog(artigos) {
   });
 }
 
+/* ===================== ALERTAS DO DASHBOARD ===================== */
+async function carregarAlertasDashboard() {
+  const container = document.getElementById('dashboard-alerts');
+  if (!container) return;
+
+  const { data: artigos, error } = await sb
+    .from('blog_artigos')
+    .select('id,titulo,slug,status,data_publicacao,imagem_capa_url')
+    .order('data_publicacao', { ascending: true, nullsFirst: false });
+
+  if (error) {
+    console.error(error);
+    container.innerHTML = '<div class="dashboard-alerts-head"><span class="dashboard-alerts-title">🔔 Alertas e lembretes</span></div><p class="empty-hint">Não foi possível carregar os alertas agora.</p>';
+    return;
+  }
+
+  const agora = Date.now();
+  const limite = agora + (30 * 24 * 60 * 60 * 1000);
+  const lista = [];
+
+  (artigos || []).forEach(a => {
+    const dataPub = a.data_publicacao ? new Date(a.data_publicacao).getTime() : 0;
+    const futuro = a.status === 'publicado' && dataPub > agora;
+    const semImagem = !a.imagem_capa_url;
+
+    if (futuro && semImagem) {
+      lista.push({
+        tipo: 'imagem-programado',
+        titulo: 'Imagem pendente em artigo programado',
+        texto: '“' + (a.titulo || 'Artigo sem título') + '” está programado para ' + new Date(a.data_publicacao).toLocaleString('pt-BR') + ' e ainda não possui foto de capa.',
+        prioridade: 1
+      });
+    }
+
+    if (futuro && dataPub <= limite) {
+      lista.push({
+        tipo: 'publicacao-proxima',
+        titulo: 'Publicação programada',
+        texto: '“' + (a.titulo || 'Artigo sem título') + '” será publicado em ' + new Date(a.data_publicacao).toLocaleString('pt-BR') + '.',
+        prioridade: 2
+      });
+    }
+  });
+
+  const publicadosSemImagem = (artigos || []).filter(a => {
+    const dataPub = a.data_publicacao ? new Date(a.data_publicacao).getTime() : 0;
+    return a.status === 'publicado' && (!a.data_publicacao || dataPub <= agora) && !a.imagem_capa_url;
+  });
+
+  if (publicadosSemImagem.length) {
+    lista.push({
+      tipo: 'imagem-publicado',
+      titulo: 'Artigos publicados sem imagem de capa',
+      texto: publicadosSemImagem.length + ' artigo(s) publicado(s) ainda precisam de foto de capa.',
+      prioridade: 3
+    });
+  }
+
+  lista.sort((a, b) => a.prioridade - b.prioridade);
+
+  if (!lista.length) {
+    container.classList.add('alerts-ok');
+    container.innerHTML = '<div class="dashboard-alerts-head"><span class="dashboard-alerts-title">🔔 Alertas e lembretes</span></div><div class="dashboard-alert-empty">✓ Nenhum alerta pendente no momento.</div>';
+    return;
+  }
+
+  container.classList.remove('alerts-ok');
+  const visiveis = lista.slice(0, 8);
+  container.innerHTML = `
+    <div class="dashboard-alerts-head">
+      <span class="dashboard-alerts-title">🔔 Alertas e lembretes</span>
+      <span class="dashboard-alerts-count">${lista.length}</span>
+    </div>
+    <div>
+      ${visiveis.map(item => `
+        <div class="dashboard-alert-item">
+          <div class="dashboard-alert-icon">⚠️</div>
+          <div class="dashboard-alert-body">
+            <strong>${escapeHtmlAttr(item.titulo)}</strong>
+            <span>${escapeHtmlAttr(item.texto)}</span>
+          </div>
+          <div class="dashboard-alert-action">
+            <button type="button" class="btn btn-outline btn-sm" data-alerta-blog>Ver Blog</button>
+          </div>
+        </div>`).join('')}
+    </div>
+    ${lista.length > visiveis.length ? '<p class="empty-hint" style="padding:10px 0 0;">Há mais alertas pendentes. Consulte a seção Blog.</p>' : ''}
+  `;
+
+  container.querySelectorAll('[data-alerta-blog]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelector('.tab-btn[data-tab="blog"]')?.click();
+    });
+  });
+}
+
 /* ===================== DASHBOARD ===================== */
 async function carregarDashboard() {
   const mercadinho = projetosCache.find(p => p.slug === 'mercadinho');
@@ -1047,6 +1157,7 @@ async function carregarDashboard() {
   document.getElementById('dash-cards').innerHTML = cards.map(([lbl, num]) =>
     `<div class="kpi-card"><div class="num">${num}</div><div class="lbl">${lbl}</div></div>`).join('');
   atualizarLembreteBlog(artigosDashboard);
+  await carregarAlertasDashboard();
 }
 
 /* ===================== PRODUTOS (Mercadinho + Atelier) ===================== */
