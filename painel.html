@@ -1366,9 +1366,16 @@ async function carregarQualidadeDashboard() {
     const itens = [['Artigos sem SEO completo', artigosPendentesSeo],['Artigos publicados sem capa', artigosSemCapa],['Produtos sem SEO completo', produtosPendentesSeo],['Produtos ativos sem imagem', produtosSemImagem]];
     container.innerHTML = '<div class="dashboard-quality-head"><div class="dashboard-quality-title">Qualidade do conteúdo</div><span class="empty-hint" style="padding:0;">Itens que merecem atenção</span></div>' + '<div class="dashboard-quality-grid">' + itens.map(([label, num]) => '<div class="dashboard-quality-card ' + (num === 0 ? 'ok' : 'clickable') + '" ' + (num > 0 ? 'role="button" tabindex="0" data-quality-item="' + escapeHtmlAttr(label) + '"' : '') + '><div class="q-num">' + num + '</div><div class="q-label">' + escapeHtmlAttr(label) + '</div><div class="q-status">' + (num === 0 ? '✓ Tudo certo' : '⚠ Verificar — clique para ver') + '</div></div>').join('') + '</div>';
 
+  const qualityTypes = {
+    'Artigos sem SEO completo':'artigosSeo',
+    'Artigos publicados sem capa':'artigosCapa',
+    'Produtos sem SEO completo':'produtosSeo',
+    'Produtos ativos sem imagem':'produtosImagem'
+  };
   container.querySelectorAll('[data-quality-item]').forEach(card => {
     const abrir = () => {
-      if (card.dataset.qualityItem === 'Produtos sem SEO completo') abrirListaQualidadeProdutos();
+      const tipo = qualityTypes[card.dataset.qualityItem];
+      if (tipo) abrirListaQualidade(tipo);
     };
     card.addEventListener('click', abrir);
     card.addEventListener('keydown', e => {
@@ -1381,8 +1388,8 @@ async function carregarQualidadeDashboard() {
   }
 }
 
-async function abrirListaQualidadeProdutos() {
-  const modalId = 'modal-qualidade-produtos';
+async function abrirListaQualidade(tipo) {
+  const modalId = 'modal-qualidade-itens';
   let modal = document.getElementById(modalId);
   if (!modal) {
     modal = document.createElement('div');
@@ -1390,46 +1397,87 @@ async function abrirListaQualidadeProdutos() {
     modal.className = 'modal-overlay quality-product-modal';
     document.body.appendChild(modal);
   }
+
+  const configs = {
+    artigosSeo: { titulo:'Artigos sem SEO completo', tabela:'blog_artigos', tipo:'artigo' },
+    artigosCapa: { titulo:'Artigos publicados sem capa', tabela:'blog_artigos', tipo:'artigo-capa' },
+    produtosSeo: { titulo:'Produtos sem SEO completo', tabela:'produtos', tipo:'produto' },
+    produtosImagem: { titulo:'Produtos ativos sem imagem', tabela:'produtos', tipo:'produto-imagem' }
+  };
+  const cfg = configs[tipo];
+  if (!cfg) return;
+
   modal.innerHTML = '<div class="modal-box">' +
     '<button type="button" class="modal-close" aria-label="Fechar">×</button>' +
-    '<h3>Produtos sem SEO completo</h3>' +
-    '<p class="empty-hint" style="padding:0 0 12px;">Carregando produtos que precisam de correção...</p>' +
-    '<div id="quality-product-list" class="quality-product-list"></div>' +
-    '</div>';
+    '<h3>' + escapeHtmlAttr(cfg.titulo) + '</h3>' +
+    '<p class="empty-hint" style="padding:0 0 12px;">Carregando itens que precisam de correção...</p>' +
+    '<div id="quality-item-list" class="quality-product-list"></div></div>';
   modal.classList.add('show');
   modal.querySelector('.modal-close').addEventListener('click', () => modal.classList.remove('show'));
   modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('show'); }, { once:true });
-  const { data: produtos, error } = await sb.from('produtos')
-    .select('id,nome,status,projeto_id,seo_title,seo_description,alt_text,projetos(nome_publico,slug)')
-    .eq('status', 'ativo')
-    .order('nome', { ascending:true });
+
+  const agora = Date.now();
+  let data = [], error = null;
+  if (cfg.tabela === 'blog_artigos') {
+    const r = await sb.from('blog_artigos').select('id,titulo,status,data_publicacao,imagem_capa_url,seo_title,seo_description,alt_text').order('titulo');
+    data = r.data || []; error = r.error;
+    data = data.filter(a => {
+      const atual = a.status === 'publicado' && (!a.data_publicacao || new Date(a.data_publicacao).getTime() <= agora);
+      if (!atual) return false;
+      return tipo === 'artigosSeo'
+        ? (!a.seo_title?.trim() || !a.seo_description?.trim() || !a.alt_text?.trim())
+        : !String(a.imagem_capa_url || '').trim();
+    });
+  } else {
+    const r = await sb.from('produtos').select('id,nome,status,seo_title,seo_description,alt_text,imagem_principal_url,projetos(nome_publico,slug)').eq('status','ativo').order('nome');
+    data = r.data || []; error = r.error;
+    data = data.filter(p => tipo === 'produtosSeo'
+      ? (!p.seo_title?.trim() || !p.seo_description?.trim() || !p.alt_text?.trim())
+      : !String(p.imagem_principal_url || '').trim());
+  }
+
+  const lista = document.getElementById('quality-item-list');
   if (error) {
-    document.getElementById('quality-product-list').innerHTML = '<p class="msg-box erro" style="display:block;margin:12px;">Não foi possível carregar a lista.</p>';
+    lista.innerHTML = '<p class="msg-box erro" style="display:block;margin:12px;">Não foi possível carregar a lista.</p>';
     return;
   }
-  const pendentes = (produtos || []).filter(p => !p.seo_title?.trim() || !p.seo_description?.trim() || !p.alt_text?.trim());
-  const lista = document.getElementById('quality-product-list');
-  if (!pendentes.length) {
-    lista.innerHTML = '<p class="empty-hint" style="padding:18px;">Nenhum produto pendente de SEO.</p>';
+  if (!data.length) {
+    lista.innerHTML = '<p class="empty-hint" style="padding:18px;">Nenhum item pendente encontrado.</p>';
     return;
   }
-  lista.innerHTML = pendentes.map(p => {
-    const faltantes = [];
-    if (!p.seo_title?.trim()) faltantes.push('SEO Title');
-    if (!p.seo_description?.trim()) faltantes.push('SEO Description');
-    if (!p.alt_text?.trim()) faltantes.push('Alt Text');
+
+  lista.innerHTML = data.map(item => {
+    let faltantes = [];
+    if (cfg.tipo === 'artigo') {
+      if (!item.seo_title?.trim()) faltantes.push('SEO Title');
+      if (!item.seo_description?.trim()) faltantes.push('SEO Description');
+      if (!item.alt_text?.trim()) faltantes.push('Alt Text');
+    } else if (cfg.tipo === 'produto') {
+      if (!item.seo_title?.trim()) faltantes.push('SEO Title');
+      if (!item.seo_description?.trim()) faltantes.push('SEO Description');
+      if (!item.alt_text?.trim()) faltantes.push('Alt Text');
+    } else if (cfg.tipo === 'artigo-capa') faltantes.push('Imagem de capa');
+    else faltantes.push('Imagem principal');
+
+    const projeto = item.projetos?.nome_publico || item.projetos?.slug || 'Projeto';
     return '<div class="quality-product-row">' +
-      '<div class="q-prod-name">' + escapeHtmlAttr(p.nome || 'Produto sem nome') + '</div>' +
-      '<div class="q-prod-project">' + escapeHtmlAttr(p.projetos?.nome_publico || p.projetos?.slug || 'Projeto') + '</div>' +
+      '<div class="q-prod-name">' + escapeHtmlAttr(item.titulo || item.nome || 'Item sem nome') + '</div>' +
+      (cfg.tabela === 'produtos' ? '<div class="q-prod-project">' + escapeHtmlAttr(projeto) + '</div>' : '<div class="q-prod-project">Blog</div>') +
       '<div class="q-prod-missing">Faltando: ' + escapeHtmlAttr(faltantes.join(', ')) + '</div>' +
-      '<div class="q-prod-action"><button type="button" class="btn btn-outline btn-sm" data-quality-edit="' + escapeHtmlAttr(p.id) + '" data-quality-project="' + escapeHtmlAttr(p.projetos?.slug || '') + '">Editar</button></div>' +
+      '<div class="q-prod-action"><button type="button" class="btn btn-outline btn-sm" data-quality-edit="' + escapeHtmlAttr(item.id) + '">Editar</button></div>' +
     '</div>';
   }).join('');
+
   lista.querySelectorAll('[data-quality-edit]').forEach(btn => {
     btn.addEventListener('click', () => {
+      const item = data.find(x => String(x.id) === String(btn.dataset.qualityEdit));
       modal.classList.remove('show');
-      const projetoSlug = btn.dataset.qualityProject === 'atelier-verushka' ? 'atelier-verushka' : 'mercadinho';
-      abrirModalProduto(projetoSlug, btn.dataset.qualityEdit);
+      if (cfg.tabela === 'blog_artigos') {
+        abrirModalArtigo(btn.dataset.qualityEdit);
+      } else {
+        const slug = item?.projetos?.slug === 'atelier-verushka' ? 'atelier-verushka' : 'mercadinho';
+        abrirModalProduto(slug, btn.dataset.qualityEdit);
+      }
     });
   });
 }
