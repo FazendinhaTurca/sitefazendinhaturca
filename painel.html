@@ -829,6 +829,45 @@ function mostrarApp() {
   carregarTudo();
 }
 
+let temporizadorInatividade = null;
+let ultimaAtividade = Date.now();
+const LIMITE_INATIVIDADE_MS = 60 * 60 * 1000;
+
+function registrarAtividadePainel() {
+  ultimaAtividade = Date.now();
+}
+
+async function encerrarPorInatividade() {
+  if (!document.getElementById('app-shell').classList.contains('show')) return;
+  if (Date.now() - ultimaAtividade < LIMITE_INATIVIDADE_MS) return;
+  await sb.auth.signOut();
+  mostrarLogin();
+  const msg = document.getElementById('login-msg');
+  msg.textContent = 'Sessão encerrada por inatividade. Entre novamente para continuar.';
+  msg.className = 'login-msg erro';
+}
+
+function iniciarProtecoesSessao() {
+  ['click','keydown','mousemove','scroll','touchstart'].forEach(evento => {
+    window.addEventListener(evento, registrarAtividadePainel, { passive: true });
+  });
+  clearInterval(temporizadorInatividade);
+  temporizadorInatividade = setInterval(encerrarPorInatividade, 60 * 1000);
+  registrarAtividadePainel();
+}
+
+sb.auth.onAuthStateChange(async (_event, session) => {
+  if (!session) {
+    mostrarLogin();
+    return;
+  }
+  if (!(await sessaoEhAdmin(session))) {
+    await encerrarSessaoNaoAutorizada();
+  }
+});
+
+iniciarProtecoesSessao();
+
 document.getElementById('btn-login').addEventListener('click', async () => {
   const email = document.getElementById('login-email').value.trim().toLowerCase();
   const senha = document.getElementById('login-senha').value;
