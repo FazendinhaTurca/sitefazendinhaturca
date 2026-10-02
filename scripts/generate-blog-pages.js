@@ -73,7 +73,9 @@ function formatDate(value) {
 function isoDate(value, fallback) {
   if (!value) return fallback;
   const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? fallback : d.toISOString().slice(0, 10);
+  if (Number.isNaN(d.getTime())) return fallback;
+  const iso = d.toISOString().slice(0, 10);
+  return iso > fallback ? fallback : iso;
 }
 
 function jsonLd(obj) {
