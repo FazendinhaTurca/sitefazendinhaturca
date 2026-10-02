@@ -1435,6 +1435,13 @@ async function abrirModalProduto(projetoSlug, produtoId) {
   document.getElementById('modal-produto').classList.add('show');
 }
 
+['pr-nome','pr-slug','pr-preco','pr-descricao-curta','pr-seo-title','pr-seo-desc','pr-alt-text','pr-categoria','pr-status','pr-imagem'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', atualizarQualidadeSeoProduto);
+  document.getElementById(id)?.addEventListener('change', atualizarQualidadeSeoProduto);
+});
+document.getElementById('pr-descricao-rte')?.addEventListener('input', atualizarQualidadeSeoProduto);
+document.getElementById('pr-galeria')?.addEventListener('change', atualizarQualidadeSeoProduto);
+
 document.getElementById('pr-remover-imagem').addEventListener('click', () => {
   const form = document.getElementById('form-produto');
   if (!form.dataset.imagemAtual) return;
