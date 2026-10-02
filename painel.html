@@ -94,6 +94,17 @@
   .rte-content:focus { outline:2px solid var(--gold); }
 
   .msg-box { font-size:0.8rem; padding:10px 12px; border-radius:6px; margin-bottom:14px; }
+  .blog-reminder { background:#fff8df; border:1px solid rgba(217,164,65,.55); border-left:5px solid var(--gold); border-radius:10px; padding:15px 18px; margin-bottom:20px; box-shadow:0 2px 8px rgba(78,52,32,.08); }
+  .blog-reminder.hidden { display:none; }
+  .blog-reminder-title { display:flex; align-items:center; gap:8px; font-weight:800; color:var(--brown-dark); margin-bottom:5px; }
+  .blog-reminder-text { font-size:.84rem; line-height:1.55; color:var(--text); }
+  .blog-reminder-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .config-setting { background:#fff; border-radius:10px; padding:16px 18px; margin-bottom:18px; box-shadow:0 2px 8px rgba(78,52,32,.08); }
+  .config-setting-head { display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; }
+  .config-setting-title { font-weight:800; color:var(--brown-dark); }
+  .config-setting-text { font-size:.8rem; color:var(--brown); margin-top:4px; line-height:1.5; }
+  .config-toggle { display:inline-flex; align-items:center; gap:8px; font-size:.8rem; font-weight:700; color:var(--brown-dark); white-space:nowrap; }
+  .config-toggle input { width:auto; min-height:auto; }
   .msg-box.ok { background:#e4f0dc; color:var(--ok); }
   .msg-box.erro { background:#f2e0e0; color:var(--danger); }
   .empty-hint { color:var(--brown); font-style:italic; font-size:0.85rem; padding:20px 0; }
@@ -302,6 +313,7 @@
     <!-- DASHBOARD -->
     <section class="panel-view show" id="view-dashboard">
       <div class="view-header"><h2>Dashboard</h2></div>
+      <div id="blog-reminder" class="blog-reminder hidden" role="status" aria-live="polite"></div>
       <div class="cards-row" id="dash-cards"></div>
       <p class="empty-hint">Visão geral do sistema. Use o menu lateral para administrar cada área.</p>
     </section>
@@ -452,7 +464,20 @@
     <!-- CONFIGURAÇÕES -->
     <section class="panel-view" id="view-config">
       <div class="view-header"><h2>Configurações</h2></div>
-      <p class="empty-hint" style="margin-top:-8px;">Ajustes rápidos de cada projeto (WhatsApp, prazos e status).</p>
+      <p class="empty-hint" style="margin-top:-8px;">Ajustes rápidos de cada projeto e dos lembretes do painel.</p>
+      <div class="config-setting">
+        <div class="config-setting-head">
+          <div>
+            <div class="config-setting-title">Lembrete de publicação do Blog</div>
+            <div class="config-setting-text">O sistema verifica os próximos 6 dias. Se não houver artigo programado nesse período, o painel poderá lembrar você de publicar um artigo.</div>
+          </div>
+          <label class="config-toggle">
+            <input type="checkbox" id="cfg-lembrete-blog">
+            Receber lembretes
+          </label>
+        </div>
+        <div id="cfg-lembrete-blog-status" class="config-setting-text"></div>
+      </div>
       <div id="config-container"></div>
     </section>
   </main>
@@ -884,6 +909,110 @@ async function carregarTudo() {
   carregarStorage();
 }
 
+/* ===================== LEMBRETE DE PUBLICAÇÃO DO BLOG ===================== */
+const BLOG_REMINDER_STORAGE = 'fazendinha_blog_reminder_config_v1';
+const BLOG_REMINDER_INTERVAL_MS = 6 * 24 * 60 * 60 * 1000;
+
+function lerConfigLembreteBlog() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(BLOG_REMINDER_STORAGE) || '{}');
+    return {
+      enabled: raw.enabled !== false,
+      lastReminderAt: Number(raw.lastReminderAt || 0)
+    };
+  } catch {
+    return { enabled: true, lastReminderAt: 0 };
+  }
+}
+
+function salvarConfigLembreteBlog(config) {
+  localStorage.setItem(BLOG_REMINDER_STORAGE, JSON.stringify({
+    enabled: config.enabled !== false,
+    lastReminderAt: Number(config.lastReminderAt || 0)
+  }));
+}
+
+function atualizarConfigLembreteBlogUI() {
+  const cfg = lerConfigLembreteBlog();
+  const input = document.getElementById('cfg-lembrete-blog');
+  const status = document.getElementById('cfg-lembrete-blog-status');
+  if (input) input.checked = cfg.enabled;
+  if (status) {
+    status.textContent = cfg.enabled
+      ? 'Ativado. O lembrete volta a ser considerado a cada 6 dias, quando não houver programação para os próximos 6 dias.'
+      : 'Desativado. Você pode reativar este lembrete a qualquer momento.';
+  }
+}
+
+function configurarLembreteBlog() {
+  const input = document.getElementById('cfg-lembrete-blog');
+  if (!input || input.dataset.bound === 'true') {
+    atualizarConfigLembreteBlogUI();
+    return;
+  }
+  input.dataset.bound = 'true';
+  input.addEventListener('change', () => {
+    const cfg = lerConfigLembreteBlog();
+    cfg.enabled = input.checked;
+    if (!cfg.enabled) cfg.lastReminderAt = Date.now();
+    salvarConfigLembreteBlog(cfg);
+    atualizarConfigLembreteBlogUI();
+    carregarDashboard();
+  });
+  atualizarConfigLembreteBlogUI();
+}
+
+function atualizarLembreteBlog(artigos) {
+  const box = document.getElementById('blog-reminder');
+  if (!box) return;
+
+  const cfg = lerConfigLembreteBlog();
+  if (!cfg.enabled) {
+    box.classList.add('hidden');
+    return;
+  }
+
+  const agora = Date.now();
+  const limite = agora + BLOG_REMINDER_INTERVAL_MS;
+  const existeProgramacaoNoPeriodo = (artigos || []).some(a => {
+    if (a.status !== 'publicado' || !a.data_publicacao) return false;
+    const data = new Date(a.data_publicacao).getTime();
+    return !Number.isNaN(data) && data > agora && data <= limite;
+  });
+
+  const podeLembrarNovamente =
+    !cfg.lastReminderAt || (agora - cfg.lastReminderAt) >= BLOG_REMINDER_INTERVAL_MS;
+
+  if (existeProgramacaoNoPeriodo || !podeLembrarNovamente) {
+    box.classList.add('hidden');
+    return;
+  }
+
+  const dataLimite = new Date(limite);
+  box.innerHTML = `
+    <div class="blog-reminder-title">&#128276; Lembrete de publicação</div>
+    <div class="blog-reminder-text">
+      Não há artigo programado para os próximos 6 dias. Para manter o Blog ativo e a rotina de publicação em dia, programe ou publique um novo artigo.
+      <strong>Próxima verificação:</strong> ${dataLimite.toLocaleDateString('pt-BR')}.
+    </div>
+    <div class="blog-reminder-actions">
+      <button type="button" class="btn btn-primary btn-sm" id="btn-ir-blog-lembrete">Ir para o Blog</button>
+      <button type="button" class="btn btn-outline btn-sm" id="btn-adiar-blog-lembrete">Lembrar novamente em 6 dias</button>
+    </div>
+  `;
+  box.classList.remove('hidden');
+
+  document.getElementById('btn-ir-blog-lembrete')?.addEventListener('click', () => {
+    document.querySelector('.tab-btn[data-tab="blog"]')?.click();
+  });
+  document.getElementById('btn-adiar-blog-lembrete')?.addEventListener('click', () => {
+    const atual = lerConfigLembreteBlog();
+    atual.lastReminderAt = Date.now();
+    salvarConfigLembreteBlog(atual);
+    atualizarLembreteBlog(artigos);
+  });
+}
+
 /* ===================== DASHBOARD ===================== */
 async function carregarDashboard() {
   const mercadinho = projetosCache.find(p => p.slug === 'mercadinho');
@@ -917,6 +1046,7 @@ async function carregarDashboard() {
   ];
   document.getElementById('dash-cards').innerHTML = cards.map(([lbl, num]) =>
     `<div class="kpi-card"><div class="num">${num}</div><div class="lbl">${lbl}</div></div>`).join('');
+  atualizarLembreteBlog(artigosDashboard);
 }
 
 /* ===================== PRODUTOS (Mercadinho + Atelier) ===================== */
@@ -1872,6 +2002,7 @@ document.getElementById('btn-baixar-sitemap').addEventListener('click', async ()
 
 /* ===================== CONFIGURAÇÕES ===================== */
 async function carregarConfig() {
+  configurarLembreteBlog();
   const container = document.getElementById('config-container');
   container.innerHTML = projetosCache.map(p => `
     <div style="background:#fff; border-radius:10px; padding:16px 18px; margin-bottom:14px; box-shadow:0 2px 8px rgba(78,52,32,0.08);">
