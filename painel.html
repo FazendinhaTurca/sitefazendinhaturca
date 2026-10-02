@@ -286,6 +286,8 @@
 <body>
 
 <!-- ===================== LOGIN ===================== -->
+<div id="panel-system-alert" class="panel-system-alert" role="alert" aria-live="assertive"><strong>Ocorreu um problema no painel</strong><span id="panel-system-alert-text">Tente novamente.</span></div>
+
 <div id="login-screen">
   <div class="login-box">
     <h1>Painel Central</h1>
@@ -294,8 +296,8 @@
     <input type="email" id="login-email" autocomplete="username" value="fazendinhaturca@gmail.com">
     <label>Senha</label>
     <input type="password" id="login-senha" autocomplete="current-password">
-    <button class="btn btn-primary" id="btn-login" style="width:100%; margin-top:18px;">Entrar</button>
-    <button class="btn-ghost" id="btn-esqueci" style="margin-top:12px;">Esqueci minha senha</button>
+    <button type="button" class="btn btn-primary" id="btn-login" style="width:100%; margin-top:18px;">Entrar</button>
+    <button type="button" class="btn-ghost" id="btn-esqueci" style="margin-top:12px;">Esqueci minha senha</button>
     <div class="login-msg" id="login-msg"></div>
   </div>
 </div>
@@ -319,7 +321,7 @@
     <button class="tab-btn" data-tab="sitemap">Sitemap</button>
     <button class="tab-btn" data-tab="config">Configurações</button>
     </nav>
-    <button class="btn btn-outline sair-btn btn-sm" id="btn-logout" style="color:var(--cream); border-color:rgba(255,255,255,0.4);">Sair</button>
+    <button type="button" class="btn btn-outline sair-btn btn-sm" id="btn-logout" style="color:var(--cream); border-color:rgba(255,255,255,0.4);">Sair</button>
   </aside>
 
   <main>
@@ -328,6 +330,7 @@
       <div class="view-header"><h2>Dashboard</h2></div>
       <div id="blog-reminder" class="blog-reminder hidden" role="status" aria-live="polite"></div>
       <div id="dashboard-alerts" class="dashboard-alerts" role="region" aria-label="Alertas e lembretes do painel"></div>
+      <div id="dashboard-quality" class="dashboard-quality" aria-label="Qualidade do conteúdo"></div>
       <div class="cards-row" id="dash-cards"></div>
       <p class="empty-hint">Visão geral do sistema. Use o menu lateral para administrar cada área.</p>
     </section>
@@ -407,7 +410,7 @@
       <div class="view-header">
         <h2>Blog</h2>
         <div style="display:flex; gap:8px;">
-          <button class="btn btn-outline" id="btn-nova-categoria-blog">+ Nova categoria</button>
+          <button type="button" class="btn btn-outline" id="btn-nova-categoria-blog">+ Nova categoria</button>
           <button type="button" class="btn btn-primary" id="btn-novo-artigo">+ Novo artigo</button>
         </div>
       </div>
@@ -457,7 +460,7 @@
     <section class="panel-view" id="view-storage">
       <div class="view-header">
         <h2>Storage</h2>
-        <button class="btn btn-outline" id="btn-recarregar-storage">Atualizar</button>
+        <button type="button" class="btn btn-outline" id="btn-recarregar-storage">Atualizar</button>
       </div>
       <p class="empty-hint" style="margin-top:-8px;">Bucket público <strong>projetos</strong>, organizado por pasta de cada projeto.</p>
       <div id="storage-container"></div>
@@ -468,8 +471,8 @@
       <div class="view-header"><h2>Sitemap</h2></div>
       <div class="cards-row" id="sitemap-cards"></div>
       <div class="sitemap-actions">
-        <button class="btn btn-primary" id="btn-atualizar-sitemap">Atualizar Sitemap (sincronizar URLs)</button>
-        <button class="btn btn-outline" id="btn-baixar-sitemap">Baixar sitemap.xml</button>
+        <button type="button" class="btn btn-primary" id="btn-atualizar-sitemap">Atualizar Sitemap (sincronizar URLs)</button>
+        <button type="button" class="btn btn-outline" id="btn-baixar-sitemap">Baixar sitemap.xml</button>
       </div>
       <div class="msg-box" id="sitemap-msg" style="display:none;"></div>
       <div id="tabela-sitemap"></div>
@@ -1124,40 +1127,59 @@ async function carregarAlertasDashboard() {
 }
 
 /* ===================== DASHBOARD ===================== */
+async function carregarQualidadeDashboard() {
+  const container = document.getElementById('dashboard-quality');
+  if (!container) return;
+  container.innerHTML = '<div class="dashboard-quality-head"><div class="dashboard-quality-title">Qualidade do conteúdo</div><span class="empty-hint" style="padding:0;">Verificando...</span></div>';
+  try {
+    const [{ data: artigos, error: artigosError }, { data: produtos, error: produtosError }] = await Promise.all([
+      sb.from('blog_artigos').select('id,titulo,status,data_publicacao,imagem_capa_url,seo_title,seo_description,alt_text'),
+      sb.from('produtos').select('id,nome,status,imagem_principal_url,seo_title,seo_description,alt_text')
+    ]);
+    if (artigosError) throw artigosError;
+    if (produtosError) throw produtosError;
+    const agora = Date.now();
+    const artigosVisiveis = (artigos || []).filter(a => a.status === 'publicado' && (!a.data_publicacao || Number.isNaN(new Date(a.data_publicacao).getTime()) || new Date(a.data_publicacao).getTime() <= agora));
+    const artigosPendentesSeo = artigosVisiveis.filter(a => !a.seo_title?.trim() || !a.seo_description?.trim() || !a.alt_text?.trim()).length;
+    const artigosSemCapa = artigosVisiveis.filter(a => !a.imagem_capa_url).length;
+    const produtosAtivos = (produtos || []).filter(p => p.status === 'ativo');
+    const produtosPendentesSeo = produtosAtivos.filter(p => !p.seo_title?.trim() || !p.seo_description?.trim() || !p.alt_text?.trim()).length;
+    const produtosSemImagem = produtosAtivos.filter(p => !p.imagem_principal_url).length;
+    const itens = [['Artigos sem SEO completo', artigosPendentesSeo],['Artigos publicados sem capa', artigosSemCapa],['Produtos sem SEO completo', produtosPendentesSeo],['Produtos ativos sem imagem', produtosSemImagem]];
+    container.innerHTML = '<div class="dashboard-quality-head"><div class="dashboard-quality-title">Qualidade do conteúdo</div><span class="empty-hint" style="padding:0;">Itens que merecem atenção</span></div>' + '<div class="dashboard-quality-grid">' + itens.map(([label, num]) => '<div class="dashboard-quality-card ' + (num === 0 ? 'ok' : '') + '"><div class="q-num">' + num + '</div><div class="q-label">' + escapeHtmlAttr(label) + '</div></div>').join('') + '</div>';
+  } catch (err) {
+    console.error('Erro na verificação de qualidade:', err);
+    container.innerHTML = '<div class="dashboard-quality-head"><div class="dashboard-quality-title">Qualidade do conteúdo</div></div><p class="msg-box erro" style="display:block;margin:0;">Não foi possível verificar a qualidade agora. Tente atualizar o painel.</p>';
+  }
+}
+
 async function carregarDashboard() {
-  const mercadinho = projetosCache.find(p => p.slug === 'mercadinho');
-  const atelier = projetosCache.find(p => p.slug === 'atelier-verushka');
-
-  const { data: artigosDashboard } = await sb.from('blog_artigos').select('status,data_publicacao');
-  const agoraDashboard = Date.now();
-  const artigosPublicados = (artigosDashboard || []).filter(a =>
-    a.status === 'publicado' &&
-    (!a.data_publicacao || Number.isNaN(new Date(a.data_publicacao).getTime()) || new Date(a.data_publicacao).getTime() <= agoraDashboard)
-  ).length;
-  const artigosProgramados = (artigosDashboard || []).filter(a =>
-    a.status === 'publicado' &&
-    a.data_publicacao &&
-    new Date(a.data_publicacao).getTime() > agoraDashboard
-  ).length;
-
-  const produtosMercadinho = mercadinho ? await sb.from('produtos').select('*', { count: 'exact', head: true }).eq('projeto_id', mercadinho.id) : { count: 0 };
-  const categoriasMercadinho = mercadinho ? categoriasCache.filter(c => c.projeto_id === mercadinho.id).length : 0;
-  const produtosAtelier = atelier ? await sb.from('produtos').select('*', { count: 'exact', head: true }).eq('projeto_id', atelier.id) : { count: 0 };
-  const categoriasAtelier = atelier ? categoriasCache.filter(c => c.projeto_id === atelier.id).length : 0;
-
-  const cards = [
-    ['Projetos ativos', projetosCache.filter(p => p.status === 'ativo').length],
-    ['Mercadinho — produtos', produtosMercadinho.count || 0],
-    ['Mercadinho — categorias', categoriasMercadinho],
-    ['Ateliê — produtos', produtosAtelier.count || 0],
-    ['Ateliê — categorias', categoriasAtelier],
-    ['Blog — artigos publicados', artigosPublicados],
-    ['Blog — programados', artigosProgramados]
-  ];
-  document.getElementById('dash-cards').innerHTML = cards.map(([lbl, num]) =>
-    `<div class="kpi-card"><div class="num">${num}</div><div class="lbl">${lbl}</div></div>`).join('');
-  atualizarLembreteBlog(artigosDashboard);
-  await carregarAlertasDashboard();
+  try {
+    const mercadinho = projetosCache.find(p => p.slug === 'mercadinho');
+    const atelier = projetosCache.find(p => p.slug === 'atelier-verushka');
+    const [{ data: artigosDashboard, error: artigosError }, produtosMercadinho, produtosAtelier] = await Promise.all([
+      sb.from('blog_artigos').select('status,data_publicacao'),
+      mercadinho ? sb.from('produtos').select('*', { count: 'exact', head: true }).eq('projeto_id', mercadinho.id) : Promise.resolve({ count: 0, error: null }),
+      atelier ? sb.from('produtos').select('*', { count: 'exact', head: true }).eq('projeto_id', atelier.id) : Promise.resolve({ count: 0, error: null })
+    ]);
+    if (artigosError) throw artigosError;
+    if (produtosMercadinho.error) throw produtosMercadinho.error;
+    if (produtosAtelier.error) throw produtosAtelier.error;
+    const agoraDashboard = Date.now();
+    const artigosPublicados = (artigosDashboard || []).filter(a => a.status === 'publicado' && (!a.data_publicacao || Number.isNaN(new Date(a.data_publicacao).getTime()) || new Date(a.data_publicacao).getTime() <= agoraDashboard)).length;
+    const artigosProgramados = (artigosDashboard || []).filter(a => a.status === 'publicado' && a.data_publicacao && new Date(a.data_publicacao).getTime() > agoraDashboard).length;
+    const categoriasMercadinho = mercadinho ? categoriasCache.filter(c => c.projeto_id === mercadinho.id).length : 0;
+    const categoriasAtelier = atelier ? categoriasCache.filter(c => c.projeto_id === atelier.id).length : 0;
+    const cards = [['Projetos ativos', projetosCache.filter(p => p.status === 'ativo').length],['Mercadinho — produtos', produtosMercadinho.count || 0],['Mercadinho — categorias', categoriasMercadinho],['Ateliê — produtos', produtosAtelier.count || 0],['Ateliê — categorias', categoriasAtelier],['Blog — artigos publicados', artigosPublicados],['Blog — programados', artigosProgramados]];
+    document.getElementById('dash-cards').innerHTML = cards.map(([lbl, num]) => '<div class="kpi-card"><div class="num">' + num + '</div><div class="lbl">' + lbl + '</div></div>').join('');
+    atualizarLembreteBlog(artigosDashboard || []);
+    await carregarAlertasDashboard();
+    await carregarQualidadeDashboard();
+  } catch (err) {
+    console.error('Erro ao carregar dashboard:', err);
+    const container = document.getElementById('dash-cards');
+    if (container) container.innerHTML = '<p class="msg-box erro" style="display:block;grid-column:1/-1;">Não foi possível carregar todos os indicadores. Verifique a conexão e tente novamente.</p>';
+  }
 }
 
 /* ===================== PRODUTOS (Mercadinho + Atelier) ===================== */
@@ -1702,8 +1724,8 @@ async function carregarBlogTabela() {
       <td><span class="badge ${escapeHtmlAttr(statusTexto)}">${escapeHtmlAttr(statusTexto)}</span></td>
       <td>${dataFormatada(a)}</td>
       <td class="row-actions">
-        <button class="btn btn-outline btn-sm" data-editar-artigo="${escapeHtmlAttr(a.id)}">Editar</button>
-        <button class="btn btn-outline btn-sm" data-toggle-artigo="${escapeHtmlAttr(a.id)}" data-status="${escapeHtmlAttr(a.status || '')}">${acaoTexto}</button>
+        <button type="button" class="btn btn-outline btn-sm" data-editar-artigo="${escapeHtmlAttr(a.id)}">Editar</button>
+        <button type="button" class="btn btn-outline btn-sm" data-toggle-artigo="${escapeHtmlAttr(a.id)}" data-status="${escapeHtmlAttr(a.status || '')}">${acaoTexto}</button>
       </td>
     </tr>`;
     }).join('')}</tbody></table>`;
@@ -1886,7 +1908,7 @@ async function carregarCategoriasBlogLista() {
     ${categorias.map(c => `
     <tr>
       <td>${escapeHtmlAttr(c.nome || '')}</td>
-      <td class="row-actions"><button class="btn btn-outline btn-sm" data-excluir-categoria-blog="${escapeHtmlAttr(c.id)}">Excluir</button></td>
+      <td class="row-actions"><button type="button" class="btn btn-outline btn-sm" data-excluir-categoria-blog="${escapeHtmlAttr(c.id)}">Excluir</button></td>
     </tr>`).join('')}</tbody></table>`;
 
   container.querySelectorAll('[data-excluir-categoria-blog]').forEach(btn => {
@@ -2161,6 +2183,24 @@ async function carregarConfig() {
     });
   });
 }
+
+function mostrarErroSistema(mensagem) {
+  const box = document.getElementById('panel-system-alert');
+  const text = document.getElementById('panel-system-alert-text');
+  if (!box || !text) return;
+  text.textContent = mensagem || 'Ocorreu um erro inesperado. Tente novamente.';
+  box.classList.add('show');
+  clearTimeout(window.__painelErroTimer);
+  window.__painelErroTimer = setTimeout(() => box.classList.remove('show'), 9000);
+}
+window.addEventListener('error', event => {
+  console.error('Erro JavaScript no painel:', event.error || event.message);
+  mostrarErroSistema('Ocorreu um erro inesperado. A operação atual não foi concluída. Recarregue o painel se necessário.');
+});
+window.addEventListener('unhandledrejection', event => {
+  console.error('Promise rejeitada no painel:', event.reason);
+  mostrarErroSistema('Uma operação encontrou um erro de comunicação. Tente novamente; seus dados não serão alterados automaticamente.');
+});
 
 /* ===================== INIT ===================== */
 checarSessao();
