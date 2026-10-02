@@ -147,11 +147,11 @@ jobs:
           for page in seo_pages:
               html = page.read_text(encoding='utf-8', errors='replace')
 
-              title = re.search(r'<title(?:\\s[^>]*)?>([\\s\\S]*?)</title>', html, re.I)
-              description = re.search(r'<meta\\s+[^>]*name=[\"\\']description[\"\\'][^>]*>', html, re.I)
-              robots = re.search(r'<meta\\s+[^>]*name=[\"\\']robots[\"\\'][^>]*content=[\"\\']([^\\"\\']+)', html, re.I)
-              canonical = re.search(r'<link\\s+[^>]*rel=[\"\\']canonical[\"\\'][^>]*href=[\"\\']([^\\"\\']+)', html, re.I)
-              h1_count = len(re.findall(r'<h1(?:\\s[^>]*)?>', html, re.I))
+              title = re.search(r'<title(?:\s[^>]*)?>([\s\S]*?)</title>', html, re.I)
+              description = re.search(r'<meta\s+[^>]*name=[\"\']description[\"\'][^>]*>', html, re.I)
+              robots = re.search(r'<meta\s+[^>]*name=[\"\']robots[\"\'][^>]*content=[\"\']([^\"\']+)', html, re.I)
+              canonical = re.search(r'<link\s+[^>]*rel=[\"\']canonical[\"\'][^>]*href=[\"\']([^\"\']+)', html, re.I)
+              h1_count = len(re.findall(r'<h1(?:\s[^>]*)?>', html, re.I))
 
               if not title or not title.group(1).strip():
                   raise SystemExit(f'Página sem <title>: {page}')
