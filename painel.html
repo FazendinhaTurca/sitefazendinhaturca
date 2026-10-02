@@ -519,7 +519,8 @@
     <section class="panel-view" id="view-sitemap">
       <div class="view-header"><h2>Sitemap</h2></div>
       <div class="cards-row" id="sitemap-cards"></div>
-      <div class="sitemap-actions">        <button type="button" class="btn btn-primary" id="btn-atualizar-sitemap">Atualizar Sitemap (sincronizar URLs)</button>
+      <div class="sitemap-actions">
+        <button type="button" class="btn btn-primary" id="btn-atualizar-sitemap">Atualizar Sitemap (sincronizar URLs)</button>
         <button type="button" class="btn btn-outline" id="btn-baixar-sitemap">Baixar sitemap.xml</button>
       </div>
       <div class="msg-box" id="sitemap-msg" style="display:none;"></div>
@@ -1019,6 +1020,7 @@ async function carregarTudo() {
   ]);
   carregarStorage();
 }
+
 /* ===================== LEMBRETE DE PUBLICAÇÃO DO BLOG ===================== */
 const BLOG_REMINDER_STORAGE = 'fazendinha_blog_reminder_config_v1';
 const BLOG_REMINDER_INTERVAL_MS = 6 * 24 * 60 * 60 * 1000;
@@ -1517,7 +1519,8 @@ document.getElementById('pr-galeria')?.addEventListener('change', atualizarQuali
 
 document.getElementById('pr-remover-imagem').addEventListener('click', () => {
   const form = document.getElementById('form-produto');
-  if (!form.dataset.imagemAtual) return;  if (!confirm('Excluir a imagem principal?')) return;
+  if (!form.dataset.imagemAtual) return;
+  if (!confirm('Excluir a imagem principal?')) return;
   form.dataset.imagemAtual = '';
   document.getElementById('pr-imagem').value = '';
   renderImagemPrincipalPreview(null);
@@ -2217,3 +2220,404 @@ document.getElementById('btn-excluir-artigo').addEventListener('click', async ()
   if (!artigoId || !confirm('Excluir este artigo definitivamente?')) return;
   await sb.from('blog_artigos').delete().eq('id', artigoId);
   document.getElementById('modal-artigo').classList.remove('show');
+  carregarBlogTabela(); carregarDashboard();
+});
+
+/* ===================== CATEGORIAS DO BLOG ===================== */
+async function carregarCategoriasBlogSelect(valorSelecionado) {
+  const select = document.getElementById('ar-categoria');
+  const atual = valorSelecionado !== undefined ? valorSelecionado : select.value;
+  const { data: categorias, error } = await sb.from('blog_categorias').select('*').order('nome', { ascending: true });
+  if (error) { console.error(error); return; }
+  select.innerHTML = '<option value="">Selecione uma categoria...</option>' +
+    (categorias || []).map(c => `<option value="${escapeHtmlAttr(c.nome || '')}">${escapeHtmlAttr(c.nome || '')}</option>`).join('');
+  if (atual) select.value = atual;
+}
+
+async function carregarCategoriasBlogLista() {
+  const container = document.getElementById('lista-categorias-blog');
+  const { data: categorias, error } = await sb.from('blog_categorias').select('*').order('nome', { ascending: true });
+  if (error) { container.innerHTML = '<p class="empty-hint">Erro ao carregar categorias.</p>'; return; }
+  if (!categorias || categorias.length === 0) { container.innerHTML = '<p class="empty-hint">Nenhuma categoria cadastrada ainda.</p>'; return; }
+  container.innerHTML = `<table><thead><tr><th>Nome</th><th></th></tr></thead><tbody>
+    ${categorias.map(c => `
+    <tr>
+      <td>${escapeHtmlAttr(c.nome || '')}</td>
+      <td class="row-actions"><button type="button" class="btn btn-outline btn-sm" data-excluir-categoria-blog="${escapeHtmlAttr(c.id)}">Excluir</button></td>
+    </tr>`).join('')}</tbody></table>`;
+
+  container.querySelectorAll('[data-excluir-categoria-blog]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Excluir esta categoria? Artigos já publicados com ela não são alterados.')) return;
+      await sb.from('blog_categorias').delete().eq('id', btn.dataset.excluirCategoriaBlog);
+      carregarCategoriasBlogLista();
+      carregarCategoriasBlogSelect();
+    });
+  });
+}
+
+document.getElementById('btn-nova-categoria-blog').addEventListener('click', () => {
+  document.getElementById('form-categoria-blog').reset();
+  document.getElementById('blogcat-msg').style.display = 'none';
+  carregarCategoriasBlogLista();
+  document.getElementById('modal-categoria-blog').classList.add('show');
+});
+
+document.getElementById('form-categoria-blog').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('blogcat-msg');
+  msg.style.display = 'block'; msg.className = 'msg-box'; msg.textContent = 'Salvando...';
+  try {
+    const nome = document.getElementById('blogcat-nome').value.trim();
+    if (!nome) throw new Error('Informe o nome da categoria.');
+    const { error } = await sb.from('blog_categorias').insert({ nome, slug: slugify(nome) });
+    if (error) throw error;
+    msg.className = 'msg-box ok'; msg.textContent = 'Categoria adicionada!';
+    document.getElementById('form-categoria-blog').reset();
+    await carregarCategoriasBlogLista();
+    await carregarCategoriasBlogSelect();
+  } catch (err) {
+    console.error(err);
+    msg.className = 'msg-box erro'; msg.textContent = 'Erro ao salvar: ' + (err.message || 'tente novamente.');
+  }
+});
+
+/* ===================== NOVO PROJETO ===================== */
+document.getElementById('form-novo-projeto').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('np-msg');
+  msg.style.display = 'block'; msg.className = 'msg-box'; msg.textContent = 'Criando projeto...';
+  try {
+    const slug = slugify(document.getElementById('np-slug').value);
+    const payload = {
+      slug,
+      nome: document.getElementById('np-nome').value,
+      nome_publico: document.getElementById('np-nome-publico').value,
+      descricao: document.getElementById('np-descricao').value,
+      categoria: document.getElementById('np-categoria').value,
+      menu_label: document.getElementById('np-menu-label').value,
+      menu_url: document.getElementById('np-menu-url').value,
+      whatsapp_numero: document.getElementById('np-whatsapp').value,
+      prazo_entrega_min: parseInt(document.getElementById('np-prazo-min').value) || null,
+      prazo_entrega_max: parseInt(document.getElementById('np-prazo-max').value) || null,
+      status: 'ativo'
+    };
+    const { data: novoProjeto, error } = await sb.from('projetos').insert(payload).select().single();
+    if (error) throw error;
+
+    const catsTexto = document.getElementById('np-categorias-iniciais').value;
+    if (catsTexto.trim()) {
+      const nomes = catsTexto.split(',').map(s => s.trim()).filter(Boolean);
+      const rows = nomes.map((n, i) => ({ projeto_id: novoProjeto.id, nome: n, slug: slugify(n), ordem: i + 1 }));
+      await sb.from('categorias').insert(rows);
+    }
+
+    msg.className = 'msg-box ok';
+    msg.textContent = `Projeto "${novoProjeto.nome_publico}" criado! Ele já aparece no menu dinâmico (config.projetos) e pode receber produtos. Crie a página pública (ex: ${payload.menu_url || slug + '.html'}) seguindo o mesmo padrão do atelie.html.`;
+    e.target.reset();
+    const { data: projetos } = await sb.from('projetos').select('*').order('criado_em');
+    projetosCache = projetos || [];
+    carregarDashboard(); carregarConfig(); carregarSitemap();
+  } catch (err) {
+    console.error(err);
+    msg.className = 'msg-box erro'; msg.textContent = 'Erro ao criar projeto: ' + (err.message || '');
+  }
+});
+
+/* ===================== BANCO DE DADOS ===================== */
+async function carregarBanco() {
+  const [{ count: cP }, { count: cC }, { count: cPr }, { count: cA }] = await Promise.all([
+    sb.from('projetos').select('*', { count: 'exact', head: true }),
+    sb.from('categorias').select('*', { count: 'exact', head: true }),
+    sb.from('produtos').select('*', { count: 'exact', head: true }),
+    sb.from('blog_artigos').select('*', { count: 'exact', head: true })
+  ]);
+  document.getElementById('banco-cards').innerHTML = [
+    ['Projetos', cP || 0], ['Categorias', cC || 0], ['Produtos', cPr || 0], ['Artigos', cA || 0]
+  ].map(([lbl, num]) => `<div class="kpi-card"><div class="num">${num}</div><div class="lbl">${lbl}</div></div>`).join('');
+  document.getElementById('banco-status').innerHTML = '<p class="empty-hint">✅ Conexão com o Supabase funcionando normalmente.</p>';
+}
+
+/* ===================== STORAGE ===================== */
+document.getElementById('btn-recarregar-storage').addEventListener('click', carregarStorage);
+document.getElementById('btn-verificar-storage').addEventListener('click', verificarIntegridadeStorage);
+
+async function listarArquivosStorage(caminho = '', profundidade = 0, resultado = []) {
+  if (profundidade > 6) return resultado;
+  const { data: itens, error } = await sb.storage.from(BUCKET).list(caminho, { limit: 1000, sortBy: { column: 'name', order: 'asc' } });
+  if (error) throw error;
+  for (const item of (itens || [])) {
+    const caminhoCompleto = caminho ? caminho + '/' + item.name : item.name;
+    if (item.metadata && item.metadata.size != null) {
+      resultado.push({
+        caminho: caminhoCompleto,
+        tamanho: Number(item.metadata.size) || 0,
+        url: sb.storage.from(BUCKET).getPublicUrl(caminhoCompleto).data.publicUrl
+      });
+    } else if (item.name) {
+      await listarArquivosStorage(caminhoCompleto, profundidade + 1, resultado);
+    }
+  }
+  return resultado;
+}
+
+async function carregarStorage() {
+  const container = document.getElementById('storage-container');
+  const cards = document.getElementById('storage-cards');
+  const msg = document.getElementById('storage-msg');
+  container.innerHTML = '<p class="empty-hint">Carregando arquivos e calculando o espaço utilizado...</p>';
+  cards.innerHTML = '';
+  msg.style.display = 'none';
+  try {
+    const arquivos = await listarArquivosStorage();
+    const totalBytes = arquivos.reduce((s, a) => s + a.tamanho, 0);
+    const pastas = new Set(arquivos.map(a => a.caminho.split('/').slice(0, -1).join('/')).filter(Boolean));
+    const webp = arquivos.filter(a => a.caminho.toLowerCase().endsWith('.webp')).length;
+
+    cards.innerHTML = [
+      ['Arquivos', arquivos.length],
+      ['Pastas', pastas.size],
+      ['Espaço usado', formatarBytes(totalBytes)],
+      ['WebP', webp + ' / ' + arquivos.length]
+    ].map(([lbl, num]) => '<div class="kpi-card"><div class="num">' + escapeHtmlAttr(String(num)) + '</div><div class="lbl">' + escapeHtmlAttr(lbl) + '</div></div>').join('');
+
+    if (!arquivos.length) {
+      container.innerHTML = '<p class="empty-hint">Nenhum arquivo enviado ainda.</p>';
+      return;
+    }
+
+    const porPasta = {};
+    arquivos.forEach(a => {
+      const partes = a.caminho.split('/');
+      const pasta = partes.length > 1 ? partes.slice(0, -1).join('/') : '(raiz)';
+      (porPasta[pasta] ||= []).push(a);
+    });
+
+    container.innerHTML = Object.keys(porPasta).sort().map(pasta => {
+      const lista = porPasta[pasta];
+      const tamanho = lista.reduce((s, a) => s + a.tamanho, 0);
+      return '<div class="config-setting">' +
+        '<h3 style="font-size:.95rem;">' + escapeHtmlAttr(pasta) + '</h3>' +
+        '<p class="empty-hint" style="padding:4px 0;">' + lista.length + ' arquivo(s) · ' + formatarBytes(tamanho) + '</p>' +
+        lista.map(a => '<div class="storage-file"><span class="storage-path" title="' + escapeHtmlAttr(a.caminho) + '">' + escapeHtmlAttr(a.caminho.split('/').pop()) + '</span><span class="storage-size">' + formatarBytes(a.tamanho) + '</span></div>').join('') +
+      '</div>';
+    }).join('');
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = '<p class="empty-hint">Erro ao carregar o Storage.</p>';
+    msg.style.display = 'block';
+    msg.className = 'msg-box erro';
+    msg.textContent = 'Não foi possível consultar o Storage: ' + (err.message || 'erro desconhecido.');
+  }
+}
+
+async function verificarIntegridadeStorage() {
+  const container = document.getElementById('storage-container');
+  const msg = document.getElementById('storage-msg');
+  msg.style.display = 'block';
+  msg.className = 'msg-box';
+  msg.textContent = 'Verificando arquivos do Storage contra produtos e artigos...';
+  try {
+    const [arquivos, produtosResp, artigosResp] = await Promise.all([
+      listarArquivosStorage(),
+      sb.from('produtos').select('imagem_principal_url,galeria'),
+      sb.from('blog_artigos').select('imagem_capa_url')
+    ]);
+    if (produtosResp.error) throw produtosResp.error;
+    if (artigosResp.error) throw artigosResp.error;
+
+    const referenciados = new Set();
+    [...(produtosResp.data || []), ...(artigosResp.data || [])].forEach(item => {
+      const urls = [item.imagem_principal_url, item.imagem_capa_url, ...(Array.isArray(item.galeria) ? item.galeria : [])];
+      urls.filter(Boolean).forEach(url => {
+        const caminho = obterCaminhoStorage(url);
+        if (caminho) referenciados.add(caminho);
+      });
+    });
+
+    const orfaos = arquivos.filter(a => !referenciados.has(a.caminho));
+    if (!orfaos.length) {
+      msg.className = 'msg-box ok';
+      msg.textContent = '✓ Integridade OK: todos os arquivos encontrados no Storage estão referenciados pelo banco.';
+      return;
+    }
+
+    msg.className = 'msg-box';
+    msg.innerHTML = '<strong>Foram encontrados ' + orfaos.length + ' arquivo(s) sem referência no banco.</strong><br>Isso não exclui nada automaticamente. Revise antes de apagar.';
+    const bloco = '<div class="storage-orphan"><strong>Arquivos sem referência</strong>' +
+      orfaos.map(a => '<div class="storage-file"><span class="storage-path" title="' + escapeHtmlAttr(a.caminho) + '">' + escapeHtmlAttr(a.caminho) + '</span><span class="storage-size">' + formatarBytes(a.tamanho) + '</span></div>').join('') +
+      '</div>';
+    container.insertAdjacentHTML('afterbegin', bloco);
+  } catch (err) {
+    console.error(err);
+    msg.className = 'msg-box erro';
+    msg.textContent = 'Erro na verificação: ' + (err.message || 'tente novamente.');
+  }
+}
+
+function formatarBytes(b) {
+  if (!b) return '0 KB';
+  const kb = b / 1024;
+  if (kb < 1024) return kb.toFixed(1) + ' KB';
+  return (kb / 1024).toFixed(2) + ' MB';
+}
+
+/* ===================== SITEMAP ===================== */
+async function carregarSitemap() {
+  const { data: urls } = await sb.from('sitemap_urls').select('*').order('criado_em', { ascending: false });
+  const ativos = (urls || []).filter(u => u.ativo);
+  document.getElementById('sitemap-cards').innerHTML = [
+    ['URLs no sitemap', ativos.length],
+    ['Última atualização', urls && urls[0] ? new Date(urls[0].atualizado_em).toLocaleDateString('pt-BR') : '-']
+  ].map(([lbl, num]) => `<div class="kpi-card"><div class="num">${num}</div><div class="lbl">${lbl}</div></div>`).join('');
+
+  const container = document.getElementById('tabela-sitemap');
+  if (!urls || urls.length === 0) { container.innerHTML = '<p class="empty-hint">Nenhuma URL cadastrada.</p>'; return; }
+  container.innerHTML = `<table><thead><tr><th>URL</th><th>Origem</th><th>Prioridade</th><th>Status</th></tr></thead><tbody>
+    ${urls.map(u => `<tr><td>${escapeHtmlAttr(u.url)}</td><td>${escapeHtmlAttr(u.origem || '')}</td><td>${escapeHtmlAttr(u.priority)}</td><td><span class="badge ${u.ativo ? 'ativo' : 'inativo'}">${u.ativo ? 'ativa' : 'inativa'}</span></td></tr>`).join('')}
+  </tbody></table>`;
+}
+
+async function atualizarSitemapAutomatico(mostrarMsg = true) {
+  const msg = document.getElementById('sitemap-msg');
+  if (mostrarMsg) { msg.style.display = 'block'; msg.className = 'msg-box'; msg.textContent = 'Sincronizando URLs...'; }
+  try {
+    const base = 'https://www.fazendinhaturca.com.br/';
+    const { data: produtos, error: produtosError } = await sb.from('produtos').select('slug, projeto_id, status, atualizado_em, projetos(menu_url, slug, status)').eq('status', 'ativo');
+    const { data: artigos, error: artigosError } = await sb.from('blog_artigos').select('slug, status, data_publicacao, atualizado_em').eq('status', 'publicado');
+
+    if (produtosError) throw produtosError;
+    if (artigosError) throw artigosError;
+
+    // O GitHub gera páginas estáticas para produtos e artigos.
+    // As URLs antigas do painel não devem continuar ativas no índice.
+    for (const origem of ['produto', 'artigo']) {
+      const { error } = await sb.from('sitemap_urls').update({ ativo: false }).eq('origem', origem);
+      if (error) throw error;
+    }
+
+    const urlsAtivas = new Map();
+    urlsAtivas.set(base, { origem: 'pagina', priority: 1.0 });
+    urlsAtivas.set(`${base}produtos.html`, { origem: 'pagina', priority: 0.9 });
+    urlsAtivas.set(`${base}atelie.html`, { origem: 'pagina', priority: 0.9 });
+    urlsAtivas.set(`${base}blog.html`, { origem: 'pagina', priority: 0.8 });
+
+    (produtos || []).forEach(p => {
+      if (p.projetos && p.projetos.status === 'ativo' && p.projetos.slug && p.slug) {
+        const pasta = p.projetos.slug === 'atelier-verushka' ? 'atelie' : (p.projetos.slug === 'mercadinho' ? 'produtos' : null);
+        if (pasta) {
+          urlsAtivas.set(`${base}${pasta}/${encodeURIComponent(p.slug)}.html`, {
+            origem: 'produto',
+            priority: 0.8
+          });
+        }
+      }
+    });
+
+    const agoraSitemap = Date.now();
+    (artigos || []).forEach(a => {
+      const dataPublicacao = a.data_publicacao ? new Date(a.data_publicacao).getTime() : 0;
+      if (a.slug && (!a.data_publicacao || Number.isNaN(dataPublicacao) || dataPublicacao <= agoraSitemap)) {
+        urlsAtivas.set(`${base}blog/${encodeURIComponent(a.slug)}.html`, {
+          origem: 'artigo',
+          priority: 0.7
+        });
+      }
+    });
+
+    projetosCache.filter(p => p.status === 'ativo' && p.menu_url).forEach(p => {
+      urlsAtivas.set(`${base}${String(p.menu_url).replace(/^\/+/, '')}`, {
+        origem: 'pagina',
+        priority: 0.9
+      });
+    });
+
+    for (const [url, meta] of urlsAtivas) {
+      const { error } = await sb.from('sitemap_urls').upsert(
+        { url, origem: meta.origem, ativo: true, priority: meta.priority },
+        { onConflict: 'url' }
+      );
+      if (error) throw error;
+    }
+    if (mostrarMsg) { msg.className = 'msg-box ok'; msg.textContent = 'Sitemap sincronizado com sucesso!'; }
+    await carregarSitemap();
+  } catch (err) {
+    console.error(err);
+    if (mostrarMsg) { msg.className = 'msg-box erro'; msg.textContent = 'Erro ao sincronizar sitemap.'; }
+  }
+}
+document.getElementById('btn-atualizar-sitemap').addEventListener('click', () => atualizarSitemapAutomatico(true));
+
+document.getElementById('btn-baixar-sitemap').addEventListener('click', async () => {
+  const { data: urls } = await sb.from('sitemap_urls').select('*').eq('ativo', true).order('priority', { ascending: false });
+  const hoje = new Date().toISOString().slice(0, 10);
+  let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+  (urls || []).forEach(u => {
+    xml += `\n<url>\n<loc>${u.url}</loc>\n<lastmod>${hoje}</lastmod>\n<changefreq>${u.changefreq || 'weekly'}</changefreq>\n<priority>${u.priority || 0.7}</priority>\n</url>\n`;
+  });
+  xml += '\n</urlset>\n';
+  const blob = new Blob([xml], { type: 'application/xml' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'sitemap.xml';
+  a.click();
+});
+
+/* ===================== CONFIGURAÇÕES ===================== */
+async function carregarConfig() {
+  configurarLembreteBlog();
+  const container = document.getElementById('config-container');
+  container.innerHTML = projetosCache.map(p => `
+    <div style="background:#fff; border-radius:10px; padding:16px 18px; margin-bottom:14px; box-shadow:0 2px 8px rgba(78,52,32,0.08);">
+      <h3 style="font-size:1rem; margin-bottom:10px;">${escapeHtmlAttr(p.nome_publico || '')} <span class="badge ${escapeHtmlAttr(p.status || '')}">${escapeHtmlAttr(p.status || '')}</span></h3>
+      <div class="grid-2">
+        <div><label>WhatsApp</label><input type="text" id="cfg-whats-${escapeHtmlAttr(p.id)}" value="${escapeHtmlAttr(p.whatsapp_numero || '')}"></div>
+        <div>
+          <label>Status</label>
+          <select id="cfg-status-${escapeHtmlAttr(p.id)}">
+            <option value="ativo" ${p.status === 'ativo' ? 'selected' : ''}>Ativo</option>
+            <option value="inativo" ${p.status === 'inativo' ? 'selected' : ''}>Inativo</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-sm" style="margin-top:10px;" data-salvar-config="${escapeHtmlAttr(p.id)}">Salvar</button>
+    </div>
+  `).join('');
+
+  container.querySelectorAll('[data-salvar-config]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.salvarConfig;
+      await sb.from('projetos').update({
+        whatsapp_numero: document.getElementById(`cfg-whats-${id}`).value,
+        status: document.getElementById(`cfg-status-${id}`).value
+      }).eq('id', id);
+      const { data: projetos } = await sb.from('projetos').select('*').order('criado_em');
+      projetosCache = projetos || [];
+      carregarDashboard(); carregarSitemap();
+    });
+  });
+}
+
+function mostrarErroSistema(mensagem) {
+  const box = document.getElementById('panel-system-alert');
+  const text = document.getElementById('panel-system-alert-text');
+  if (!box || !text) return;
+  text.textContent = mensagem || 'Ocorreu um erro inesperado. Tente novamente.';
+  box.classList.add('show');
+  clearTimeout(window.__painelErroTimer);
+  window.__painelErroTimer = setTimeout(() => box.classList.remove('show'), 9000);
+}
+window.addEventListener('error', event => {
+  console.error('Erro JavaScript no painel:', event.error || event.message);
+  mostrarErroSistema('Ocorreu um erro inesperado. A operação atual não foi concluída. Recarregue o painel se necessário.');
+});
+window.addEventListener('unhandledrejection', event => {
+  console.error('Promise rejeitada no painel:', event.reason);
+  mostrarErroSistema('Uma operação encontrou um erro de comunicação. Tente novamente; seus dados não serão alterados automaticamente.');
+});
+
+/* ===================== INIT ===================== */
+checarSessao();
+</script>
+</body>
+</html>
