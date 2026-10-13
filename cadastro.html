@@ -296,7 +296,7 @@
       form.reset();
     } catch (error) {
       console.error('Erro ao salvar cadastro:', error);
-      statusMsg.textContent = 'Não foi possível enviar seu cadastro agora. Tente novamente em instantes.';
+      statusMsg.textContent = 'Não foi possível enviar seu cadastro. Detalhe técnico: ' + (error && error.message ? error.message : 'falha de conexão. Tente novamente em instantes.');
       statusMsg.className = 'status-msg error';
     } finally {
       submitBtn.disabled = false;
