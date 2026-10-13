@@ -781,6 +781,15 @@
   .checkout-cancel{background:#f1e8d6;color:#4E3420;} .checkout-submit{background:#25D366;color:#fff;}
   .checkout-error{display:none;background:#f7e1e1;color:#9f2428;border-radius:7px;padding:9px 10px;font-size:.78rem;margin-top:12px;}
   @media(max-width:620px){.checkout-grid{grid-template-columns:1fr}.checkout-grid .full{grid-column:auto}.checkout-box{padding:18px}}
+
+  /* Pop-up promocional compartilhado com o painel administrativo */
+  .promo-overlay { position:fixed; inset:0; background:rgba(30,46,27,.55); z-index:300; display:none; align-items:center; justify-content:center; padding:20px; }
+  .promo-overlay.open { display:flex; }
+  .promo-box { position:relative; background:var(--cream); border-radius:18px; overflow:hidden; max-width:380px; width:100%; box-shadow:0 10px 40px rgba(0,0,0,.35); }
+  .promo-box img { width:100%; height:auto; max-height:calc(100vh - 130px); object-fit:contain; display:block; }
+  .promo-close { position:absolute; top:10px; right:10px; background:rgba(30,46,27,.85); color:#fff; border:0; width:32px; height:32px; border-radius:50%; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:2; }
+  .promo-cta { display:block; text-align:center; background:var(--green); color:#fff; font-weight:700; font-size:13px; padding:12px; letter-spacing:.4px; text-decoration:none; }
+  .promo-cta:hover { background:var(--green-dark); }
 </style>
 </head>
 <body>
@@ -942,6 +951,43 @@
   <img class="full-banner" src="images/atelie/rodape-vila-1024.webp" srcset="images/atelie/rodape-vila-640.webp 640w, images/atelie/rodape-vila-1024.webp 1024w, images/atelie/rodape-vila-1600.webp 1600w, images/atelie/rodape-vila.webp 3040w" sizes="100vw" alt="Ateliê da Verushka - arte, cor e natureza em Hama Beads, Fazendinha Turca, Araruama-RJ" width="1024" height="116" loading="lazy" decoding="async">
   <a class="rodape-voltar-btn" href="index.html">Voltar para a Fazendinha Turca &rarr;</a>
 </div>
+<!-- POP-UP PROMOCIONAL GERENCIADO PELO PAINEL -->
+<div class="promo-overlay" id="promo-overlay" aria-hidden="true">
+  <div class="promo-box" role="dialog" aria-modal="true" aria-label="Campanha promocional">
+    <button class="promo-close" id="promo-close" aria-label="Fechar">&times;</button>
+    <a id="promo-image-link" href="produtos.html" style="display:block;"><img id="promo-image" src="" alt="" width="900" height="1070" fetchpriority="high"></a>
+    <a class="promo-cta" href="produtos.html" id="promo-cta">SAIBA MAIS</a>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+(async function () {
+  const overlay=document.getElementById('promo-overlay');
+  const close=document.getElementById('promo-close');
+  if(!overlay||!window.supabase)return;
+  const client=window.supabase.createClient('https://iskdknoedbvbiqlosgii.supabase.co','sb_publishable_m_dI-5n_6F_VGKPFb-EFpg_G1mnOZjQ');
+  const page=(window.location.pathname.split('/').pop()||'index.html').toLowerCase();
+  try{
+    const {data,error}=await client.from('popup_configuracao').select('titulo,imagem_url,alt_text,texto_botao,link_destino,paginas,ativo,atraso_ms,atualizado_em').eq('id',true).eq('ativo',true).maybeSingle();
+    if(error)throw error;
+    if(!data||!data.imagem_url||!(data.paginas||[]).includes(page))return;
+    const destino=String(data.link_destino||'produtos.html').trim();
+    if(/^\s*javascript:/i.test(destino))return;
+    const img=document.getElementById('promo-image');
+    img.src=data.imagem_url; img.alt=data.alt_text||data.titulo||'Campanha da Fazendinha Turca';
+    const cta=document.getElementById('promo-cta'); cta.href=destino; cta.textContent=data.texto_botao||'SAIBA MAIS';
+    document.getElementById('promo-image-link').href=destino;
+    const chave='fazendinhaTurca_popup_v3_'+page+'_'+(data.atualizado_em||data.imagem_url);
+    function fechar(){overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true');try{sessionStorage.setItem(chave,'1')}catch(_){}}
+    if(sessionStorage.getItem(chave))return;
+    close.addEventListener('click',fechar);
+    overlay.addEventListener('click',e=>{if(e.target===overlay)fechar()});
+    cta.addEventListener('click',fechar);
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('open'))fechar()});
+    window.setTimeout(()=>{overlay.classList.add('open');overlay.setAttribute('aria-hidden','false')},Math.max(0,Math.min(15000,Number(data.atraso_ms)||0)));
+  }catch(err){console.error('Não foi possível carregar o pop-up configurado:',err);}
+})();
+</script>
 <footer>
   <p class="footer-nap">Fazendinha Turca &middot; Araruama &ndash; RJ &middot; <a href="https://wa.me/5522988328812" target="_blank" rel="noopener noreferrer" style="color:#EDE7D6; text-decoration:underline;">Fale conosco no WhatsApp</a> &middot; <a href="politica-devolucao.html" style="color:#EDE7D6; text-decoration:underline;">Política de Devolução</a></p>
 </footer>
