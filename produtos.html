@@ -1424,29 +1424,7 @@ document.getElementById('checkout-form').addEventListener('submit',async(e)=>{e.
  let msg=`Olá! Gostaria de fazer o seguinte pedido na Fazendinha Turca:\n\nPedido: ${numero}\n\nCliente: ${dados.nome}\nCPF: ${dados.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4')}\nWhatsApp: ${dados.telefone}\n\nEndereço: ${dados.rua}, ${dados.numero}${dados.complemento?', '+dados.complemento:''}\n${dados.bairro} - ${dados.cidade}/${dados.uf}\nCEP: ${formatarCEP(dados.cep)}${dados.referencia?'\nReferência: '+dados.referencia:''}\n\nItens:\n`;itens.forEach(i=>msg+=`• ${i.quantidade}x ${i.nome} (${i.unidade}) - ${formatarPreco(i.subtotal)}\n`);msg+=`\nSubtotal: ${formatarPreco(subtotal)}\nFrete: ${formatarPreco(frete)}\nTotal: ${formatarPreco(total)}\nPagamento: Pendente`;if(dados.observacoes)msg+=`\nObservações: ${dados.observacoes}`;fecharCheckout();window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(msg)}`,'_blank','noopener,noreferrer');
  }catch(err){console.error(err);errorEl.textContent='Não foi possível registrar o pedido: '+(err.message||'erro desconhecido');errorEl.style.display='block';}finally{btn.disabled=false;btn.textContent='Registrar e abrir WhatsApp';}});
 
-/* ===================== POPUP PROMOCIONAL ===================== */
-(function () {
-  const promoOverlay = document.getElementById('promo-overlay');
-  const promoClose = document.getElementById('promo-close');
-  const CHAVE_POPUP = "fazendinhaTurca_popupVisto_produtos_20261013";
-
-  function abrirPopup() {
-    promoOverlay.classList.add('open');
-  }
-  function fecharPopup() {
-    promoOverlay.classList.remove('open');
-    sessionStorage.setItem(CHAVE_POPUP, "1");
-  }
-
-  if (!sessionStorage.getItem(CHAVE_POPUP)) {
-    setTimeout(abrirPopup, 900);
-  }
-  promoClose.addEventListener('click', fecharPopup);
-  promoOverlay.addEventListener('click', (e) => {
-    if (e.target === promoOverlay) fecharPopup();
-  });
-  document.getElementById('promo-cta').addEventListener('click', fecharPopup);
-})();
+/* O pop-up é carregado pelo bloco compartilhado próximo ao HTML do modal. */
 
 /* ===================== INIT ===================== */
 (function () {
