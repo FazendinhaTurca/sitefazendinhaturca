@@ -463,6 +463,10 @@
       <button type="button" class="tab-btn active" data-tab="dashboard">Dashboard</button>
     </div>
     <div class="menu-group">
+      <div class="menu-group-title">CLIENTES</div>
+      <button type="button" class="tab-btn" data-tab="clientes-cadastrados">Clientes cadastrados</button>
+    </div>
+    <div class="menu-group">
       <div class="menu-group-title">LOJA · MERCADINHO</div>
       <button type="button" class="tab-btn" data-tab="mercadinho">Mercadinho</button>
       <button type="button" class="tab-btn" data-tab="pedidos-mercadinho">Pedidos</button>
@@ -501,6 +505,20 @@
         <div class="dashboard-overview-title">Visão geral</div>
         <div class="cards-row" id="dash-cards"></div>
       </div>
+    </section>
+
+    <!-- CLIENTES CADASTRADOS -->
+    <section class="panel-view" id="view-clientes-cadastrados">
+      <div class="view-header">
+        <h2>Clientes cadastrados</h2>
+        <button type="button" class="btn btn-outline btn-sm" id="btn-atualizar-clientes">Atualizar lista</button>
+      </div>
+      <p class="empty-hint" style="margin-top:-8px;">Cadastros enviados pelo formulário público da Fazendinha Turca.</p>
+      <div class="order-toolbar">
+        <div class="field field-busca"><label for="busca-clientes">Buscar cliente</label><input type="search" id="busca-clientes" placeholder="Nome, telefone ou e-mail" autocomplete="off"></div>
+        <span class="filtro-info" id="contagem-clientes" aria-live="polite"></span>
+      </div>
+      <div id="tabela-clientes-cadastrados"><p class="empty-hint">Clique em “Clientes cadastrados” para carregar a lista.</p></div>
     </section>
 
     <!-- MERCADINHO -->
@@ -1061,6 +1079,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.add('active');
     document.querySelectorAll('.panel-view').forEach(v => v.classList.remove('show'));
     document.getElementById('view-' + btn.dataset.tab).classList.add('show');
+    if (btn.dataset.tab === 'clientes-cadastrados') carregarClientesCadastrados();
   });
 });
 document.querySelectorAll('[data-close-modal]').forEach(btn => {
@@ -1070,6 +1089,46 @@ document.querySelectorAll('[data-close-modal]').forEach(btn => {
 /* ===================== PEDIDOS / PAGAMENTOS / FINANCEIRO ===================== */
 const pedidoCaches = { mercadinho: [], 'atelier-verushka': [] };
 function escPedido(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+let clientesCadastradosCache = [];
+let clientesCadastradosCarregados = false;
+
+function renderizarClientesCadastrados() {
+  const container = document.getElementById('tabela-clientes-cadastrados');
+  const termo = (document.getElementById('busca-clientes').value || '').trim().toLocaleLowerCase('pt-BR');
+  const filtrados = clientesCadastradosCache.filter(c =>
+    [c.nome, c.telefone, c.email, c.rua, c.numero, c.bairro]
+      .some(v => String(v || '').toLocaleLowerCase('pt-BR').includes(termo))
+  );
+  document.getElementById('contagem-clientes').textContent =
+    filtrados.length + (filtrados.length === 1 ? ' cliente' : ' clientes');
+  if (!filtrados.length) {
+    container.innerHTML = '<p class="empty-hint">Nenhum cadastro encontrado.</p>';
+    return;
+  }
+  container.innerHTML = `<div style="overflow-x:auto;"><table><thead><tr><th>Nome</th><th>Telefone</th><th>E-mail</th><th>Endereço</th><th>Cadastro em</th></tr></thead><tbody>${filtrados.map(c => {
+    const endereco = [c.rua, c.numero, c.bairro].filter(Boolean).join(', ');
+    const data = c.criado_em ? new Date(c.criado_em).toLocaleString('pt-BR') : '—';
+    return `<tr><td>${escPedido(c.nome)}</td><td><a href="https://wa.me/${String(c.telefone || '').replace(/\\D/g, '')}" target="_blank" rel="noopener">${escPedido(c.telefone)}</a></td><td>${escPedido(c.email)}</td><td>${escPedido(endereco)}</td><td>${escPedido(data)}</td></tr>`;
+  }).join('')}</tbody></table></div>`;
+}
+
+async function carregarClientesCadastrados() {
+  const container = document.getElementById('tabela-clientes-cadastrados');
+  container.innerHTML = '<p class="empty-hint">Carregando clientes...</p>';
+  const { data, error } = await sb.from('clientes_cadastrados')
+    .select('id,nome,telefone,email,rua,numero,bairro,criado_em')
+    .order('criado_em', { ascending: false });
+  if (error) {
+    container.innerHTML = '<div class="msg-box erro">Não foi possível carregar os clientes: ' + escPedido(error.message) + '</div>';
+    return;
+  }
+  clientesCadastradosCache = data || [];
+  clientesCadastradosCarregados = true;
+  renderizarClientesCadastrados();
+}
+document.getElementById('busca-clientes').addEventListener('input', renderizarClientesCadastrados);
+document.getElementById('btn-atualizar-clientes').addEventListener('click', carregarClientesCadastrados);
+
 function dinheiro(v){return 'R$ '+Number(v||0).toFixed(2).replace('.',',');}
 function labelStatus(v){return ({novo:'Novo',em_confirmacao:'Em confirmação',confirmado:'Confirmado',em_preparacao:'Em preparação',saiu_entrega:'Saiu para entrega',concluido:'Concluído',cancelado:'Cancelado'})[v]||v||'—';}
 function labelPagamento(v){return ({pendente:'Pendente',pago:'Pago',cancelado:'Cancelado',estornado:'Estornado'})[v]||v||'Pendente';}
