@@ -1096,7 +1096,7 @@ function renderizarClientesCadastrados() {
   const container = document.getElementById('tabela-clientes-cadastrados');
   const termo = (document.getElementById('busca-clientes').value || '').trim().toLocaleLowerCase('pt-BR');
   const filtrados = clientesCadastradosCache.filter(c =>
-    [c.nome, c.telefone, c.email, c.rua, c.numero, c.bairro]
+    [c.nome, c.telefone, c.email, c.rua, c.numero, c.bairro, c.indicacao]
       .some(v => String(v || '').toLocaleLowerCase('pt-BR').includes(termo))
   );
   document.getElementById('contagem-clientes').textContent =
@@ -1105,10 +1105,10 @@ function renderizarClientesCadastrados() {
     container.innerHTML = '<p class="empty-hint">Nenhum cadastro encontrado.</p>';
     return;
   }
-  container.innerHTML = `<div style="overflow-x:auto;"><table><thead><tr><th>Nome</th><th>Telefone</th><th>E-mail</th><th>Endereço</th><th>Cadastro em</th></tr></thead><tbody>${filtrados.map(c => {
+  container.innerHTML = `<div style="overflow-x:auto;"><table><thead><tr><th>Nome</th><th>Telefone</th><th>E-mail</th><th>Endereço</th><th>Indicação</th><th>Cadastro em</th></tr></thead><tbody>${filtrados.map(c => {
     const endereco = [c.rua, c.numero, c.bairro].filter(Boolean).join(', ');
     const data = c.criado_em ? new Date(c.criado_em).toLocaleString('pt-BR') : '—';
-    return `<tr><td>${escPedido(c.nome)}</td><td><a href="https://wa.me/${String(c.telefone || '').replace(/\D/g, '')}" target="_blank" rel="noopener">${escPedido(c.telefone)}</a></td><td>${escPedido(c.email)}</td><td>${escPedido(endereco)}</td><td>${escPedido(data)}</td></tr>`;
+    return `<tr><td>${escPedido(c.nome)}</td><td><a href="https://wa.me/${String(c.telefone || '').replace(/\D/g, '')}" target="_blank" rel="noopener">${escPedido(c.telefone)}</a></td><td>${escPedido(c.email)}</td><td>${escPedido(endereco)}</td><td>${escPedido(c.indicacao || '—')}</td><td>${escPedido(data)}</td></tr>`;
   }).join('')}</tbody></table></div>`;
 }
 
@@ -1116,7 +1116,7 @@ async function carregarClientesCadastrados() {
   const container = document.getElementById('tabela-clientes-cadastrados');
   container.innerHTML = '<p class="empty-hint">Carregando clientes...</p>';
   const { data, error } = await sb.from('clientes_cadastrados')
-    .select('id,nome,telefone,email,rua,numero,bairro,criado_em')
+    .select('id,nome,telefone,email,rua,numero,bairro,indicacao,criado_em')
     .order('criado_em', { ascending: false });
   if (error) {
     container.innerHTML = '<div class="msg-box erro">Não foi possível carregar os clientes: ' + escPedido(error.message) + '</div>';
