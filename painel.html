@@ -695,7 +695,14 @@
           <div class="msg-box" id="popup-msg" style="display:none;margin-top:12px;"></div>
         </form>
       </div>
-      <p class="empty-hint" style="margin-top:14px;">Existe apenas um cadastro: uma nova imagem substitui a campanha anterior. Desativar oculta o pop-up sem apagar suas configurações.</p>
+      <p class="empty-hint" style="margin-top:14px;">Só uma campanha pode ficar ativa no site por vez. As campanhas salvas ficam na biblioteca para você reutilizar quando quiser.</p>
+      <div class="config-setting" style="margin-top:24px;">
+        <div class="view-header" style="margin-bottom:12px;"><div><h3>Biblioteca de pop-ups</h3><p class="empty-hint">Campanhas já cadastradas, com suas imagens e configurações guardadas.</p></div><button type="button" class="btn btn-outline" id="popup-biblioteca-atualizar">Atualizar biblioteca</button></div>
+        <label for="popup-biblioteca-busca">Pesquisar campanhas</label>
+        <input id="popup-biblioteca-busca" type="search" placeholder="Digite o nome da campanha..." style="max-width:520px;">
+        <div id="popup-biblioteca-msg" class="empty-hint" style="margin:10px 0;">Carregando biblioteca...</div>
+        <div id="popup-biblioteca-lista" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;"></div>
+      </div>
     </section>
 
     <!-- CONFIGURAÇÕES -->
@@ -1104,6 +1111,8 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
 /* ===================== GERENCIADOR DE POP-UP ===================== */
 let popupConfiguracaoAtual = null;
 let popupImagemSelecionada = null;
+let popupBibliotecaSelecionadaId = null;
+let popupBibliotecaCache = [];
 function mostrarMensagemPopup(texto, erro = false) {
   const el = document.getElementById('popup-msg'); el.textContent = texto;
   el.className = 'msg-box' + (erro ? ' erro' : ''); el.style.display = 'block';
@@ -1147,11 +1156,68 @@ async function salvarConfiguracaoPopup(ativar=false) {
     const {data:{user}}=await sb.auth.getUser();
     const payload={id:true,titulo,imagem_url:imagemUrl,alt_text:alt,link_destino:link,texto_botao:textoBotao,paginas,ativo:ativar?true:Boolean(popupConfiguracaoAtual?.ativo),atraso_ms:Math.round(atraso*1000),atualizado_em:new Date().toISOString(),atualizado_por:user?.id||null};
     const {data,error}=await sb.from('popup_configuracao').upsert(payload,{onConflict:'id'}).select('*').single();
-    if(error)throw error; popupConfiguracaoAtual=data; popupImagemSelecionada=null; document.getElementById('popup-imagem').value='';
-    atualizarStatusPopup(Boolean(data.ativo)); mostrarMensagemPopup('Pop-up salvo com sucesso.');
+    if(error)throw error; popupConfiguracaoAtual=data;
+    const campanha={titulo,imagem_url:imagemUrl,alt_text:alt,link_destino:link,texto_botao:textoBotao,paginas,atraso_ms:Math.round(atraso*1000),atualizado_em:new Date().toISOString(),criado_por:user?.id||null};
+    let arquivada;
+    if(popupBibliotecaSelecionadaId){
+      const res=await sb.from('popup_biblioteca').update(campanha).eq('id',popupBibliotecaSelecionadaId).select('id').single();
+      if(res.error)throw res.error; arquivada=res.data;
+    } else {
+      const res=await sb.from('popup_biblioteca').insert(campanha).select('id').single();
+      if(res.error)throw res.error; arquivada=res.data;
+    }
+    popupBibliotecaSelecionadaId=arquivada.id; popupImagemSelecionada=null; document.getElementById('popup-imagem').value='';
+    atualizarStatusPopup(Boolean(data.ativo)); mostrarMensagemPopup('Pop-up salvo e guardado na biblioteca.'); await carregarBibliotecaPopup();
   }catch(err){console.error(err);mostrarMensagemPopup('Não foi possível salvar: '+(err.message||'erro desconhecido'),true);}
   finally{btn.disabled=false;}
 }
+async function carregarBibliotecaPopup() {
+  const lista=document.getElementById('popup-biblioteca-lista');
+  const msg=document.getElementById('popup-biblioteca-msg');
+  msg.textContent='Carregando biblioteca...';
+  const {data,error}=await sb.from('popup_biblioteca').select('*').order('atualizado_em',{ascending:false});
+  if(error){msg.textContent='Não foi possível carregar a biblioteca: '+error.message;return;}
+  popupBibliotecaCache=data||[];
+  renderizarBibliotecaPopup();
+}
+function renderizarBibliotecaPopup(){
+  const lista=document.getElementById('popup-biblioteca-lista');
+  const msg=document.getElementById('popup-biblioteca-msg');
+  const termo=(document.getElementById('popup-biblioteca-busca').value||'').trim().toLocaleLowerCase('pt-BR');
+  const itens=popupBibliotecaCache.filter(x=>(x.titulo||'').toLocaleLowerCase('pt-BR').includes(termo));
+  lista.innerHTML='';
+  msg.textContent=itens.length?itens.length+' campanha(s) na biblioteca.':'Nenhuma campanha encontrada.';
+  itens.forEach(item=>{
+    const card=document.createElement('article');
+    card.style.cssText='border:1px solid #dfe5dc;border-radius:12px;overflow:hidden;background:#fff;display:flex;flex-direction:column;';
+    const img=document.createElement('img');img.src=item.imagem_url;img.alt=item.alt_text||item.titulo;img.loading='lazy';img.style.cssText='width:100%;height:150px;object-fit:cover;background:#f2f2f2;';
+    const body=document.createElement('div');body.style.cssText='padding:12px;display:flex;flex-direction:column;gap:8px;flex:1;';
+    const title=document.createElement('strong');title.textContent=item.titulo;
+    const date=document.createElement('small');date.className='empty-hint';date.textContent='Salvo em '+new Date(item.atualizado_em||item.criado_em).toLocaleDateString('pt-BR');
+    const pages=document.createElement('small');pages.className='empty-hint';pages.textContent='Páginas: '+(item.paginas||[]).join(', ');
+    const btn=document.createElement('button');btn.type='button';btn.className='btn btn-primary';btn.textContent='Reutilizar campanha';
+    btn.addEventListener('click',()=>reutilizarCampanhaPopup(item));
+    body.append(title,date,pages,btn);card.append(img,body);lista.append(card);
+  });
+}
+function reutilizarCampanhaPopup(item){
+  popupBibliotecaSelecionadaId=item.id; popupImagemSelecionada=null;
+  document.getElementById('popup-titulo').value=item.titulo||'';
+  document.getElementById('popup-alt').value=item.alt_text||'';
+  document.getElementById('popup-link').value=item.link_destino||'produtos.html';
+  document.getElementById('popup-botao').value=item.texto_botao||'SAIBA MAIS';
+  document.getElementById('popup-atraso').value=String((Number(item.atraso_ms)||0)/1000);
+  document.querySelectorAll('.popup-pagina').forEach(cb=>cb.checked=(item.paginas||[]).includes(cb.value));
+  document.getElementById('popup-imagem').value='';
+  document.getElementById('popup-preview').src=item.imagem_url;
+  document.getElementById('popup-preview-wrap').style.display='block';
+  document.getElementById('popup-imagem-info').textContent='Imagem reaproveitada da biblioteca; não precisa enviar novamente.';
+  document.getElementById('popup-msg').style.display='none';
+  document.getElementById('popup-form').scrollIntoView({behavior:'smooth',block:'start'});
+  mostrarMensagemPopup('Campanha carregada. Clique em “Salvar e ativar” para publicá-la novamente.');
+}
+document.getElementById('popup-biblioteca-atualizar').addEventListener('click',carregarBibliotecaPopup);
+document.getElementById('popup-biblioteca-busca').addEventListener('input',renderizarBibliotecaPopup);
 document.getElementById('popup-form').addEventListener('submit',e=>{e.preventDefault();salvarConfiguracaoPopup(false);});
 document.getElementById('popup-ativar').addEventListener('click',()=>salvarConfiguracaoPopup(true));
 document.getElementById('popup-desativar').addEventListener('click',async()=>{
@@ -1168,7 +1234,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('.panel-view').forEach(v => v.classList.remove('show'));
     document.getElementById('view-' + btn.dataset.tab).classList.add('show');
     if (btn.dataset.tab === 'clientes-cadastrados') carregarClientesCadastrados();
-    if (btn.dataset.tab === 'popups') carregarConfiguracaoPopup().catch(err => { console.error(err); mostrarMensagemPopup('Erro ao carregar: ' + err.message, true); });
+    if (btn.dataset.tab === 'popups') { carregarConfiguracaoPopup().catch(err => { console.error(err); mostrarMensagemPopup('Erro ao carregar: ' + err.message, true); }); carregarBibliotecaPopup(); }
   });
 });
 document.querySelectorAll('[data-close-modal]').forEach(btn => {
