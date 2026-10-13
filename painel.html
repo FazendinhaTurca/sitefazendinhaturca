@@ -1105,10 +1105,10 @@ function renderizarClientesCadastrados() {
     container.innerHTML = '<p class="empty-hint">Nenhum cadastro encontrado.</p>';
     return;
   }
-  container.innerHTML = `<div style="overflow-x:auto;"><table><thead><tr><th>Nome</th><th>Telefone</th><th>E-mail</th><th>Endereço</th><th>Indicação</th><th>Cadastro em</th></tr></thead><tbody>${filtrados.map(c => {
+  container.innerHTML = `<div style="overflow-x:auto;"><table><thead><tr><th>Nome</th><th>Telefone</th><th>E-mail</th><th>Endereço</th><th>Indicação</th><th>Cadastro em</th><th>Ações</th></tr></thead><tbody>${filtrados.map(c => {
     const endereco = [c.rua, c.numero, c.bairro].filter(Boolean).join(', ');
     const data = c.criado_em ? new Date(c.criado_em).toLocaleString('pt-BR') : '—';
-    return `<tr><td>${escPedido(c.nome)}</td><td><a href="https://wa.me/${String(c.telefone || '').replace(/\D/g, '')}" target="_blank" rel="noopener">${escPedido(c.telefone)}</a></td><td>${escPedido(c.email)}</td><td>${escPedido(endereco)}</td><td style="min-width:230px;"><div style="display:flex;gap:6px;align-items:center;"><input type="text" aria-label="Quem indicou ${escPedido(c.nome)}" data-indicacao-input="${escPedido(c.id)}" value="${escPedido(c.indicacao || '')}" placeholder="Nome de quem indicou" style="min-width:140px;width:100%;padding:7px;border:1px solid var(--border,#d8d4ca);border-radius:6px;"><button type="button" class="btn btn-primary btn-sm" data-salvar-indicacao="${escPedido(c.id)}">Salvar</button></div><small data-indicacao-status="${escPedido(c.id)}" aria-live="polite"></small></td><td>${escPedido(data)}</td></tr>`;
+    return `<tr><td>${escPedido(c.nome)}</td><td><a href="https://wa.me/${String(c.telefone || '').replace(/\D/g, '')}" target="_blank" rel="noopener">${escPedido(c.telefone)}</a></td><td>${escPedido(c.email)}</td><td>${escPedido(endereco)}</td><td style="min-width:230px;"><div style="display:flex;gap:6px;align-items:center;"><input type="text" aria-label="Quem indicou ${escPedido(c.nome)}" data-indicacao-input="${escPedido(c.id)}" value="${escPedido(c.indicacao || '')}" placeholder="Nome de quem indicou" style="min-width:140px;width:100%;padding:7px;border:1px solid var(--border,#d8d4ca);border-radius:6px;"><button type="button" class="btn btn-primary btn-sm" data-salvar-indicacao="${escPedido(c.id)}">Salvar</button></div><small data-indicacao-status="${escPedido(c.id)}" aria-live="polite"></small></td><td>${escPedido(data)}</td><td><div style="display:flex;gap:6px;flex-wrap:wrap;min-width:150px;"><button type="button" class="btn btn-outline btn-sm" data-editar-cliente="${escPedido(c.id)}">Editar</button><button type="button" class="btn btn-danger btn-sm" data-excluir-cliente="${escPedido(c.id)}">Excluir</button></div></td></tr>`;
   }).join('')}</tbody></table></div>`;
 }
 
@@ -1130,35 +1130,99 @@ document.getElementById('busca-clientes').addEventListener('input', renderizarCl
 document.getElementById('btn-atualizar-clientes').addEventListener('click', carregarClientesCadastrados);
 
 document.getElementById('tabela-clientes-cadastrados').addEventListener('click', async (event) => {
-  const botao = event.target.closest('[data-salvar-indicacao]');
-  if (!botao) return;
-  const id = botao.dataset.salvarIndicacao;
-  const campo = document.querySelector('[data-indicacao-input="' + id + '"]');
-  const status = document.querySelector('[data-indicacao-status="' + id + '"]');
-  if (!campo || !status) return;
+  const salvarIndicacao = event.target.closest('[data-salvar-indicacao]');
+  if (salvarIndicacao) {
+    const id = salvarIndicacao.dataset.salvarIndicacao;
+    const campo = document.querySelector('[data-indicacao-input="' + id + '"]');
+    const status = document.querySelector('[data-indicacao-status="' + id + '"]');
+    if (!campo || !status) return;
+    salvarIndicacao.disabled = true;
+    salvarIndicacao.textContent = 'Salvando...';
+    status.textContent = '';
+    try {
+      const { data, error } = await sb.from('clientes_cadastrados')
+        .update({ indicacao: campo.value.trim() || null })
+        .eq('id', id).select('id,indicacao').single();
+      if (error) throw error;
+      const cliente = clientesCadastradosCache.find(c => c.id === id);
+      if (cliente) cliente.indicacao = data.indicacao;
+      status.textContent = 'Salvo!';
+      status.style.color = 'var(--green, #287a3d)';
+    } catch (error) {
+      console.error('Erro ao salvar indicação do cliente:', error);
+      status.textContent = 'Erro ao salvar: ' + (error.message || 'tente novamente');
+      status.style.color = '#b42318';
+    } finally {
+      salvarIndicacao.disabled = false;
+      salvarIndicacao.textContent = 'Salvar';
+    }
+    return;
+  }
 
-  botao.disabled = true;
-  botao.textContent = 'Salvando...';
-  status.textContent = '';
-  const valor = campo.value.trim();
-  try {
-    const { data, error } = await sb.from('clientes_cadastrados')
-      .update({ indicacao: valor || null })
-      .eq('id', id)
-      .select('id,indicacao')
-      .single();
-    if (error) throw error;
-    const cliente = clientesCadastradosCache.find(c => c.id === id);
-    if (cliente) cliente.indicacao = data.indicacao;
-    status.textContent = 'Salvo!';
-    status.style.color = 'var(--green, #287a3d)';
-  } catch (error) {
-    console.error('Erro ao salvar indicação do cliente:', error);
-    status.textContent = 'Erro ao salvar: ' + (error.message || 'tente novamente');
-    status.style.color = '#b42318';
-  } finally {
-    botao.disabled = false;
-    botao.textContent = 'Salvar';
+  const editar = event.target.closest('[data-editar-cliente]');
+  if (editar) {
+    const cliente = clientesCadastradosCache.find(c => c.id === editar.dataset.editarCliente);
+    if (!cliente) return;
+    const campos = [
+      ['nome', 'Nome', cliente.nome],
+      ['telefone', 'Telefone', cliente.telefone],
+      ['email', 'E-mail', cliente.email],
+      ['rua', 'Rua', cliente.rua],
+      ['numero', 'Número', cliente.numero],
+      ['bairro', 'Bairro', cliente.bairro],
+      ['indicacao', 'Indicação (opcional)', cliente.indicacao || '']
+    ];
+    const atualizados = {};
+    for (const [chave, rotulo, atual] of campos) {
+      const valor = prompt('Editar ' + rotulo + ':', atual == null ? '' : String(atual));
+      if (valor === null) return;
+      if (chave !== 'indicacao' && !valor.trim()) {
+        alert('O campo "' + rotulo + '" é obrigatório.');
+        return;
+      }
+      atualizados[chave] = valor.trim() || (chave === 'indicacao' ? null : '');
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(atualizados.email)) {
+      alert('Informe um e-mail válido.');
+      return;
+    }
+    editar.disabled = true;
+    editar.textContent = 'Salvando...';
+    try {
+      const { data, error } = await sb.from('clientes_cadastrados')
+        .update(atualizados)
+        .eq('id', cliente.id)
+        .select('id,nome,telefone,email,rua,numero,bairro,indicacao,criado_em')
+        .single();
+      if (error) throw error;
+      Object.assign(cliente, data);
+      renderizarClientesCadastrados();
+    } catch (error) {
+      console.error('Erro ao editar cliente:', error);
+      alert('Não foi possível editar o cliente: ' + (error.message || 'tente novamente'));
+      editar.disabled = false;
+      editar.textContent = 'Editar';
+    }
+    return;
+  }
+
+  const excluir = event.target.closest('[data-excluir-cliente]');
+  if (excluir) {
+    const cliente = clientesCadastradosCache.find(c => c.id === excluir.dataset.excluirCliente);
+    if (!cliente || !confirm('Excluir definitivamente o cadastro de ' + cliente.nome + '? Esta ação não pode ser desfeita.')) return;
+    excluir.disabled = true;
+    excluir.textContent = 'Excluindo...';
+    try {
+      const { error } = await sb.from('clientes_cadastrados').delete().eq('id', cliente.id);
+      if (error) throw error;
+      clientesCadastradosCache = clientesCadastradosCache.filter(c => c.id !== cliente.id);
+      renderizarClientesCadastrados();
+    } catch (error) {
+      console.error('Erro ao excluir cliente:', error);
+      alert('Não foi possível excluir o cliente: ' + (error.message || 'tente novamente'));
+      excluir.disabled = false;
+      excluir.textContent = 'Excluir';
+    }
   }
 });
 
