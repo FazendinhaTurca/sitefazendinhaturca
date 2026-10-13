@@ -259,52 +259,46 @@
   Fazendinha Turca &middot; Araruama &ndash; RJ &middot; Entrega de frutas frescas apenas em Araruama
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-  // ATENÇÃO: substitua a URL abaixo pela URL do seu Google Apps Script
-  // publicado como "Web App" (veja instruções enviadas junto com este arquivo).
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyVpPbDC7KEwlz6DZkxvA_8y7R2B2aBA3eQYhoM-wc3qZfyJlt3FEctcZQhxAU785aUNw/exec";
+  const SUPABASE_URL = "https://iskdknoedbvbiqlosgii.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_m_dI-5n_6F_VGKPFb-EFpg_G1mnOZjQ";
+  const cadastroSb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
   const form = document.getElementById('cadastroForm');
-  const submitBtn = document.getElementById('submitBtn');
-  const statusMsg = document.getElementById('statusMsg');
-
-  form.addEventListener('submit', function (e) {
+  form.addEventListener('submit', async function (e) {
     e.preventDefault();
     statusMsg.className = 'status-msg';
     statusMsg.textContent = '';
 
-    if (SCRIPT_URL.indexOf('COLE_AQUI') !== -1) {
-      statusMsg.textContent = 'Configuração pendente: cole a URL do Google Apps Script no arquivo cadastro.html.';
-      statusMsg.classList.add('error');
-      return;
-    }
+    const dados = {
+      nome: document.getElementById('nome').value.trim(),
+      telefone: document.getElementById('telefone').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      rua: document.getElementById('rua').value.trim(),
+      numero: document.getElementById('numero').value.trim(),
+      bairro: document.getElementById('bairro').value.trim()
+    };
 
     submitBtn.disabled = true;
     submitBtn.textContent = 'ENVIANDO...';
-
-    statusMsg.textContent = 'Aguarde, estamos enviando seu cadastro... Não feche esta página nem clique novamente.';
+    statusMsg.textContent = 'Aguarde, estamos salvando seu cadastro com segurança...';
     statusMsg.className = 'status-msg success';
 
-    const formData = new FormData(form);
-
-    fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: formData
-    })
-      .then(function () {
-        statusMsg.textContent = 'Cadastro enviado com sucesso! Em breve entraremos em contato.';
-        statusMsg.classList.add('success');
-        form.reset();
-      })
-      .catch(function () {
-        statusMsg.textContent = 'Não foi possível enviar. Tente novamente em instantes.';
-        statusMsg.classList.add('error');
-      })
-      .finally(function () {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'ENVIAR CADASTRO \u{1F353}';
-      });
+    try {
+      const { error } = await cadastroSb.from('clientes_cadastrados').insert([dados]);
+      if (error) throw error;
+      statusMsg.textContent = 'Cadastro enviado com sucesso! Em breve entraremos em contato.';
+      statusMsg.className = 'status-msg success';
+      form.reset();
+    } catch (error) {
+      console.error('Erro ao salvar cadastro:', error);
+      statusMsg.textContent = 'Não foi possível enviar seu cadastro agora. Tente novamente em instantes.';
+      statusMsg.className = 'status-msg error';
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'ENVIAR CADASTRO 🌱';
+    }
   });
 </script>
 
