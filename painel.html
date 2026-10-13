@@ -467,6 +467,10 @@
       <button type="button" class="tab-btn" data-tab="clientes-cadastrados">Clientes cadastrados</button>
     </div>
     <div class="menu-group">
+      <div class="menu-group-title">MARKETING</div>
+      <button type="button" class="tab-btn" data-tab="popups">Pop-ups</button>
+    </div>
+    <div class="menu-group">
       <div class="menu-group-title">LOJA · MERCADINHO</div>
       <button type="button" class="tab-btn" data-tab="mercadinho">Mercadinho</button>
       <button type="button" class="tab-btn" data-tab="pedidos-mercadinho">Pedidos</button>
@@ -667,6 +671,31 @@
       </div>
       <div class="msg-box" id="sitemap-msg" style="display:none;"></div>
       <div id="tabela-sitemap"></div>
+    </section>
+
+    <section class="panel-view" id="view-popups">
+      <div class="view-header"><div><h2>Pop-ups</h2><p class="empty-hint">Gerencie uma única campanha ativa por vez.</p></div><span id="popup-status-badge" class="badge">Carregando...</span></div>
+      <div class="config-setting" style="max-width:850px;">
+        <form id="popup-form">
+          <label for="popup-titulo">Nome interno da campanha</label><input id="popup-titulo" maxlength="120" required placeholder="Ex.: Frutas da estação">
+          <label for="popup-imagem">Imagem do pop-up (JPG, PNG ou WebP)</label><input id="popup-imagem" type="file" accept="image/jpeg,image/png,image/webp,image/avif" style="padding:10px;background:#fff;">
+          <p class="empty-hint">A imagem será convertida automaticamente para WebP ao salvar.</p>
+          <div id="popup-preview-wrap" style="display:none;max-width:300px;margin:12px 0;"><img id="popup-preview" alt="Pré-visualização do pop-up" style="display:block;width:100%;height:auto;border-radius:10px;border:1px solid #ddd;"><small id="popup-imagem-info" class="empty-hint"></small></div>
+          <label for="popup-alt">Texto alternativo da imagem</label><input id="popup-alt" maxlength="200" required placeholder="Descreva a imagem">
+          <label for="popup-link">Link de destino</label><input id="popup-link" maxlength="500" required value="produtos.html" placeholder="produtos.html ou https://...">
+          <label for="popup-botao">Texto do botão</label><input id="popup-botao" maxlength="60" required value="VER PRODUTOS 🍌">
+          <label for="popup-atraso">Atraso para aparecer (segundos)</label><input id="popup-atraso" type="number" min="0" max="15" step="0.5" value="0.9" required>
+          <label>Páginas onde o pop-up aparecerá</label>
+          <div style="display:grid;gap:8px;margin:8px 0 16px;">
+            <label style="display:flex;gap:8px;align-items:center;margin:0;font-weight:500;"><input type="checkbox" class="popup-pagina" value="index.html" style="width:auto;"> Página inicial (index.html)</label>
+            <label style="display:flex;gap:8px;align-items:center;margin:0;font-weight:500;"><input type="checkbox" class="popup-pagina" value="produtos.html" style="width:auto;"> Produtos (produtos.html)</label>
+            <label style="display:flex;gap:8px;align-items:center;margin:0;font-weight:500;"><input type="checkbox" class="popup-pagina" value="atelie.html" style="width:auto;"> Ateliê Verushka (atelie.html)</label>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;"><button type="submit" class="btn btn-primary" id="popup-salvar">Salvar pop-up</button><button type="button" class="btn btn-outline" id="popup-ativar">Salvar e ativar</button><button type="button" class="btn btn-danger" id="popup-desativar">Desativar</button></div>
+          <div class="msg-box" id="popup-msg" style="display:none;margin-top:12px;"></div>
+        </form>
+      </div>
+      <p class="empty-hint" style="margin-top:14px;">Existe apenas um cadastro: uma nova imagem substitui a campanha anterior. Desativar oculta o pop-up sem apagar suas configurações.</p>
     </section>
 
     <!-- CONFIGURAÇÕES -->
@@ -1072,6 +1101,65 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
   mostrarLogin();
 });
 
+/* ===================== GERENCIADOR DE POP-UP ===================== */
+let popupConfiguracaoAtual = null;
+let popupImagemSelecionada = null;
+function mostrarMensagemPopup(texto, erro = false) {
+  const el = document.getElementById('popup-msg'); el.textContent = texto;
+  el.className = 'msg-box' + (erro ? ' erro' : ''); el.style.display = 'block';
+}
+function atualizarStatusPopup(ativo) {
+  const el = document.getElementById('popup-status-badge');
+  el.textContent = ativo ? 'Publicado' : 'Desativado';
+  el.className = 'badge ' + (ativo ? 'ativo' : 'inativo');
+}
+async function carregarConfiguracaoPopup() {
+  const {data,error}=await sb.from('popup_configuracao').select('*').eq('id',true).maybeSingle();
+  if(error) throw error; popupConfiguracaoAtual=data;
+  if(!data){atualizarStatusPopup(false);return;}
+  document.getElementById('popup-titulo').value=data.titulo||'';
+  document.getElementById('popup-alt').value=data.alt_text||'';
+  document.getElementById('popup-link').value=data.link_destino||'produtos.html';
+  document.getElementById('popup-botao').value=data.texto_botao||'SAIBA MAIS';
+  document.getElementById('popup-atraso').value=String((Number(data.atraso_ms)||0)/1000);
+  document.querySelectorAll('.popup-pagina').forEach(cb=>cb.checked=(data.paginas||[]).includes(cb.value));
+  if(data.imagem_url){document.getElementById('popup-preview').src=data.imagem_url;document.getElementById('popup-preview-wrap').style.display='block';document.getElementById('popup-imagem-info').textContent='Imagem atual salva no Storage.';}
+  atualizarStatusPopup(Boolean(data.ativo));
+}
+document.getElementById('popup-imagem').addEventListener('change',()=>{
+  const file=document.getElementById('popup-imagem').files[0]; popupImagemSelecionada=file||null; if(!file)return;
+  const reader=new FileReader(); reader.onload=e=>{document.getElementById('popup-preview').src=e.target.result;document.getElementById('popup-preview-wrap').style.display='block';document.getElementById('popup-imagem-info').textContent='Prévia local; será convertida para WebP ao salvar.';}; reader.readAsDataURL(file);
+});
+async function salvarConfiguracaoPopup(ativar=false) {
+  const btn=document.getElementById('popup-salvar'); btn.disabled=true;
+  try {
+    const titulo=document.getElementById('popup-titulo').value.trim(), alt=document.getElementById('popup-alt').value.trim();
+    const link=document.getElementById('popup-link').value.trim(), textoBotao=document.getElementById('popup-botao').value.trim();
+    const paginas=[...document.querySelectorAll('.popup-pagina:checked')].map(cb=>cb.value);
+    const atraso=Number(document.getElementById('popup-atraso').value);
+    if(!titulo||!alt||!link||!textoBotao)throw new Error('Preencha todos os campos obrigatórios.');
+    if(!paginas.length)throw new Error('Selecione pelo menos uma página.');
+    if(!Number.isFinite(atraso)||atraso<0||atraso>15)throw new Error('O atraso deve ser de 0 a 15 segundos.');
+    if(/^javascript:/i.test(link))throw new Error('Link não permitido.');
+    let imagemUrl=popupConfiguracaoAtual?.imagem_url||null;
+    if(popupImagemSelecionada)imagemUrl=await enviarImagemStorage(popupImagemSelecionada,'site','popups');
+    if(!imagemUrl)throw new Error('Selecione uma imagem para o pop-up.');
+    const {data:{user}}=await sb.auth.getUser();
+    const payload={id:true,titulo,imagem_url:imagemUrl,alt_text:alt,link_destino:link,texto_botao:textoBotao,paginas,ativo:ativar?true:Boolean(popupConfiguracaoAtual?.ativo),atraso_ms:Math.round(atraso*1000),atualizado_em:new Date().toISOString(),atualizado_por:user?.id||null};
+    const {data,error}=await sb.from('popup_configuracao').upsert(payload,{onConflict:'id'}).select('*').single();
+    if(error)throw error; popupConfiguracaoAtual=data; popupImagemSelecionada=null; document.getElementById('popup-imagem').value='';
+    atualizarStatusPopup(Boolean(data.ativo)); mostrarMensagemPopup('Pop-up salvo com sucesso.');
+  }catch(err){console.error(err);mostrarMensagemPopup('Não foi possível salvar: '+(err.message||'erro desconhecido'),true);}
+  finally{btn.disabled=false;}
+}
+document.getElementById('popup-form').addEventListener('submit',e=>{e.preventDefault();salvarConfiguracaoPopup(false);});
+document.getElementById('popup-ativar').addEventListener('click',()=>salvarConfiguracaoPopup(true));
+document.getElementById('popup-desativar').addEventListener('click',async()=>{
+  try{const {error}=await sb.from('popup_configuracao').update({ativo:false,atualizado_em:new Date().toISOString()}).eq('id',true);if(error)throw error;
+    if(popupConfiguracaoAtual)popupConfiguracaoAtual.ativo=false;atualizarStatusPopup(false);mostrarMensagemPopup('Pop-up desativado.');}
+  catch(err){mostrarMensagemPopup('Não foi possível desativar: '+err.message,true);}
+});
+
 /* ===================== NAVEGAÇÃO DE ABAS ===================== */
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1080,6 +1168,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('.panel-view').forEach(v => v.classList.remove('show'));
     document.getElementById('view-' + btn.dataset.tab).classList.add('show');
     if (btn.dataset.tab === 'clientes-cadastrados') carregarClientesCadastrados();
+    if (btn.dataset.tab === 'popups') carregarConfiguracaoPopup().catch(err => { console.error(err); mostrarMensagemPopup('Erro ao carregar: ' + err.message, true); });
   });
 });
 document.querySelectorAll('[data-close-modal]').forEach(btn => {
