@@ -689,15 +689,28 @@
   }
   .promo-cta {
     display: block;
+    width: 100%;
+    box-sizing: border-box;
     text-align: center;
-    background: var(--green);
-    color: #fff;
+    background-color: #286b32 !important;
+    color: #ffffff !important;
     font-weight: 700;
-    font-size: 13px;
-    padding: 12px;
+    font-size: 14px;
+    padding: 14px 12px;
     letter-spacing: 0.4px;
+    text-decoration: none !important;
+    border: 0;
+    border-radius: 0 0 18px 18px;
+    opacity: 1;
+    visibility: visible;
+    position: relative;
+    z-index: 3;
   }
-  .promo-cta:hover { background: var(--green-dark); }
+  .promo-cta:hover,
+  .promo-cta:focus-visible {
+    background-color: #1e4f26 !important;
+    color: #ffffff !important;
+  }
 
   /* FOOTER */
   footer {
