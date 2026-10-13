@@ -1108,7 +1108,7 @@ function renderizarClientesCadastrados() {
   container.innerHTML = `<div style="overflow-x:auto;"><table><thead><tr><th>Nome</th><th>Telefone</th><th>E-mail</th><th>Endereço</th><th>Cadastro em</th></tr></thead><tbody>${filtrados.map(c => {
     const endereco = [c.rua, c.numero, c.bairro].filter(Boolean).join(', ');
     const data = c.criado_em ? new Date(c.criado_em).toLocaleString('pt-BR') : '—';
-    return `<tr><td>${escPedido(c.nome)}</td><td><a href="https://wa.me/${String(c.telefone || '').replace(/\\D/g, '')}" target="_blank" rel="noopener">${escPedido(c.telefone)}</a></td><td>${escPedido(c.email)}</td><td>${escPedido(endereco)}</td><td>${escPedido(data)}</td></tr>`;
+    return `<tr><td>${escPedido(c.nome)}</td><td><a href="https://wa.me/${String(c.telefone || '').replace(/\D/g, '')}" target="_blank" rel="noopener">${escPedido(c.telefone)}</a></td><td>${escPedido(c.email)}</td><td>${escPedido(endereco)}</td><td>${escPedido(data)}</td></tr>`;
   }).join('')}</tbody></table></div>`;
 }
 
