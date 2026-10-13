@@ -266,6 +266,9 @@
   const cadastroSb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
   const form = document.getElementById('cadastroForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const statusMsg = document.getElementById('statusMsg');
+
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
     statusMsg.className = 'status-msg';
