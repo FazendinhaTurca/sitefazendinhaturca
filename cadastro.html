@@ -263,16 +263,28 @@
 <script>
   const SUPABASE_URL = "https://iskdknoedbvbiqlosgii.supabase.co";
   const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_m_dI-5n_6F_VGKPFb-EFpg_G1mnOZjQ";
-  const cadastroSb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-
   const form = document.getElementById('cadastroForm');
   const submitBtn = document.getElementById('submitBtn');
   const statusMsg = document.getElementById('statusMsg');
+  let cadastroSb = null;
+
+  // Se a biblioteca externa falhar ao carregar, o formulário continua mostrando um erro claro.
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    cadastroSb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  } else {
+    statusMsg.textContent = 'O sistema de cadastro não carregou corretamente. Atualize a página e tente novamente.';
+    statusMsg.className = 'status-msg error';
+  }
 
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
     statusMsg.className = 'status-msg';
     statusMsg.textContent = '';
+    if (!cadastroSb) {
+      statusMsg.textContent = 'Não foi possível conectar ao sistema de cadastro. Atualize a página e tente novamente.';
+      statusMsg.className = 'status-msg error';
+      return;
+    }
 
     const dados = {
       nome: document.getElementById('nome').value.trim(),
