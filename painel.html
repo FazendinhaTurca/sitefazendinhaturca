@@ -1108,7 +1108,7 @@ function renderizarClientesCadastrados() {
   container.innerHTML = `<div style="overflow-x:auto;"><table><thead><tr><th>Nome</th><th>Telefone</th><th>E-mail</th><th>Endereço</th><th>Indicação</th><th>Cadastro em</th></tr></thead><tbody>${filtrados.map(c => {
     const endereco = [c.rua, c.numero, c.bairro].filter(Boolean).join(', ');
     const data = c.criado_em ? new Date(c.criado_em).toLocaleString('pt-BR') : '—';
-    return `<tr><td>${escPedido(c.nome)}</td><td><a href="https://wa.me/${String(c.telefone || '').replace(/\D/g, '')}" target="_blank" rel="noopener">${escPedido(c.telefone)}</a></td><td>${escPedido(c.email)}</td><td>${escPedido(endereco)}</td><td>${escPedido(c.indicacao || '—')}</td><td>${escPedido(data)}</td></tr>`;
+    return `<tr><td>${escPedido(c.nome)}</td><td><a href="https://wa.me/${String(c.telefone || '').replace(/\D/g, '')}" target="_blank" rel="noopener">${escPedido(c.telefone)}</a></td><td>${escPedido(c.email)}</td><td>${escPedido(endereco)}</td><td style="min-width:230px;"><div style="display:flex;gap:6px;align-items:center;"><input type="text" aria-label="Quem indicou ${escPedido(c.nome)}" data-indicacao-input="${escPedido(c.id)}" value="${escPedido(c.indicacao || '')}" placeholder="Nome de quem indicou" style="min-width:140px;width:100%;padding:7px;border:1px solid var(--border,#d8d4ca);border-radius:6px;"><button type="button" class="btn btn-primary btn-sm" data-salvar-indicacao="${escPedido(c.id)}">Salvar</button></div><small data-indicacao-status="${escPedido(c.id)}" aria-live="polite"></small></td><td>${escPedido(data)}</td></tr>`;
   }).join('')}</tbody></table></div>`;
 }
 
@@ -1128,6 +1128,39 @@ async function carregarClientesCadastrados() {
 }
 document.getElementById('busca-clientes').addEventListener('input', renderizarClientesCadastrados);
 document.getElementById('btn-atualizar-clientes').addEventListener('click', carregarClientesCadastrados);
+
+document.getElementById('tabela-clientes-cadastrados').addEventListener('click', async (event) => {
+  const botao = event.target.closest('[data-salvar-indicacao]');
+  if (!botao) return;
+  const id = botao.dataset.salvarIndicacao;
+  const campo = document.querySelector('[data-indicacao-input="' + id + '"]');
+  const status = document.querySelector('[data-indicacao-status="' + id + '"]');
+  if (!campo || !status) return;
+
+  botao.disabled = true;
+  botao.textContent = 'Salvando...';
+  status.textContent = '';
+  const valor = campo.value.trim();
+  try {
+    const { data, error } = await sb.from('clientes_cadastrados')
+      .update({ indicacao: valor || null })
+      .eq('id', id)
+      .select('id,indicacao')
+      .single();
+    if (error) throw error;
+    const cliente = clientesCadastradosCache.find(c => c.id === id);
+    if (cliente) cliente.indicacao = data.indicacao;
+    status.textContent = 'Salvo!';
+    status.style.color = 'var(--green, #287a3d)';
+  } catch (error) {
+    console.error('Erro ao salvar indicação do cliente:', error);
+    status.textContent = 'Erro ao salvar: ' + (error.message || 'tente novamente');
+    status.style.color = '#b42318';
+  } finally {
+    botao.disabled = false;
+    botao.textContent = 'Salvar';
+  }
+});
 
 function dinheiro(v){return 'R$ '+Number(v||0).toFixed(2).replace('.',',');}
 function labelStatus(v){return ({novo:'Novo',em_confirmacao:'Em confirmação',confirmado:'Confirmado',em_preparacao:'Em preparação',saiu_entrega:'Saiu para entrega',concluido:'Concluído',cancelado:'Cancelado'})[v]||v||'—';}
