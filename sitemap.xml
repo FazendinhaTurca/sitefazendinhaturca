@@ -127,15 +127,6 @@
     </image:image>
   </url>
 <url>
-    <loc>https://www.fazendinhaturca.com.br/produtos/tangerina-doce.html</loc>
-    <lastmod>2026-10-02</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://www.fazendinhaturca.com.br/images/produtos/tangerina-doce.webp</image:loc>
-    </image:image>
-  </url>
-<url>
     <loc>https://www.fazendinhaturca.com.br/atelie/porta-copos-casa-da-fazendinha.html</loc>
     <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
@@ -145,6 +136,15 @@
     </image:image>
     <image:image>
       <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790101917064-4xdw0n.webp</image:loc>
+    </image:image>
+  </url>
+<url>
+    <loc>https://www.fazendinhaturca.com.br/produtos/tangerina-doce.html</loc>
+    <lastmod>2026-10-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://www.fazendinhaturca.com.br/images/produtos/tangerina-doce.webp</image:loc>
     </image:image>
   </url>
 <url>
@@ -166,15 +166,6 @@
     </image:image>
   </url>
 <url>
-    <loc>https://www.fazendinhaturca.com.br/produtos/tomate.html</loc>
-    <lastmod>2026-10-02</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://www.fazendinhaturca.com.br/images/produtos/tomate.webp</image:loc>
-    </image:image>
-  </url>
-<url>
     <loc>https://www.fazendinhaturca.com.br/atelie/porta-copos-turco.html</loc>
     <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
@@ -184,12 +175,12 @@
     </image:image>
   </url>
 <url>
-    <loc>https://www.fazendinhaturca.com.br/produtos/mini-tomate.html</loc>
+    <loc>https://www.fazendinhaturca.com.br/produtos/tomate.html</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://www.fazendinhaturca.com.br/images/produtos/mini-tomate.webp</image:loc>
+      <image:loc>https://www.fazendinhaturca.com.br/images/produtos/tomate.webp</image:loc>
     </image:image>
   </url>
 <url>
@@ -199,6 +190,15 @@
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://iskdknoedbvbiqlosgii.supabase.co/storage/v1/object/public/projetos/atelier-verushka/produtos/1790104628986-3yyysp.webp</image:loc>
+    </image:image>
+  </url>
+<url>
+    <loc>https://www.fazendinhaturca.com.br/produtos/mini-tomate.html</loc>
+    <lastmod>2026-10-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://www.fazendinhaturca.com.br/images/produtos/mini-tomate.webp</image:loc>
     </image:image>
   </url>
 <url>
@@ -518,7 +518,7 @@
   </url>
 <url>
     <loc>https://www.fazendinhaturca.com.br/produtos/pera.html</loc>
-    <lastmod>2026-10-02</lastmod>
+    <lastmod>2026-11-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
